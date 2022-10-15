@@ -3,13 +3,7 @@
 
 from starkware.cairo.common.serialize import serialize_word
 from starkware.cairo.common.math import unsigned_div_rem
-// For StarkNet contracts
-//from starkware.starknet.common.syscalls import (
-//    get_block_number,
-//    get_block_timestamp,
-//)
 
-// ...
 
 struct Pokemon {
     id: felt,
@@ -40,11 +34,10 @@ func main{output_ptr: felt*, range_check_ptr}() {
     let pikachu = createPikachu();
   
 
-    // let winner = fightAndGetWinner(bisasam,pikachu);
-    // serialize_word(winner.id);
+
    // let dmg = attackAndGetDamage{range_check_ptr=range_check_ptr}(bisasam, bisasam.atk1, pikachu);
     let dmg2 = attackAndGetDamage{range_check_ptr=range_check_ptr}(pikachu, pikachu.atk1,bisasam );
-   // serialize_word("");
+
     return ();
 }
 
