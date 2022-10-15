@@ -30,42 +30,88 @@ struct Attack {
 }
 
 func createBisasam() -> Pokemon {
-    return (Pokemon(id=1, hp=45, atk=49, init=45, def=49, type1='grass', type2='', atk1=new Attack(type='grass', damage=11)));
+    return (Pokemon(id=1, hp=152, atk=111, init=106, def=111, type1='grass', type2='', atk1=new Attack(type='grass', damage=30)));
 }
 func createPikachu() -> Pokemon {
-    return (Pokemon(id=25, hp=35, atk=55, init=90, def=40, type1='electro', type2='', atk1=new Attack(type='electro', damage=10)));
+    return (Pokemon(id=25, hp=142, atk=117, init=156, def=101, type1='electro', type2='', atk1=new Attack(type='electro', damage=30)));
 }
 func main{output_ptr: felt*, range_check_ptr}() {
     let bisasam = createBisasam();
     let pikachu = createPikachu();
-    let rand = get_random{range_check_ptr=range_check_ptr}(2);
+  
 
     // let winner = fightAndGetWinner(bisasam,pikachu);
     // serialize_word(winner.id);
-    // let dmg = attackAndGetDamage{range_check_ptr=range_check_ptr}(bisasam, bisasam.atk1, pikachu);
-    serialize_word(rand);
+   // let dmg = attackAndGetDamage{range_check_ptr=range_check_ptr}(bisasam, bisasam.atk1, pikachu);
+    let dmg2 = attackAndGetDamage{range_check_ptr=range_check_ptr}(pikachu, pikachu.atk1,bisasam );
+   // serialize_word("");
     return ();
 }
 
-func attackAndGetDamage{range_check_ptr}(pkmn1: Pokemon, atk: Attack*, pkmn2: Pokemon) -> felt {
-   // Damage formula = (((2* 1 or 2) / 5 + 2 * AttackDamage * Attack.Pok1 / Defense.Pok2) / 50) + 2 * STAB * Type1 * Type2 * random (217 bis 255 / 255)
-   
-   
-   
+func attackAndGetDamage{range_check_ptr,output_ptr: felt*}(pkmn1: Pokemon, atk: Attack*, pkmn2: Pokemon) -> felt {
+   // Damage formula = (((2* level *1 or 2) / 5  * AttackDamage * Attack.Pok1 / Defense.Pok2) / 50 )* STAB *  random (217 bis 255 / 255) 
    alloc_locals;
     if (atk.type == pkmn1.type1) {
         local stab = 2;  // Same Type Attack Bonus (STAB)
-        let (res, r) = unsigned_div_rem(pkmn1.atk, pkmn2.def);
-        //let (res, r) = div(pkmn1.atk, pkmn2.def);
-        // local damage =  res - pkmn2.def + atk.damage + stab;
-        return (pkmn2.hp - res);
+        
+        let level = 50000 ;
+        let rand1 = get_random(2); 
+        let a = 2 * level * rand1;
+        let (crit, r) = unsigned_div_rem(a,5);
+        let b = crit * atk.damage * pkmn1.atk;
+        let (c,r) = unsigned_div_rem(b,pkmn2.def);
+        let (d,r) = unsigned_div_rem(c,50);
+        let e = d * stab;
+        let f = get_random(50);
+        let g = e *(f + 205) ;
+        let (h,r) = unsigned_div_rem(g,255);
+        let (final, r) = unsigned_div_rem(h,1000);
+        
+        serialize_word(final);
+
+        return (final);
     }
     if (atk.type == pkmn1.type2) {
-        local stab = 2;
-        local damage = pkmn1.atk * atk.damage * stab;
-        return (damage);
+        local stab = 2;  // Same Type Attack Bonus (STAB)
+        
+        let level = 50000 ;
+        let rand1 = get_random(2); 
+        let a = 2 * level * rand1;
+        let (crit, r) = unsigned_div_rem(a,5);
+        let b = crit * atk.damage * pkmn1.atk;
+        let (c,r) = unsigned_div_rem(b,pkmn2.def);
+        let (d,r) = unsigned_div_rem(c,50);
+        let e = d * stab;
+        let f = get_random(50);
+        let g = e *(f + 205) ;
+        let (h,r) = unsigned_div_rem(g,255);
+        let (final, r) = unsigned_div_rem(h,1000);
+        
+        serialize_word(final);
+
+        return (final);
+    } else {
+         local stab = 1;  // Same Type Attack Bonus (STAB)
+        
+        let level = 50000 ;
+        let rand1 = get_random(2); 
+        let a = 2 * level * rand1;
+        let (crit, r) = unsigned_div_rem(a,5);
+        let b = crit * atk.damage * pkmn1.atk;
+        let (c,r) = unsigned_div_rem(b,pkmn2.def);
+        let (d,r) = unsigned_div_rem(c,50);
+        let e = d * stab;
+        let f = get_random(50);
+        let g = e *(f + 205) ;
+        let (h,r) = unsigned_div_rem(g,255);
+        let (final, r) = unsigned_div_rem(h,1000);
+        
+        serialize_word(final);
+
+        return (final);
+    
     }
-    return (pkmn1.atk / pkmn2.def * atk.damage);
+   
 }
 func fightAndGetWinner(pkmn1: Pokemon, pkmn2: Pokemon) -> Pokemon {
     return (pkmn1);
@@ -73,7 +119,7 @@ func fightAndGetWinner(pkmn1: Pokemon, pkmn2: Pokemon) -> Pokemon {
 
 func get_random{range_check_ptr}(range: felt,) -> felt {
       let (res, r) = unsigned_div_rem(1665829291743, range); // toDo: replace with currentTimeMillis
-      return r+1;  
+      return (r+1);  
 }
 
 
