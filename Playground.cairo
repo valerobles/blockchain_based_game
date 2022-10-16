@@ -84,7 +84,7 @@ func attackAndGetDamage{range_check_ptr,output_ptr: felt*}(pkmn1: Pokemon, atk: 
 
         return (final);
     } else {
-         local stab = 1;  // Same Type Attack Bonus (STAB)
+        local stab = 1;  // Same Type Attack Bonus (STAB)
         
         let level = 50000 ;
         let rand1 = get_random(2); 
