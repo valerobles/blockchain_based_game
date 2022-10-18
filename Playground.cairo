@@ -38,16 +38,16 @@ func main{output_ptr: felt*, range_check_ptr}() {
     local dmg = _dmg;
     let _dmg2 = attackAndGetDamage(pikachu, pikachu.atk1, bisasam);
     local dmg2 = _dmg2;
-    let winner = fight{range_check_ptr=range_check_ptr}(bisasam, pikachu);
-    let string = 'Damage done: ';
+    let winner = fight(bisasam, pikachu);
+    
 
     // serialize_word(string);
-    serialize_word(dmg);
-    serialize_word(winner);
+    //serialize_word(dmg);
+    //serialize_word(winner.hp);
 
     return ();
 }
-func fight{range_check_ptr: felt, output_ptr: felt*}(pkmn1: Pokemon*, pkmn2: Pokemon*) -> felt {
+func fight{range_check_ptr: felt, output_ptr: felt*}(pkmn1: Pokemon*, pkmn2: Pokemon*) -> Pokemon* {
     alloc_locals;
     // local firstIsFaster = is_le(pkmn1.init,pkmn2.init);
     local faster_pkmn: Pokemon*;
@@ -73,7 +73,8 @@ func fight{range_check_ptr: felt, output_ptr: felt*}(pkmn1: Pokemon*, pkmn2: Pok
     // if new HP value less 0 -> dead
     if (is_le(newPok.hp, 0) == 1) {
         // return winner
-        return (0);
+        serialize_word(newPok.hp);
+        return (faster_pkmn);
     }
 
     let _dmgSecondFight = attackAndGetDamage(slower_pkmn, slower_pkmn.atk1, faster_pkmn);
@@ -86,14 +87,14 @@ func fight{range_check_ptr: felt, output_ptr: felt*}(pkmn1: Pokemon*, pkmn2: Pok
 
     if (is_le(newPok2.hp, 0) == 1) {
         // return winner
-        return (1);
+        serialize_word(newPok2.hp);
+        return (slower_pkmn);
     }
-    // serialize_word(newPok.hp);
-    //
-
-    // let _dmg2 = attackAndGetDamage(pkmn2, pkmn2.atk1, pkmn1);
-    // local dmg2 = _dmg2;
-    return (0);
+      
+    let winner: Pokemon* = fight(newPok, newPok2);  
+    
+  
+    return (winner);
     //
 }
 
