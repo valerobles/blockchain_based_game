@@ -48,7 +48,9 @@ func main{output_ptr: felt*, range_check_ptr}() {
     return ();
 }
 func fight{range_check_ptr: felt, output_ptr: felt*}(pkmn1: Pokemon*, pkmn2: Pokemon*) -> Pokemon* {
-    alloc_locals;
+   // toDo : use random attacks -> use get_random()
+   
+   alloc_locals;
     // local firstIsFaster = is_le(pkmn1.init,pkmn2.init);
     local faster_pkmn: Pokemon*;
     local slower_pkmn: Pokemon*;
