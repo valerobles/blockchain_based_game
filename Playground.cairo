@@ -2,7 +2,7 @@
 
 from starkware.cairo.common.serialize import serialize_word
 from starkware.cairo.common.math import unsigned_div_rem
-from starkware.cairo.common.math_cmp import  is_le
+from starkware.cairo.common.math_cmp import is_le
 
 struct Pokemon {
     id: felt,
@@ -38,32 +38,63 @@ func main{output_ptr: felt*, range_check_ptr}() {
     local dmg = _dmg;
     let _dmg2 = attackAndGetDamage(pikachu, pikachu.atk1, bisasam);
     local dmg2 = _dmg2;
-    fight{range_check_ptr=range_check_ptr}(pikachu,bisasam);
+    let winner = fight{range_check_ptr=range_check_ptr}(bisasam, pikachu);
     let string = 'Damage done: ';
 
     // serialize_word(string);
     serialize_word(dmg);
+    serialize_word(winner);
+
     return ();
 }
 func fight{range_check_ptr: felt, output_ptr: felt*}(pkmn1: Pokemon*, pkmn2: Pokemon*) -> felt {
     alloc_locals;
-    //local firstIsFaster = is_le(pkmn1.init,pkmn2.init);
-   
-    if(is_le(pkmn1.init,pkmn2.init)==0){
-     //pkmn1 is faster
-    let _dmgx = attackAndGetDamage{range_check_ptr=range_check_ptr}(pkmn1, pkmn1.atk1, pkmn2);
-    //local dmg = _dmg;
-  //  local pkmn2_hp=pkmn2.hp-dmg;
-    
-    //let _dmg2 = attackAndGetDamage(pkmn2, pkmn2.atk1, pkmn1);
-   // local dmg2 = _dmg2;
-      //serialize_word(-1);
-    }else{
-     //pkmn2 is faster
-     // serialize_word(9999);
+    // local firstIsFaster = is_le(pkmn1.init,pkmn2.init);
+    local faster_pkmn: Pokemon*;
+    local slower_pkmn: Pokemon*;
+    if (is_le(pkmn1.init, pkmn2.init) == 0) {
+        faster_pkmn = pkmn1;
+        slower_pkmn = pkmn2;
+    } else {
+        faster_pkmn = pkmn2;
+        slower_pkmn = pkmn1;
     }
-   
+
+    // pkmn1 is faster
+    let _dmgx = attackAndGetDamage(faster_pkmn, faster_pkmn.atk1, slower_pkmn);
+    local dmg = _dmgx;
+
+    // calculate new HP
+    local pkmn2_hp = slower_pkmn.hp - dmg;
+
+    let newPok_: Pokemon* = updateHP(slower_pkmn, pkmn2_hp);
+    local newPok: Pokemon* = newPok_;
+
+    // if new HP value less 0 -> dead
+    if (is_le(newPok.hp, 0) == 1) {
+        // return winner
+        return (0);
+    }
+
+    let _dmgSecondFight = attackAndGetDamage(slower_pkmn, slower_pkmn.atk1, faster_pkmn);
+    local dmgSecondFight = _dmgSecondFight;
+
+    local pkmn1_hp = faster_pkmn.hp - dmg;
+
+    let newPok_2: Pokemon* = updateHP(faster_pkmn, pkmn1_hp);
+    local newPok2: Pokemon* = newPok_2;
+
+    if (is_le(newPok2.hp, 0) == 1) {
+        // return winner
+        return (1);
+    }
+    // serialize_word(newPok.hp);
+    //
+
+    // let _dmg2 = attackAndGetDamage(pkmn2, pkmn2.atk1, pkmn1);
+    // local dmg2 = _dmg2;
     return (0);
+    //
 }
 
 func attackAndGetDamage{range_check_ptr, output_ptr: felt*}(
@@ -103,4 +134,8 @@ func fightAndGetWinner(pkmn1: Pokemon, pkmn2: Pokemon) -> Pokemon {
 func get_random{range_check_ptr}(range: felt) -> felt {
     let (res, r) = unsigned_div_rem(1665829291743, range);  // toDo: replace with currentTimeMillis
     return (r + 1);
+}
+
+func updateHP(pkmn: Pokemon*, hp_: felt) -> Pokemon* {
+    return (new Pokemon(id=pkmn.id, hp=hp_, atk=pkmn.atk, init=pkmn.init, def=pkmn.def, type1=pkmn.type1, type2=pkmn.type2, atk1=pkmn.atk1, atk2=pkmn.atk2));
 }
