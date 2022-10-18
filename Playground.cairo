@@ -2,6 +2,7 @@
 
 from starkware.cairo.common.serialize import serialize_word
 from starkware.cairo.common.math import unsigned_div_rem
+from starkware.cairo.common.math_cmp import  is_le
 
 struct Pokemon {
     id: felt,
@@ -12,7 +13,7 @@ struct Pokemon {
     type1: felt,
     type2: felt,
     atk1: Attack*,
-    // atk2: Attack*,
+    atk2: Attack*,
     // atk3: Attack*,
     // atk4: Attack*,
 }
@@ -22,10 +23,10 @@ struct Attack {
 }
 
 func createBisasam() -> Pokemon* {
-    return (new Pokemon(id=1, hp=152, atk=111, init=106, def=111, type1='grass', type2='', atk1=new Attack(type='grass', damage=30)));
+    return (new Pokemon(id=1, hp=152, atk=111, init=106, def=111, type1='grass', type2='', atk1=new Attack(type='grass', damage=30), atk2=new Attack(type='normal', damage=40)));
 }
 func createPikachu() -> Pokemon* {
-    return (new Pokemon(id=25, hp=142, atk=117, init=156, def=101, type1='electro', type2='', atk1=new Attack(type='electro', damage=30)));
+    return (new Pokemon(id=25, hp=142, atk=117, init=156, def=101, type1='electro', type2='', atk1=new Attack(type='electro', damage=30), atk2=new Attack(type='normal', damage=35)));
 }
 
 func main{output_ptr: felt*, range_check_ptr}() {
@@ -37,12 +38,32 @@ func main{output_ptr: felt*, range_check_ptr}() {
     local dmg = _dmg;
     let _dmg2 = attackAndGetDamage(pikachu, pikachu.atk1, bisasam);
     local dmg2 = _dmg2;
-
+    fight{range_check_ptr=range_check_ptr}(pikachu,bisasam);
     let string = 'Damage done: ';
 
     // serialize_word(string);
     serialize_word(dmg);
     return ();
+}
+func fight{range_check_ptr: felt, output_ptr: felt*}(pkmn1: Pokemon*, pkmn2: Pokemon*) -> felt {
+    alloc_locals;
+    //local firstIsFaster = is_le(pkmn1.init,pkmn2.init);
+   
+    if(is_le(pkmn1.init,pkmn2.init)==0){
+     //pkmn1 is faster
+    let _dmgx = attackAndGetDamage{range_check_ptr=range_check_ptr}(pkmn1, pkmn1.atk1, pkmn2);
+    //local dmg = _dmg;
+  //  local pkmn2_hp=pkmn2.hp-dmg;
+    
+    //let _dmg2 = attackAndGetDamage(pkmn2, pkmn2.atk1, pkmn1);
+   // local dmg2 = _dmg2;
+      //serialize_word(-1);
+    }else{
+     //pkmn2 is faster
+     // serialize_word(9999);
+    }
+   
+    return (0);
 }
 
 func attackAndGetDamage{range_check_ptr, output_ptr: felt*}(
