@@ -1,4 +1,5 @@
 
+
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
@@ -23,46 +24,50 @@ struct Pokemon {
 }
 
 @storage_var
-func winner_pkmn() -> (winner: Pokemon) {
-
+func winner_pkmn() -> (res: Pokemon) {
 }
-
 
 // Increases the balance by the given amount.
 @external
-func fight{
-    syscall_ptr: felt*,
-    pedersen_ptr: HashBuiltin*,
-    range_check_ptr,
-}(pkmn1: Pokemon, pkmn2: Pokemon) -> (res: felt) {
-       // toDo : use random attacks -> use get_random()
-   
-   alloc_locals;
+func pokemon_game{pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    pkmn1: Pokemon, pkmn2: Pokemon) -> (winner: felt) {
+    alloc_locals;
+
+    local pkmn1_: Pokemon* = new Pokemon(id=pkmn1.id, hp=pkmn1.hp, atk=pkmn1.atk, init=pkmn1.init, def=pkmn1.def,
+        type1=pkmn1.type1, type2=pkmn1.type2, atk1_type=pkmn1.atk1_type,
+        atk1_damage=pkmn1.atk1_damage, atk2_type=pkmn1.atk2_type,
+        atk2_damage=pkmn1.atk2_damage);
+
+    local pkmn2_: Pokemon* = new Pokemon(id=pkmn2.id, hp=pkmn2.hp, atk=pkmn2.atk, init=pkmn2.init, def=pkmn2.def,
+        type1=pkmn2.type1, type2=pkmn2.type2, atk1_type=pkmn2.atk1_type,
+        atk1_damage=pkmn2.atk1_damage, atk2_type=pkmn2.atk2_type,
+        atk2_damage=pkmn2.atk2_damage);
+
+    let (res) = fight(pkmn1_, pkmn2_);
+    
+    return(winner=res);
+}
+
+func fight{pedersen_ptr: HashBuiltin*, range_check_ptr}(pkmn1: Pokemon*, pkmn2: Pokemon*) -> (res: felt) {
+    // toDo : use random attacks -> use get_random()
+
+    alloc_locals;
     // local firstIsFaster = is_le(pkmn1.init,pkmn2.init);
-    local pkmn1_ : Pokemon* = new Pokemon(id=pkmn1.id, hp=pkmn1.hp, atk=pkmn1.atk, init=pkmn1.init, def=pkmn1.def,
-    type1=pkmn1.type1, type2=pkmn1.type2, atk1_type=pkmn1.atk1_type,
-    atk1_damage=pkmn1.atk1_damage, atk2_type=pkmn1.atk2_type,
-    atk2_damage=pkmn1.atk2_damage);
-    
-    local pkmn2_ : Pokemon* = new Pokemon(id=pkmn2.id, hp=pkmn2.hp, atk=pkmn2.atk, init=pkmn2.init, def=pkmn2.def,
-    type1=pkmn2.type1, type2=pkmn2.type2, atk1_type=pkmn2.atk1_type,
-    atk1_damage=pkmn2.atk1_damage, atk2_type=pkmn2.atk2_type,
-    atk2_damage=pkmn2.atk2_damage);
-    
-    
-    
+
     local faster_pkmn: Pokemon*;
     local slower_pkmn: Pokemon*;
     if (is_le(pkmn1.init, pkmn2.init) == 0) {
-        faster_pkmn = pkmn1_;
-        slower_pkmn = pkmn2_;
+        faster_pkmn = pkmn1;
+        slower_pkmn = pkmn2;
     } else {
-        faster_pkmn = pkmn2_;
-        slower_pkmn = pkmn1_;
+        faster_pkmn = pkmn2;
+        slower_pkmn = pkmn1;
     }
 
     // pkmn1 is faster
-    let _dmgx = attackAndGetDamage(faster_pkmn, faster_pkmn.atk1_type, faster_pkmn.atk1_damage, slower_pkmn);
+    let _dmgx = attackAndGetDamage(
+        faster_pkmn, faster_pkmn.atk1_type, faster_pkmn.atk1_damage, slower_pkmn
+    );
     local dmg = _dmgx;
 
     // calculate new HP
@@ -74,12 +79,14 @@ func fight{
     // if new HP value less 0 -> dead
     if (is_le(newPok.hp, 0) == 1) {
         // return winner
-        //serialize_word(newPok.hp);
-        //winner_pkmn.write(faster_pkmn);
+        // serialize_word(newPok.hp);
+        // winner_pkmn.write(faster_pkmn);
         return (res=faster_pkmn.id);
     }
 
-    let _dmgSecondFight = attackAndGetDamage(slower_pkmn, slower_pkmn.atk1_type, slower_pkmn.atk1_damage,faster_pkmn);
+    let _dmgSecondFight = attackAndGetDamage(
+        slower_pkmn, slower_pkmn.atk1_type, slower_pkmn.atk1_damage, faster_pkmn
+    );
     local dmgSecondFight = _dmgSecondFight;
 
     local pkmn1_hp = faster_pkmn.hp - dmg;
@@ -89,19 +96,17 @@ func fight{
 
     if (is_le(newPok2.hp, 0) == 1) {
         // return winner
-        //serialize_word(newPok2.hp);
+        // serialize_word(newPok2.hp);
         return (res=slower_pkmn.id);
     }
-      
-    let winner_id = fight(newPok, newPok2);  
-    
-  
-    return (res=winner_id);
+
+    let (res) = fight(newPok, newPok2);
+
+    return (res=res);
 }
 
-
 func attackAndGetDamage{range_check_ptr}(
-    pkmn1: Pokemon*, atk_type: felt, atk_damage: felt,  pkmn2: Pokemon*
+    pkmn1: Pokemon*, atk_type: felt, atk_damage: felt, pkmn2: Pokemon*
 ) -> felt {
     // Damage formula = (((2* level *1 or 2) / 5  * AttackDamage * Attack.Pok1 / Defense.Pok2) / 50 )* STAB *  random (217 bis 255 / 255)
     alloc_locals;
@@ -131,15 +136,16 @@ func attackAndGetDamage{range_check_ptr}(
     return (final);
 }
 
-func updateHP(pkmn: Pokemon*, hp_: felt) -> (pok: Pokemon*) {
+func updateHP(pkmn: Pokemon*, hp_: felt) -> Pokemon* {
     return (new Pokemon(id=pkmn.id, hp=hp_, atk=pkmn.atk, init=pkmn.init, def=pkmn.def,
-    type1=pkmn.type1, type2=pkmn.type2, atk1_type=pkmn.atk1_type,
-    atk1_damage=pkmn.atk1_damage, atk2_type=pkmn.atk2_type,
-    atk2_damage=pkmn.atk2_damage, ));
+        type1=pkmn.type1, type2=pkmn.type2, atk1_type=pkmn.atk1_type,
+        atk1_damage=pkmn.atk1_damage, atk2_type=pkmn.atk2_type,
+        atk2_damage=pkmn.atk2_damage));
 }
 
 func get_random{range_check_ptr}(range: felt) -> felt {
     let (res, r) = unsigned_div_rem(1665829291743, range);  // toDo: replace with currentTimeMillis
     return (r + 1);
 }
+
 
