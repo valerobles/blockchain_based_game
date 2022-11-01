@@ -6,6 +6,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.serialize import serialize_word
 from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.registers import get_fp_and_pc
 
 struct Pokemon {
     id: felt,
@@ -27,23 +28,16 @@ struct Pokemon {
 func winner_pkmn() -> (res: Pokemon) {
 }
 
-// Increases the balance by the given amount.
+
 @external
 func pokemon_game{pedersen_ptr: HashBuiltin*, range_check_ptr}(
     pkmn1: Pokemon, pkmn2: Pokemon) -> (winner: felt) {
-    alloc_locals;
+   
+    
+     let (__fp__, _) = get_fp_and_pc();
+    
 
-    local pkmn1_: Pokemon* = new Pokemon(id=pkmn1.id, hp=pkmn1.hp, atk=pkmn1.atk, init=pkmn1.init, def=pkmn1.def,
-        type1=pkmn1.type1, type2=pkmn1.type2, atk1_type=pkmn1.atk1_type,
-        atk1_damage=pkmn1.atk1_damage, atk2_type=pkmn1.atk2_type,
-        atk2_damage=pkmn1.atk2_damage);
-
-    local pkmn2_: Pokemon* = new Pokemon(id=pkmn2.id, hp=pkmn2.hp, atk=pkmn2.atk, init=pkmn2.init, def=pkmn2.def,
-        type1=pkmn2.type1, type2=pkmn2.type2, atk1_type=pkmn2.atk1_type,
-        atk1_damage=pkmn2.atk1_damage, atk2_type=pkmn2.atk2_type,
-        atk2_damage=pkmn2.atk2_damage);
-
-    let (res) = fight(pkmn1_, pkmn2_);
+    let (res) = fight(&pkmn1, &pkmn2);
     
     return(winner=res);
 }
@@ -113,11 +107,12 @@ func attackAndGetDamage{range_check_ptr}(
     local stab;
     if (atk_type == pkmn1.type1) {
         stab = 2;
-    }
-    if (atk_type == pkmn1.type1) {
-        stab = 2;
     } else {
-        stab = 1;
+        if (atk_type == pkmn1.type2) {
+            stab = 2;
+        } else {
+            stab = 1;
+        }
     }
 
     let level = 50000;
