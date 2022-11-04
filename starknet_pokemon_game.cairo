@@ -24,10 +24,20 @@ struct Pokemon {
     // atk4: Attack*,
 }
 
-@storage_var
-func winner_pkmn() -> (res: Pokemon) {
+func createBisasam() -> Pokemon* {
+    return (new Pokemon(id=1, hp=152, atk=111, init=106, def=111, type1='grass', type2='', atk1_type='grass', atk1_damage=30, atk2_type='normal', atk2_damage=40));
+}
+func createPikachu() -> Pokemon* {
+    return (new Pokemon(id=25, hp=142, atk=117, init=156, def=101, type1='electro', type2='', atk1_type='electro', atk1_damage=30, atk2_type='normal', atk2_damage=35));
 }
 
+@external
+func no_param_fight{pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (winner: felt) {
+   
+    let (res) = fight(createBisasam(), createPikachu());
+    
+    return(winner=res);
+}
 
 @external
 func pokemon_game{pedersen_ptr: HashBuiltin*, range_check_ptr}(
