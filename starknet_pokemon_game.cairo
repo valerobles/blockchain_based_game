@@ -68,20 +68,21 @@ func pokemon_game{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
     // save winner in map
     winner.write(fight_id, res);
 
-    // send fight_id/winner_id to l1
+    get_winner(fight_id);
+    return ();
+}
+//read winner from a fight_id
+@external
+func get_winner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    fight_id: felt
+) {
+    let (res) = winner.read(fight_id=fight_id);
     let (message_payload: felt*) = alloc();
     assert message_payload[0] = fight_id;
     assert message_payload[1] = res;
     send_message_to_l1(to_address=L1_CONTRACT_ADDRESS, payload_size=2, payload=message_payload);
+    
     return ();
-}
-//read winner from a fight_id
-@view
-func get_winner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    fight_id: felt
-) -> (winner_id: felt) {
-    let (res) = winner.read(fight_id=fight_id);
-    return (winner_id=res);
 }
 func fight{pedersen_ptr: HashBuiltin*, range_check_ptr}(pkmn1: Pokemon*, pkmn2: Pokemon*) -> (
     res: felt
