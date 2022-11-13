@@ -9,9 +9,18 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.math import assert_nn
 from starkware.starknet.common.messages import send_message_to_l1
 // TODO change to our contract adress
-const L1_CONTRACT_ADDRESS = (
-    0x8359E4B0152ed5A731162D3c7B0D8D56edB165A0);
-
+@storage_var
+func l1_address() -> ( felt) {
+}
+@external
+func set_l1_address{
+    syscall_ptr: felt*,
+    pedersen_ptr: HashBuiltin*,
+    range_check_ptr,
+}(address: felt) {
+    l1_address.write(address);
+    return ();
+}
 struct Pokemon {
     id: felt,
     hp: felt,
@@ -62,8 +71,9 @@ func pokemon_game{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
     from_address: felt, pkmn1: Pokemon, pkmn2: Pokemon, fight_id: felt
 ) {
     let (__fp__, _) = get_fp_and_pc();
-    // check if l1 addess is correct
-    assert from_address = L1_CONTRACT_ADDRESS;
+    // TODO doesnt compile
+    //let (l1_contract_address)= l1_address.read();
+       // assert from_address = l1_contract_address;
     let (res) = fight(&pkmn1, &pkmn2);
 
     // save winner in map
@@ -81,7 +91,8 @@ func get_winner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}
     let (message_payload: felt*) = alloc();
     assert message_payload[0] = fight_id;
     assert message_payload[1] = res;
-    send_message_to_l1(to_address=L1_CONTRACT_ADDRESS, payload_size=2, payload=message_payload);
+      let (l1_contract_address)=l1_address.read();
+    send_message_to_l1(to_address=l1_contract_address, payload_size=2, payload=message_payload);
     
     return ();
 }
