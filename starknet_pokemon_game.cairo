@@ -1,5 +1,3 @@
-
-
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
@@ -7,6 +5,12 @@ from starkware.cairo.common.serialize import serialize_word
 from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.registers import get_fp_and_pc
+from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.math import assert_nn
+from starkware.starknet.common.messages import send_message_to_l1
+// TODO change to our contract adress
+const L1_CONTRACT_ADDRESS = (
+    0x8359E4B0152ed5A731162D3c7B0D8D56edB165A0);
 
 struct Pokemon {
     id: felt,
@@ -23,36 +27,66 @@ struct Pokemon {
     // atk3: Attack*,
     // atk4: Attack*,
 }
-
+//for testing purposes
 func createBisasam() -> Pokemon* {
     return (new Pokemon(id=1, hp=152, atk=111, init=106, def=111, type1='grass', type2='', atk1_type='grass', atk1_damage=30, atk2_type='normal', atk2_damage=40));
 }
+//for testing purposes
 func createPikachu() -> Pokemon* {
     return (new Pokemon(id=25, hp=142, atk=117, init=156, def=101, type1='electro', type2='', atk1_type='electro', atk1_damage=30, atk2_type='normal', atk2_damage=35));
 }
 
+@storage_var
+func winner(fight_id: felt) -> (winner_id: felt) {
+}
+//for testing purposes
 @external
 func no_param_fight{pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (winner: felt) {
-   
     let (res) = fight(createBisasam(), createPikachu());
-    
-    return(winner=res);
-}
 
+    return (winner=res);
+}
+//deprecated
 @external
-func pokemon_game{pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    pkmn1: Pokemon, pkmn2: Pokemon) -> (winner: felt) {
-   
-    
-     let (__fp__, _) = get_fp_and_pc();
-    
-
+func pokemon_game_old{pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    pkmn1: Pokemon, pkmn2: Pokemon
+) -> (winner: felt) {
+    let (__fp__, _) = get_fp_and_pc();
     let (res) = fight(&pkmn1, &pkmn2);
-    
-    return(winner=res);
+    return (winner=res);
 }
 
-func fight{pedersen_ptr: HashBuiltin*, range_check_ptr}(pkmn1: Pokemon*, pkmn2: Pokemon*) -> (res: felt) {
+@l1_handler
+func pokemon_game{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    from_address: felt, pkmn1: Pokemon, pkmn2: Pokemon, fight_id: felt
+) {
+    let (__fp__, _) = get_fp_and_pc();
+    // check if l1 addess is correct
+    assert from_address = L1_CONTRACT_ADDRESS;
+    let (res) = fight(&pkmn1, &pkmn2);
+
+    // save winner in map
+    winner.write(fight_id, res);
+
+    get_winner(fight_id);
+    return ();
+}
+//read winner from a fight_id
+@external
+func get_winner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    fight_id: felt
+) {
+    let (res) = winner.read(fight_id=fight_id);
+    let (message_payload: felt*) = alloc();
+    assert message_payload[0] = fight_id;
+    assert message_payload[1] = res;
+    send_message_to_l1(to_address=L1_CONTRACT_ADDRESS, payload_size=2, payload=message_payload);
+    
+    return ();
+}
+func fight{pedersen_ptr: HashBuiltin*, range_check_ptr}(pkmn1: Pokemon*, pkmn2: Pokemon*) -> (
+    res: felt
+) {
     // toDo : use random attacks -> use get_random()
 
     alloc_locals;
@@ -152,5 +186,3 @@ func get_random{range_check_ptr}(range: felt) -> felt {
     let (res, r) = unsigned_div_rem(1665829291743, range);  // toDo: replace with currentTimeMillis
     return (r + 1);
 }
-
-
