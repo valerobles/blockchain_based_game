@@ -24,16 +24,17 @@ struct Pokemon {
     atk1_damage: felt,
     atk2_type: felt,
     atk2_damage: felt,
+    name_id: felt,
     // atk3: Attack*,
     // atk4: Attack*,
 }
 //for testing purposes
 func createBisasam() -> Pokemon* {
-    return (new Pokemon(id=1, hp=152, atk=111, init=106, def=111, type1='grass', type2='', atk1_type='grass', atk1_damage=30, atk2_type='normal', atk2_damage=40));
+    return (new Pokemon(id=1, hp=152, atk=111, init=106, def=111, type1='grass', type2='', atk1_type='grass', atk1_damage=30, atk2_type='normal', atk2_damage=40, name_id=1));
 }
 //for testing purposes
 func createPikachu() -> Pokemon* {
-    return (new Pokemon(id=25, hp=142, atk=117, init=156, def=101, type1='electro', type2='', atk1_type='electro', atk1_damage=30, atk2_type='normal', atk2_damage=35));
+    return (new Pokemon(id=25, hp=142, atk=117, init=156, def=101, type1='electro', type2='', atk1_type='electro', atk1_damage=30, atk2_type='normal', atk2_damage=35, name_id=2));
 }
 
 @storage_var
@@ -179,7 +180,7 @@ func updateHP(pkmn: Pokemon*, hp_: felt) -> Pokemon* {
     return (new Pokemon(id=pkmn.id, hp=hp_, atk=pkmn.atk, init=pkmn.init, def=pkmn.def,
         type1=pkmn.type1, type2=pkmn.type2, atk1_type=pkmn.atk1_type,
         atk1_damage=pkmn.atk1_damage, atk2_type=pkmn.atk2_type,
-        atk2_damage=pkmn.atk2_damage));
+        atk2_damage=pkmn.atk2_damage, name_id=pkmn.name_id));
 }
 
 func get_random{range_check_ptr}(range: felt) -> felt {
