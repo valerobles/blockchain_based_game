@@ -8,9 +8,19 @@ from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.math import assert_nn
 from starkware.starknet.common.messages import send_message_to_l1
+from starkware.starknet.common.syscalls import get_tx_info
+from starkware.starknet.common.syscalls import get_block_timestamp
+from starkware.cairo.common.hash import hash2
 // TODO change to our contract adress
 @storage_var
 func l1_address() -> (felt,) {
+}
+
+func get_tx_transaction_hash{syscall_ptr: felt*}() -> (transaction_hash: felt) {
+
+    let (tx_info) = get_tx_info();
+
+    return (transaction_hash=tx_info.transaction_hash);
 }
 @external
 func set_l1_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -49,7 +59,7 @@ func winner(fight_id: felt) -> (winner_id: felt) {
 }
 // for testing purposes
 @external
-func no_param_fight{pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (winner: felt) {
+func no_param_fight{syscall_ptr: felt*,pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (winner: felt) {
     let (res) = fight(createBisasam(), createPikachu());
 
     return (winner=res);
@@ -135,7 +145,7 @@ func get_winner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}
 
     return ();
 }
-func fight{pedersen_ptr: HashBuiltin*, range_check_ptr}(pkmn1: Pokemon*, pkmn2: Pokemon*) -> (
+func fight{syscall_ptr: felt*,pedersen_ptr: HashBuiltin*, range_check_ptr}(pkmn1: Pokemon*, pkmn2: Pokemon*) -> (
     res: felt
 ) {
     // toDo : use random attacks -> use get_random()
@@ -194,7 +204,7 @@ func fight{pedersen_ptr: HashBuiltin*, range_check_ptr}(pkmn1: Pokemon*, pkmn2: 
     return (res=res);
 }
 
-func attackAndGetDamage{range_check_ptr}(
+func attackAndGetDamage{syscall_ptr: felt*,range_check_ptr,pedersen_ptr: HashBuiltin*}(
     pkmn1: Pokemon*, atk_type: felt, atk_damage: felt, pkmn2: Pokemon*
 ) -> felt {
     // Damage formula = (((2* level *1 or 2) / 5  * AttackDamage * Attack.Pok1 / Defense.Pok2) / 50 )* STAB *  random (217 bis 255 / 255)
@@ -233,7 +243,10 @@ func updateHP(pkmn: Pokemon*, hp_: felt) -> Pokemon* {
         atk2_damage=pkmn.atk2_damage, name_id=pkmn.name_id));
 }
 
-func get_random{range_check_ptr}(range: felt) -> felt {
-    let (res, r) = unsigned_div_rem(1665829291743, range);  // toDo: replace with currentTimeMillis
+func get_random{syscall_ptr: felt*,range_check_ptr,pedersen_ptr: HashBuiltin*}(range: felt) -> felt {
+    let (transaction_hash) = get_tx_transaction_hash();
+    let (block_timestamp) = get_block_timestamp();
+    let (rng_hash) = hash2{hash_ptr=pedersen_ptr}(transaction_hash,block_timestamp);
+    let (res, r) = unsigned_div_rem(rng_hash, range); 
     return (r + 1);
 }
