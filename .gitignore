@@ -1,0 +1,11 @@
+./past_blockchain_project_/.idea/.gitignore
+./past_blockchain_project_/.idea/gruppe1.iml
+./past_blockchain_project_/.idea/modules.xml
+./past_blockchain_project_/.idea/vcs.xml
+
+./past_blockchain_project_/truffle-config.js
+./past_blockchain_project_/package-lock.json
+./past_blockchain_project_/package.json
+./past_blockchain_project_/yarn.lock
+
+./past_blockchain_project_/node_modules
