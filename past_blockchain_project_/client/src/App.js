@@ -131,7 +131,7 @@ const App=()=>{
                   <div className="d-flex flex-column align-items-center" key={my_uuid}>
                     <img width="150"
                          src={`https://avatars.dicebear.com/api/avataaars/${pok.nameID}.svg`}/>
-                    <span>{pok.name_id}</span>
+                    <span>{pok.nameID}</span>
                     <div className="d-flex flex-row">
                       <input
                           type="number"
