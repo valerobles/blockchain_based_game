@@ -64,7 +64,11 @@ func no_param_fight{syscall_ptr: felt*,pedersen_ptr: HashBuiltin*, range_check_p
 
     return (winner=res);
 }
-
+@event
+func fight_steps(
+    step: felt,
+) {
+}
 @l1_handler
 func pokemon_game_flat{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     from_address: felt,
@@ -95,6 +99,7 @@ func pokemon_game_flat{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
     fight_id: felt,
 ) {
     alloc_locals;
+     fight_steps.emit(step=0);
     local pkmn1: Pokemon = Pokemon(id=id1, hp=hp1, atk=atk1, init=init1, def=def1,
         type1=type11, type2=type21, atk1_type=atk1_type1,
         atk1_damage=atk1_damage1, atk2_type=atk2_type1,
@@ -108,12 +113,19 @@ func pokemon_game_flat{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
     // TODO doesnt compile
     // let (l1_contract_address)= l1_address.read();
     // assert from_address = l1_contract_address;
+     fight_steps.emit(step=1);
     let (res) = fight(&pkmn1, &pkmn2);
-
+ fight_steps.emit(step=2);
     // save winner in map
     winner.write(fight_id, res);
 
-    get_winner(fight_id);
+     let (res) = winner.read(fight_id=fight_id);
+    let (message_payload: felt*) = alloc();
+    assert message_payload[0] = res;
+    assert message_payload[1] = fight_id;
+    let (l1_contract_address) = l1_address.read();
+    send_message_to_l1(to_address=l1_contract_address, payload_size=2, payload=message_payload);
+ fight_steps.emit(step=3);
     return ();
 }
 
@@ -130,20 +142,27 @@ func pokemon_game{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
     // save winner in map
     winner.write(fight_id, res);
 
-    get_winner(fight_id);
-    return ();
-}
-// read winner from a fight_id
-@external
-func get_winner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(fight_id: felt) {
+    //send result to l1
     let (res) = winner.read(fight_id=fight_id);
     let (message_payload: felt*) = alloc();
-    assert message_payload[0] = fight_id;
-    assert message_payload[1] = res;
+    assert message_payload[0] = res;
+    assert message_payload[1] = fight_id;
     let (l1_contract_address) = l1_address.read();
     send_message_to_l1(to_address=l1_contract_address, payload_size=2, payload=message_payload);
 
     return ();
+}
+@event
+func get_winner_called(
+    winner: felt,
+) {
+}
+// read winner from a fight_id
+@view
+func get_winner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(fight_id: felt)->(winner: felt) {
+    let (res) = winner.read(fight_id=fight_id);
+    get_winner_called.emit(winner=res);
+    return (winner=res);
 }
 func fight{syscall_ptr: felt*,pedersen_ptr: HashBuiltin*, range_check_ptr}(pkmn1: Pokemon*, pkmn2: Pokemon*) -> (
     res: felt
