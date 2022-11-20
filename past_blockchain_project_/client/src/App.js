@@ -125,17 +125,17 @@ const App=()=>{
       <h1>Your collection</h1>
       <div className="col-8 d-flex justify-content-center flex-wrap p-4">
  
-          {pokemonList.slice(1, pokemonList.length).map((student, my_uuid) => {
-            if (student.owner === account) {
+          {pokemonList.slice(1, pokemonList.length).map((pok, my_uuid) => {
+            if (pok.owner === account) {
               return (
                   <div className="d-flex flex-column align-items-center" key={my_uuid}>
                     <img width="150"
-                         src={`https://avatars.dicebear.com/api/avataaars/${student.name_id}.svg`}/>
-                    <span>{student.name_id}</span>
+                         src={`https://avatars.dicebear.com/api/avataaars/${pok.nameID}.svg`}/>
+                    <span>{pok.name_id}</span>
                     <div className="d-flex flex-row">
                       <input
                           type="number"
-                          value={pokemonList[my_uuid + 1].price}
+                          value={pokemonList[my_uuid]}
                           onChange={
                             (e) =>
                                 
