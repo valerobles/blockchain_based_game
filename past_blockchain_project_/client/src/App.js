@@ -163,8 +163,8 @@ const App=()=>{
             let shortOwnerText = student.owner.substring(0, 10) + "..."
             return (
               <div className="d-flex flex-column align-items-center p-4" key={index}>
-                <img width="150" src={`https://avatars.dicebear.com/api/avataaars/${student.name_id}.svg`} />
-                <span>{student.name_id}</span>
+                <img width="150" src={`https://avatars.dicebear.com/api/avataaars/${student.nameID}.svg`} />
+                <span>{student.nameID}</span>
                 <span>Owner : {shortOwnerText}</span>
               </div>
           )
