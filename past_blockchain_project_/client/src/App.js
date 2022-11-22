@@ -98,26 +98,26 @@ const App=()=>{
   }
 
  async function getWinner(contract, fightID) {
-   let winnerPok_ = await contract.methods.fightIDToWinnerPokemon(fightID).call();
+   let winnerPok_ = await contract.methods.fightIDToWinnerPokemon(3).call();
    setWinnerPok(winnerPok_)
    console.log(winnerPok_)
  }
 
   return <div>
 <nav className="navbar navbar-light bg-light px-4">
-  <a className="navbar-brand" href="#">Crypto Students</a>
+  <a className="navbar-brand" href="#">Crypto Pokémon</a>
   <span  className="navbar-brand" >{account}</span>
 </nav>
 <div className="container-fluid mt-5">
   <div className="row">
     <div className="col d-flex flex-column align-items-center">
       <div className="row-6">
-      <img className="mb-4" src="https://avatars.dicebear.com/api/avataaars/Welcome.svg" alt="" width="85"/>
-      <img className="mb-4" src="https://avatars.dicebear.com/api/avataaars/to_the.svg" alt="" width="85"/>
-      <img className="mb-4" src="https://avatars.dicebear.com/api/avataaars/best.svg" alt="" width="85"/>
-      <img className="mb-4" src="https://avatars.dicebear.com/api/avataaars/NFT_Marketplace.svg" alt="" width="85"/>
+      <img className="mb-4" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/1.svg" alt="" width="85"/>
+      <img className="mb-4" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/4.svg" alt="" width="85"/>
+      <img className="mb-4" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/7.svg" alt="" width="85"/>
+      <img className="mb-4" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/25.svg" alt="" width="85"/>
       </div>
-      <h1 className="display-5 fw-bold">Create your own Crypto Student NFT!</h1>
+      <h1 className="display-5 fw-bold">Create your own Pokémon</h1>
       <div className="col-6 text-center mb-3" >
         <div>
           <input
@@ -140,9 +140,9 @@ const App=()=>{
               return (
                   <div className="d-flex flex-column align-items-center" key={my_uuid}>
                     <img width="150"
-                         src={`https://avatars.dicebear.com/api/avataaars/${pok.nameID}.svg`}/>
-                    <span>{pok.nameID}</span>
-                    <span>My uuid = {my_uuid}</span>
+                         src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${pok.nameID}.svg`}/>
+                    <span>My nameID/dex# = {pok.nameID}</span>
+                    <span>My UUID = {my_uuid}</span>
                     <div className="d-flex flex-row">
                       <input
                           type="number"
@@ -178,8 +178,8 @@ const App=()=>{
             let shortOwnerText = student.owner.substring(0, 10) + "..."
             return (
               <div className="d-flex flex-column align-items-center p-4" key={index}>
-                <img width="150" src={`https://avatars.dicebear.com/api/avataaars/${student.nameID}.svg`} />
-                <span>Name ID = {student.nameID}</span>
+                <img width="150" src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${student.nameID}.svg`} />
+                <span>My nameID/dex# =  {student.nameID}</span>
                 <span>UUID =  {index}</span>
                 <span>Owner : {shortOwnerText}</span>
               </div>

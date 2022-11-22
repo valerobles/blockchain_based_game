@@ -73,7 +73,7 @@ contract NFT is ERC721, ERC721Enumerable {
 
 
     function mint(uint256  _name_id) public {
-        require(!_PokemonsExists[_name_id]);
+       // require(!_PokemonsExists[_name_id]);
         uint256 _uuid = pokemons.length; // TODO: create UUID for unique ID
 
         pokemons.push(getStatsByNameID(_name_id,_uuid ));
@@ -82,7 +82,7 @@ contract NFT is ERC721, ERC721Enumerable {
 
         // _mint method from openzeppelin
         _safeMint(msg.sender, _uuid); // save_mint in openzeppelin?
-        _PokemonsExists[_uuid] = true;
+        //_PokemonsExists[_uuid] = true;
     }
 
 
