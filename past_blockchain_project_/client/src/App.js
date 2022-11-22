@@ -188,7 +188,7 @@ const App=()=>{
         })
         }
       </div>
-      <button onClick={() => getWinner(contract,1)}>Get winner button</button>
+      <button onClick={() => getWinner(contract,4)}>Get winner button</button>
   </div>
   </div>
 </div>
