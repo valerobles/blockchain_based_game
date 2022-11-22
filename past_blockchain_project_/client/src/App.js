@@ -6,7 +6,7 @@ import "./App.css";
 
 const App=()=>{
 
-  const PokemonObj = (nameID, owner) => { return { nameID: nameID, owner: owner } }
+  const PokemonObj = (nameID, owner, currentEnemyID) => { return { nameID: nameID, owner: owner, currentEnemyID: currentEnemyID } }
   const [web3, setWeb3] = useState();
   const [contract, setContract] = useState(null);
   const [account, setAccounts] = useState("");
@@ -15,10 +15,11 @@ const App=()=>{
   const [enemy, setEnemy] = useState("")
   const [priceText, setPriceText] = useState("0.0000000000001");
   const [studentId, setStudentId] = useState(0);
+  const [winnerPok, setWinnerPok] = useState(PokemonObj());
   
   const mint = () => {
-    if (nameID.length > 0)
-      contract.methods.mint(nameID).send({ from: account }, (error)=>{
+    if (nameID.length > 0) {
+        contract.methods.mint(nameID).send({ from: account }, (error)=>{
         console.log("it worked")
         if(!error){
           let pok = PokemonObj(nameID,account);
@@ -26,9 +27,12 @@ const App=()=>{
           setNameID(0);
           // setPriceText("");
           setStudentId(pokemonList.length); // TODO read uuid from solidity programm
-        
         }
-      });
+
+         else {
+          console.log("did not work")
+        }
+      });}
   }
 
    // load all the nfts
@@ -66,7 +70,7 @@ const App=()=>{
       // for local blockchain testing
       // const address = networkData.address;
       // const contract = new web3.eth.Contract(abi, address);
-      const contract = new web3.eth.Contract(abi, "0x63a4e5e9559d1e72758216fc41e74b229a91cf42"); // TODO get solidity contract address
+      const contract = new web3.eth.Contract(abi, "0xb141A83Fb2A7c6fcba9Fedf532f5D6F973f34357"); // TODO get solidity contract address
       setContract(contract);
       return contract;
     //}
@@ -92,6 +96,12 @@ const App=()=>{
       });
     }
   }
+
+ async function getWinner(contract, fightID) {
+   let winnerPok_ = await contract.methods.fightIDToWinnerPokemon(fightID).call();
+   setWinnerPok(winnerPok_)
+   console.log(winnerPok_)
+ }
 
   return <div>
 <nav className="navbar navbar-light bg-light px-4">
@@ -132,18 +142,23 @@ const App=()=>{
                     <img width="150"
                          src={`https://avatars.dicebear.com/api/avataaars/${pok.nameID}.svg`}/>
                     <span>{pok.nameID}</span>
+                    <span>My uuid = {my_uuid}</span>
                     <div className="d-flex flex-row">
                       <input
                           type="number"
-                          value={pokemonList[my_uuid]}
+                          value={pokemonList[my_uuid].currentEnemyID}
                           onChange={
-                            (e) =>
-                                
-                                setEnemy(e.target.value) // TODO possible bug: using enemy's uuid for another of your pokemon
+                            (e) => {
+
+                              pokemonList[my_uuid].currentEnemyID = e.target.value // TODO possible bug: using enemy's uuid for another of your pokemon
+                              console.log(pokemonList[my_uuid].currentEnemyID)
+
+                            }
+
                           }
                           className="p-2"
                           placeholder="Give enemy uuid"/>
-                      <button onClick={() => fight(my_uuid,enemy)} className="btn btn-primary p-2">FIGHT</button>
+                      <button onClick={() => fight(my_uuid,pokemonList[my_uuid].currentEnemyID)} className="btn btn-primary p-2">FIGHT</button>
                     </div>
                   </div>
               )
@@ -164,7 +179,8 @@ const App=()=>{
             return (
               <div className="d-flex flex-column align-items-center p-4" key={index}>
                 <img width="150" src={`https://avatars.dicebear.com/api/avataaars/${student.nameID}.svg`} />
-                <span>{student.nameID}</span>
+                <span>Name ID = {student.nameID}</span>
+                <span>UUID =  {index}</span>
                 <span>Owner : {shortOwnerText}</span>
               </div>
           )
@@ -172,8 +188,8 @@ const App=()=>{
         })
         }
       </div>
-
-    </div>
+      <button onClick={() => getWinner(contract,1)}>Get winner button</button>
+  </div>
   </div>
 </div>
 </div>;
