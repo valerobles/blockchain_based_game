@@ -6,7 +6,7 @@ import "@openzeppelin/contracts@4.6.0/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts@4.6.0/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts@4.6.0/utils/Counters.sol";
 
-
+// Starknet Interface
 interface IStarknetCore {
     /**
       Sends a message to an L2 contract.
@@ -49,40 +49,34 @@ contract NFT is ERC721, ERC721Enumerable {
         uint256 name_id;
 
     }
-    Pokemon[] public pokemons;
+    Pokemon[] public pokemons; // List of all Pokemon
 
     IStarknetCore starknetCore;
 
-    uint256 L2_CONTRACT = 0x65ca4f13a991313394d97395bed9e06e80270a0078a9b9a39c841db4a066bed; // TODO: change to l2 contract address
+    uint256 L2_CONTRACT = 0x65ca4f13a991313394d97395bed9e06e80270a0078a9b9a39c841db4a066bed; // l2 contract address
 
     uint256 fightIDCounter = 0;
 
 
 
     uint256 constant SELECTOR =
-    1625440424450498852892950090004073452274266572863945925863133186904237482575; // pokemon_game_flat
+    1625440424450498852892950090004073452274266572863945925863133186904237482575; // pokemon_game_flat as a selector encoded
 
-    //mapping (uint256 => address) public pokemonToOwner; // Check openzeppelin contract for method
-    mapping (uint256 => bool) _PokemonsExists; //only names not in this list can be added new. every name is unique
     mapping (uint256 => Pokemon) public fightIDToWinnerPokemon; // mapping of fight ID to Winner Pokemon
 
     constructor() ERC721("NFT","CC") {
-        starknetCore = IStarknetCore(address(0xde29d060D45901Fb19ED6C6e959EB22d8626708e)); // TODO
+        starknetCore = IStarknetCore(address(0xde29d060D45901Fb19ED6C6e959EB22d8626708e)); // https://docs.starknet.io/documentation/Ecosystem/ref_operational_info/
     }
 
 
 
     function mint(uint256  _name_id) public {
-        require(!_PokemonsExists[_name_id]);
         uint256 _uuid = pokemons.length; // TODO: create UUID for unique ID
 
-        pokemons.push(getStatsByNameID(_name_id,_uuid ));
+        pokemons.push(getStatsByNameID(_name_id,_uuid )); // create Pokemon from json
 
-        //pokemonToOwner[_uuid] = msg.sender;
-
-        // _mint method from openzeppelin
-        _safeMint(msg.sender, _uuid); // save_mint in openzeppelin?
-        _PokemonsExists[_uuid] = true;
+        // _safeMint method from openzeppelin
+        _safeMint(msg.sender, _uuid);
     }
 
 
@@ -97,24 +91,6 @@ contract NFT is ERC721, ERC721Enumerable {
     }
 
 
-    /**
-        function _transferNFT(address _to, uint256 _id) private {
-            pokemonToOwner[_id] = _to;
-            pokemons[_id].price = 0;
-        }
-
-        function buyNFT(uint _id) public payable {
-            require(msg.sender != pokemonToOwner[_id], "Seller cannot be buyer");
-            require(pokemons[_id].price > 0, "only Pokemons with a price can be bought. FREE does not exist");
-            require(msg.value >= (pokemons[_id].price), "Insufficient funds");
-            payable(pokemonToOwner[_id]).transfer(pokemons[_id].price);
-            _transferNFT(msg.sender, _id);
-        }
-        */
-
-    // override method from ERC721, ERC721Enumerable
-
-
     // override method from ERC721, ERC721Enumerable
     function supportsInterface(bytes4 interfaceId)
     public
@@ -125,6 +101,7 @@ contract NFT is ERC721, ERC721Enumerable {
         return super.supportsInterface(interfaceId);
     }
 
+    // override method from ERC721, ERC721Enumerable
     function _beforeTokenTransfer(address from, address to, uint256 tokenId)
     internal
     override (ERC721, ERC721Enumerable)
@@ -138,7 +115,7 @@ contract NFT is ERC721, ERC721Enumerable {
     // L1 L2 Handlers
 
 
-    // L2 -> L1. Transfer funds from layer 2  back to Layer 1
+    // L2 -> L1. Recieve winner from L2
     function get_winner(
         uint256 l2ContractAddress,
         uint256 pokemonWinnerID,
@@ -158,16 +135,18 @@ contract NFT is ERC721, ERC721Enumerable {
         fightIDToWinnerPokemon[fightID] = pokemons[pokemonWinnerID];
     }
 
-    // L1 -> L2
+
+
+    // L1 -> L2. Send 2 pokemon to fight to L2
     function sendPokemonsToL2(
         uint256 l2ContractAddress,
         Pokemon memory pok1,
         Pokemon memory pok2,
         uint256 fight_ID
-    ) public payable {
+    ) private payable {
 
 
-        // Construct the deposit message's payload.
+        // Construct the message's payload.
         uint256[] memory payload = new uint256[](25);
         payload[0] = pok1.id;
         payload[1] = pok1.hp;
@@ -207,6 +186,7 @@ contract NFT is ERC721, ERC721Enumerable {
     }
 
 
+    // Method to be called from UI
     function startFight(uint256 myPok, uint256 enemyPok) public {
         sendPokemonsToL2(L2_CONTRACT, pokemons[myPok], pokemons[enemyPok], createFightID());
     }
