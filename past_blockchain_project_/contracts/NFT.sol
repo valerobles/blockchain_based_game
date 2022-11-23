@@ -53,7 +53,7 @@ contract NFT is ERC721, ERC721Enumerable {
 
     IStarknetCore starknetCore;
 
-    uint256 L2_CONTRACT = 0x65ca4f13a991313394d97395bed9e06e80270a0078a9b9a39c841db4a066bed; // l2 contract address
+    uint256 L2_CONTRACT = 0x48cc83663f52f00a45fa8b09e47f050a5c6c8b74af6e35db49fce474650bbc2; // l2 contract address
 
     uint256 fightIDCounter = 0;
 
@@ -142,9 +142,12 @@ contract NFT is ERC721, ERC721Enumerable {
         uint256 l2ContractAddress,
         Pokemon memory pok1,
         Pokemon memory pok2,
-        uint256 fight_ID
-    ) private payable {
+        uint256 fight_ID,
+        uint price
+    ) public payable {
 
+        require(msg.value >= price, "Insufficient funds");
+        payable(ownerOf(pok1.id)).transfer(price);
 
         // Construct the message's payload.
         uint256[] memory payload = new uint256[](25);
@@ -187,8 +190,8 @@ contract NFT is ERC721, ERC721Enumerable {
 
 
     // Method to be called from UI
-    function startFight(uint256 myPok, uint256 enemyPok) public {
-        sendPokemonsToL2(L2_CONTRACT, pokemons[myPok], pokemons[enemyPok], createFightID());
+    function startFight(uint256 myPok, uint256 enemyPok, uint price) public {
+        sendPokemonsToL2(L2_CONTRACT, pokemons[myPok], pokemons[enemyPok], createFightID(), price);
     }
 
 

@@ -70,7 +70,7 @@ const App=()=>{
       // for local blockchain testing
       // const address = networkData.address;
       // const contract = new web3.eth.Contract(abi, address);
-      const contract = new web3.eth.Contract(abi, "0xb141A83Fb2A7c6fcba9Fedf532f5D6F973f34357"); // TODO get solidity contract address
+      const contract = new web3.eth.Contract(abi, "0x964CFbda9Ea977453c40b15ce07fA5046e4b539C"); // TODO get solidity contract address
       setContract(contract);
       return contract;
     //}
@@ -88,8 +88,11 @@ const App=()=>{
   
   function fight(my_uuid, enemy_uuid) {
     if(my_uuid !== undefined && enemy_uuid !== undefined) {
-      
-      contract.methods.startFight(my_uuid,enemy_uuid).send( {from: account}, (error) => {
+       const price = "0.002"
+       let weiPrice = web3.utils.toWei(price, "ether")
+
+
+        contract.methods.startFight(my_uuid,enemy_uuid,weiPrice).send( {from: account, value: weiPrice} ,(error) => {
         if(error) {
           console.log(error);
         }
