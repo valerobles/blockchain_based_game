@@ -18,7 +18,7 @@ const App=()=>{
   const [winnerPok, setWinnerPok] = useState(PokemonObj());
   
   const mint = () => {
-    if (nameID.length > 0) {
+    if (nameID.length > 0 && nameID>0) {
         contract.methods.mint(nameID).send({ from: account }, (error)=>{
         console.log("it worked")
         if(!error){
@@ -49,7 +49,6 @@ const App=()=>{
       newResults.push(newPokObj);
     }
     setPokemonList(newResults);
-
   }
 
     // load web3 account from metamask
@@ -115,10 +114,10 @@ const App=()=>{
   <div className="row">
     <div className="col d-flex flex-column align-items-center">
       <div className="row-6">
-      <img className="mb-4" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/1.svg" alt="" width="85"/>
-      <img className="mb-4" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/4.svg" alt="" width="85"/>
-      <img className="mb-4" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/7.svg" alt="" width="85"/>
-      <img className="mb-4" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/25.svg" alt="" width="85"/>
+      <img className="mb-4" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/1.svg" alt="" height="85"/>
+      <img className="mb-4" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/4.svg" alt="" height="85"/>
+      <img className="mb-4" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/7.svg" alt="" height="85"/>
+      <img className="mb-4" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/25.svg" alt="" height="85"/>
       </div>
       <h1 className="display-5 fw-bold">Create your own Pokémon</h1>
       <div className="col-6 text-center mb-3" >
@@ -142,7 +141,7 @@ const App=()=>{
             if (pok.owner === account) {
               return (
                   <div className="d-flex flex-column align-items-center" key={my_uuid}>
-                    <img width="150"
+                    <img height="150"
                          src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${pok.nameID}.svg`}/>
                     <span>My nameID/dex# = {pok.nameID}</span>
                     <span>My UUID = {my_uuid}</span>
@@ -181,7 +180,7 @@ const App=()=>{
             let shortOwnerText = student.owner.substring(0, 10) + "..."
             return (
               <div className="d-flex flex-column align-items-center p-4" key={index}>
-                <img width="150" src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${student.nameID}.svg`} />
+                <img height="150" src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${student.nameID}.svg`} />
                 <span>My nameID/dex# =  {student.nameID}</span>
                 <span>UUID =  {index}</span>
                 <span>Owner : {shortOwnerText}</span>

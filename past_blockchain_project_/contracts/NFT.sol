@@ -30,8 +30,6 @@ interface IStarknetCore {
 }
 
 
-
-
 contract NFT is ERC721, ERC721Enumerable {
 
     struct Pokemon {
@@ -49,6 +47,7 @@ contract NFT is ERC721, ERC721Enumerable {
         uint256 name_id;
 
     }
+
     Pokemon[] public pokemons; // List of all Pokemon
 
     IStarknetCore starknetCore;
@@ -58,22 +57,24 @@ contract NFT is ERC721, ERC721Enumerable {
     uint256 fightIDCounter = 0;
 
 
-
     uint256 constant SELECTOR =
     1625440424450498852892950090004073452274266572863945925863133186904237482575; // pokemon_game_flat as a selector encoded
 
-    mapping (uint256 => Pokemon) public fightIDToWinnerPokemon; // mapping of fight ID to Winner Pokemon
+    mapping(uint256 => Pokemon) public fightIDToWinnerPokemon; // mapping of fight ID to Winner Pokemon
 
-    constructor() ERC721("NFT","CC") {
-        starknetCore = IStarknetCore(address(0xde29d060D45901Fb19ED6C6e959EB22d8626708e)); // https://docs.starknet.io/documentation/Ecosystem/ref_operational_info/
+    constructor() ERC721("NFT", "CC") {
+        starknetCore = IStarknetCore(address(0xde29d060D45901Fb19ED6C6e959EB22d8626708e));
+        // https://docs.starknet.io/documentation/Ecosystem/ref_operational_info/
     }
 
 
 
-    function mint(uint256  _name_id) public {
-        uint256 _uuid = pokemons.length; // TODO: create UUID for unique ID
+    function mint(uint256 _name_id) public {
+        uint256 _uuid = pokemons.length;
+        // TODO: create UUID for unique ID
 
-        pokemons.push(getStatsByNameID(_name_id,_uuid )); // create Pokemon from json
+        pokemons.push(getStatsByNameID(_name_id, _uuid));
+        // create Pokemon from json
 
         // _safeMint method from openzeppelin
         _safeMint(msg.sender, _uuid);
@@ -81,11 +82,37 @@ contract NFT is ERC721, ERC721Enumerable {
 
 
     // TODO: get data from json
-    function getStatsByNameID(uint256  _name_id, uint256 _id) public pure returns ( Pokemon memory) {
-        if (_name_id == 1){
-            return(Pokemon(_id,152,111,106,111,8,0,8,30,11,40,_name_id));
-        } else {
-            return(Pokemon(_id,142,117,156,101,3,0,3,30,11,35,_name_id));
+    function getStatsByNameID(uint256 _name_id, uint256 _id) public pure returns (Pokemon memory) {
+        //uint256 id;hp;atk; init; def;type1;type2; atk1_type; atk1_damage; atk2_type;atk2_damage;name_id;
+        if (_name_id == 1) {
+            return (Pokemon(_id, 152, 111, 106, 111, 8, 0, 8, 30, 11, 40, _name_id));
+        }
+        if (_name_id == 2) {
+            return (Pokemon(_id, 167, 125,  123,126, 8, 12, 8, 40, 12, 50, _name_id));
+        }
+        if (_name_id == 3) {
+            return (Pokemon(_id, 187, 167,  145,192, 8, 12, 8, 50, 12, 60, _name_id));
+        }
+        if (_name_id == 4) {
+            return (Pokemon(_id, 146, 114,  128,104, 5, 0, 5, 40, 12, 50, _name_id));
+        }
+        if (_name_id == 5) {
+            return (Pokemon(_id, 165, 127, 145, 121, 5, 0, 5, 40, 12, 50, _name_id));
+        }
+        if (_name_id == 6) {
+            return (Pokemon(_id, 185, 200,  167,179, 5, 6, 5, 50, 6, 60, _name_id));
+        }
+        if (_name_id == 7) {
+            return (Pokemon(_id, 151, 110,  104,128, 15, 0, 15, 30, 11, 40, _name_id));
+        }
+        if (_name_id == 8) {
+            return (Pokemon(_id, 166, 126,  121,145, 15, 0, 15, 40, 11, 50, _name_id));
+        }
+        if (_name_id == 9) {
+            return (Pokemon(_id, 186, 148,  143,167, 15, 0, 15, 50, 10, 60, _name_id));
+        }
+        else {
+            return (Pokemon(_id, 142, 117, 156, 101, 3, 0, 3, 30, 11, 35, _name_id));
         }
 
     }
@@ -181,7 +208,7 @@ contract NFT is ERC721, ERC721Enumerable {
 
         // Send the message to the StarkNet core contract, passing any value that was
         // passed to us as message fee.
-        starknetCore.sendMessageToL2{value: msg.value}(
+        starknetCore.sendMessageToL2{value : msg.value}(
             l2ContractAddress,
             SELECTOR,
             payload
@@ -198,7 +225,6 @@ contract NFT is ERC721, ERC721Enumerable {
     function createFightID() private returns (uint256) {
         return fightIDCounter++;
     }
-
 
 
 }
