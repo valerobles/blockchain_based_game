@@ -61,6 +61,8 @@ contract NFT is ERC721, ERC721Enumerable {
 
     uint256 constant SELECTOR =
     1625440424450498852892950090004073452274266572863945925863133186904237482575; // pokemon_game_flat as a selector encoded
+    uint256 constant SELECTORSHORT =
+    20708754562186431156644569844516723735906655576666629544789946317872496633; // pokemon_game_flat as a selector encoded
 
     mapping (uint256 => Pokemon) public fightIDToWinnerPokemon; // mapping of fight ID to Winner Pokemon
 
@@ -214,6 +216,36 @@ contract NFT is ERC721, ERC721Enumerable {
         );
 
         emit startFight(msg.sender, pok1.id, pok2.id, L2_CONTRACT, msg.value);
+    }
+    function sendPokemonsToL2Short(
+    ) public payable {
+
+        emit startFightMessage(1);
+
+        uint256 fight_ID = createFightID();
+
+        require(balanceOf(msg.sender) >= msg.value, "Insufficient funds");
+
+        payable(msg.sender).transfer(msg.value);
+
+        emit startFightMessage(2);
+
+        // Construct the message's payload.
+        uint256[] memory payload = new uint256[](0);
+
+        payload[0] = fight_ID;
+
+        emit startFightMessage(3);
+
+        // Send the message to the StarkNet core contract, passing any value that was
+        // passed to us as message fee.
+        starknetCore.sendMessageToL2{value: msg.value}(
+            L2_CONTRACT,
+            SELECTORSHORT,
+            payload
+        );
+
+        //emit startFight(msg.sender, pok1.id, pok2.id, L2_CONTRACT, msg.value);
     }
 
 
