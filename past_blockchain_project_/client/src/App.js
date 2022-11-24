@@ -88,11 +88,11 @@ const App=()=>{
   
   function fight(my_uuid, enemy_uuid) {
     if(my_uuid !== undefined && enemy_uuid !== undefined) {
-       const price = "0.002"
+       const price = "0.01"
        let weiPrice = web3.utils.toWei(price, "ether")
 
 
-        contract.methods.startFight(my_uuid,enemy_uuid,weiPrice).send( {from: account, value: weiPrice} ,(error) => {
+        contract.methods.sendPokemonsToL2(my_uuid,enemy_uuid).send( {from: account, value: weiPrice} ,(error) => {
         if(error) {
           console.log(error);
         }

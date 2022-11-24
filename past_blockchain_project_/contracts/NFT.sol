@@ -64,6 +64,18 @@ contract NFT is ERC721, ERC721Enumerable {
 
     mapping (uint256 => Pokemon) public fightIDToWinnerPokemon; // mapping of fight ID to Winner Pokemon
 
+
+    event startFight(address indexed _from, uint256 _pok1, uint256 _pok2, uint256 l2Contract, uint _value);
+
+    event startFightMessage(uint message);
+
+    event gettingWinnerEntered(uint message);
+
+    event gettingWinnerFinished(uint256 l2contract, uint256 _winnerPok, uint256 _fightID);
+
+
+
+
     constructor() ERC721("NFT","CC") {
         starknetCore = IStarknetCore(address(0xde29d060D45901Fb19ED6C6e959EB22d8626708e)); // https://docs.starknet.io/documentation/Ecosystem/ref_operational_info/
     }
@@ -122,6 +134,8 @@ contract NFT is ERC721, ERC721Enumerable {
         uint256 fightID
     ) external {
 
+        emit gettingWinnerEntered(11111);
+
         uint256[] memory payload = new uint256[](2);
         payload[0] = pokemonWinnerID;
         payload[1] = fightID;
@@ -133,21 +147,31 @@ contract NFT is ERC721, ERC721Enumerable {
 
         // Update the L1 balance.
         fightIDToWinnerPokemon[fightID] = pokemons[pokemonWinnerID];
+
+        emit gettingWinnerFinished(l2ContractAddress, pokemonWinnerID, fightID);
+
+
     }
 
 
 
     // L1 -> L2. Send 2 pokemon to fight to L2
     function sendPokemonsToL2(
-        uint256 l2ContractAddress,
-        Pokemon memory pok1,
-        Pokemon memory pok2,
-        uint256 fight_ID,
-        uint price
+        uint256 myPok,
+        uint256 enemyPok
     ) public payable {
 
-        require(msg.value >= price, "Insufficient funds");
-        payable(ownerOf(pok1.id)).transfer(price);
+        emit startFightMessage(1);
+
+        Pokemon memory pok1 = pokemons[myPok];
+        Pokemon memory pok2 = pokemons[enemyPok];
+        uint256 fight_ID = createFightID();
+
+        require(balanceOf(msg.sender) >= msg.value, "Insufficient funds");
+
+        payable(ownerOf(pok1.id)).transfer(msg.value);
+
+        emit startFightMessage(2);
 
         // Construct the message's payload.
         uint256[] memory payload = new uint256[](25);
@@ -179,20 +203,24 @@ contract NFT is ERC721, ERC721Enumerable {
 
         payload[24] = fight_ID;
 
+        emit startFightMessage(3);
+
         // Send the message to the StarkNet core contract, passing any value that was
         // passed to us as message fee.
         starknetCore.sendMessageToL2{value: msg.value}(
-            l2ContractAddress,
+            L2_CONTRACT,
             SELECTOR,
             payload
         );
+
+        emit startFight(msg.sender, pok1.id, pok2.id, L2_CONTRACT, msg.value);
     }
 
 
     // Method to be called from UI
-    function startFight(uint256 myPok, uint256 enemyPok, uint price) public {
-        sendPokemonsToL2(L2_CONTRACT, pokemons[myPok], pokemons[enemyPok], createFightID(), price);
-    }
+    //function startFight(uint256 myPok, uint256 enemyPok) public {
+    //    sendPokemonsToL2(L2_CONTRACT, pokemons[myPok], pokemons[enemyPok], createFightID());
+    // }
 
 
     function createFightID() private returns (uint256) {
