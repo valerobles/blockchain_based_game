@@ -50,7 +50,7 @@ func createBisasam() -> Pokemon* {
 }
 // create a pokemon for testing purposes
 func createPikachu() -> Pokemon* {
-    return (new Pokemon(id=25, hp=142, atk=117, init=156, def=101, type1='electro', type2='', atk1_type='electro', atk1_damage=30, atk2_type='normal', atk2_damage=35, name_id=2));
+    return (new Pokemon(id=2, hp=142, atk=117, init=156, def=101, type1='electro', type2='', atk1_type='electro', atk1_damage=30, atk2_type='normal', atk2_damage=35, name_id=25));
 }
 // Mapping to save the id of the winning pokemon for each fight_id
 @storage_var
@@ -64,6 +64,32 @@ func no_param_fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
     let (res) = fight(createBisasam(), createPikachu());
 
     return (winner=res);
+}
+@l1_handler
+func low_param_fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+    from_address: felt, fight_id: felt
+) {
+    alloc_locals;
+    fight_steps.emit(step=0);
+    local pkmn1: Pokemon* = createBisasam();
+
+    local pkmn2: Pokemon* = createPikachu();
+    let (__fp__, _) = get_fp_and_pc();
+    fight_steps.emit(step=1);
+    let (res) = fight(pkmn1, pkmn2);
+
+    fight_steps.emit(step=2);
+    // save winner in map
+    winner.write(fight_id, res);
+
+    let (res) = winner.read(fight_id=fight_id);
+    let (message_payload: felt*) = alloc();
+    assert message_payload[0] = res;
+    assert message_payload[1] = fight_id;
+    let (l1_contract_address) = l1_address.read();
+    send_message_to_l1(to_address=l1_contract_address, payload_size=2, payload=message_payload);
+    fight_steps.emit(step=3);
+    return ();
 }
 @event
 func fight_steps(step: felt) {
