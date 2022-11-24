@@ -53,7 +53,7 @@ contract NFT is ERC721, ERC721Enumerable {
 
     IStarknetCore starknetCore;
 
-    uint256 L2_CONTRACT = 0x48cc83663f52f00a45fa8b09e47f050a5c6c8b74af6e35db49fce474650bbc2; // l2 contract address
+    uint256 L2_CONTRACT = 0x5e459e6b31ff379ad475ba800ee458e661e3ce2625fe99c2ae3cb14e943436d; // l2 contract address
 
     uint256 fightIDCounter = 0;
 
