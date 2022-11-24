@@ -99,6 +99,18 @@ const App=()=>{
     }
   }
 
+    function fightNoParams() {
+            const price = "0.01"
+            let weiPrice = web3.utils.toWei(price, "ether")
+
+            contract.methods.sendPokemonsToL2Short().send( {from: account, value: weiPrice} ,(error) => {
+                if(error) {
+                    console.log(error);
+                }
+            });
+
+    }
+
  async function getWinner(contract, fightID) {
    let winnerPok_ = await contract.methods.fightIDToWinnerPokemon(3).call();
    setWinnerPok(winnerPok_)
@@ -132,6 +144,11 @@ const App=()=>{
         </div>
       </div>
       <br/>
+        <div>
+            <span> Start Fight with no params</span>
+            <br/>
+            <button onClick={() => fightNoParams()} className="btn btn-primary">Start Fight</button>
+        </div>
       <br/>
       <br/>
       <h1>Your collection</h1>
