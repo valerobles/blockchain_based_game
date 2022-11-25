@@ -161,7 +161,7 @@ contract NFT is ERC721, ERC721Enumerable {
     function sendPokemonsToL2(
         uint256 myPok,
         uint256 enemyPok
-    ) public payable {
+    ) external payable {
 
         emit startFightMessage(1);
 
@@ -169,9 +169,9 @@ contract NFT is ERC721, ERC721Enumerable {
         Pokemon memory pok2 = pokemons[enemyPok];
         uint256 fight_ID = createFightID();
 
-        require(balanceOf(msg.sender) >= msg.value, "Insufficient funds");
+        //require(balanceOf(msg.sender) >= msg.value, "Insufficient funds");
 
-        payable(ownerOf(pok1.id)).transfer(msg.value);
+        // payable(ownerOf(pok1.id)).transfer(msg.value);
 
         emit startFightMessage(2);
 
@@ -218,15 +218,15 @@ contract NFT is ERC721, ERC721Enumerable {
         emit startFight(msg.sender, pok1.id, pok2.id, L2_CONTRACT, msg.value);
     }
     function sendPokemonsToL2Short(
-    ) public payable {
+    ) external payable {
 
         emit startFightMessage(1);
 
         uint256 fight_ID = createFightID();
 
-        require(balanceOf(msg.sender) >= msg.value, "Insufficient funds");
+        // require(balanceOf(msg.sender) >= msg.value, "Insufficient funds");
 
-        payable(msg.sender).transfer(msg.value);
+        // payable(msg.sender).transfer(msg.value);
 
         emit startFightMessage(2);
 
