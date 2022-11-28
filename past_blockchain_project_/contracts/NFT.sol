@@ -53,16 +53,21 @@ contract NFT is ERC721, ERC721Enumerable {
 
     IStarknetCore starknetCore;
 
-    uint256 L2_CONTRACT = 0x5e459e6b31ff379ad475ba800ee458e661e3ce2625fe99c2ae3cb14e943436d; // l2 contract address
+    uint256 L2_CONTRACT = 0x681fa14a0f1740ac646005d9e3c8cb6bf3fecc1f46fffd6f3c426d054abbdccd; // l2 contract address.
+    uint256 L2_CONTRACT_ONE_L1 = 0x31ed78fcdc3ee496dd9d86cbe8b32a48cb29d2dcae68731fc327b919093c504; // One l1 handler
+
 
     uint256 fightIDCounter = 0;
 
 
 
-    uint256 constant SELECTOR =
-    1625440424450498852892950090004073452274266572863945925863133186904237482575; // pokemon_game_flat as a selector encoded
-    uint256 constant SELECTORSHORT =
-    20708754562186431156644569844516723735906655576666629544789946317872496633; // pokemon_game_flat as a selector encoded
+    uint256 constant SELECTOR = 1625440424450498852892950090004073452274266572863945925863133186904237482575; // pokemon_game_flat as a selector encoded
+    uint256 constant SELECTORSHORT = 20708754562186431156644569844516723735906655576666629544789946317872496633; // low param as a selector encoded
+    uint256 constant SELECTOR_NOPARAM = 1011393743699566059363786613911706806670630810185176199006738004708002761258;  // testfunc selector
+    uint256 constant SELECTOR_ADRESS = 207422004790897179769944665920910064499841236648852597806335524014759737548; // testfunc2 selector
+
+
+
 
     mapping (uint256 => Pokemon) public fightIDToWinnerPokemon; // mapping of fight ID to Winner Pokemon
 
@@ -74,6 +79,8 @@ contract NFT is ERC721, ERC721Enumerable {
     event gettingWinnerEntered(uint message);
 
     event gettingWinnerFinished(uint256 l2contract, uint256 _winnerPok, uint256 _fightID);
+
+    event enteredFunc(uint message);
 
 
 
@@ -157,6 +164,8 @@ contract NFT is ERC721, ERC721Enumerable {
 
 
 
+
+
     // L1 -> L2. Send 2 pokemon to fight to L2
     function sendPokemonsToL2(
         uint256 myPok,
@@ -231,7 +240,7 @@ contract NFT is ERC721, ERC721Enumerable {
         emit startFightMessage(2);
 
         // Construct the message's payload.
-        uint256[] memory payload = new uint256[](0);
+        uint256[] memory payload = new uint256[](1);
 
         payload[0] = fight_ID;
 
@@ -257,6 +266,38 @@ contract NFT is ERC721, ERC721Enumerable {
 
     function createFightID() private returns (uint256) {
         return fightIDCounter++;
+    }
+
+    // testfunc
+    function testL1NoParams() external payable{
+
+        uint256[] memory payload = new uint256[](0);
+
+        emit enteredFunc(888);
+
+        starknetCore.sendMessageToL2{value: msg.value}(
+            L2_CONTRACT_ONE_L1,
+            SELECTOR_NOPARAM,
+            payload
+        );
+
+    }
+
+    // testfunc 2
+    function testL1Address() external payable{
+
+
+        uint256[] memory payload = new uint256[](0);
+
+        emit enteredFunc(999);
+
+
+        starknetCore.sendMessageToL2{value: msg.value}(
+            L2_CONTRACT,
+            SELECTOR_ADRESS,
+            payload
+        );
+
     }
 
 
