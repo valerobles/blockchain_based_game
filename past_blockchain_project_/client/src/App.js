@@ -69,7 +69,7 @@ const App=()=>{
       // for local blockchain testing
       // const address = networkData.address;
       // const contract = new web3.eth.Contract(abi, address);
-      const contract = new web3.eth.Contract(abi, "0x6E57bd60507885ce0B67280aC03617248B7E5c16"); // TODO get solidity contract address
+      const contract = new web3.eth.Contract(abi, "0xf42980Cdcdc93abefa9E4a51E16c8ad627c0032D"); // TODO get solidity contract address
       setContract(contract);
       return contract;
     //}
@@ -111,6 +111,30 @@ const App=()=>{
 
     }
 
+    function oneL1Handler() {
+        const price = "0.01"
+        let weiPrice = web3.utils.toWei(price, "ether")
+
+        contract.methods.testL1NoParams().send( {from: account, value: weiPrice} ,(error) => {
+            if(error) {
+                console.log(error);
+            }
+        });
+
+    }
+
+    function addressSetL1Handler() {
+        const price = "0.01"
+        let weiPrice = web3.utils.toWei(price, "ether")
+
+        contract.methods.testL1Address().send( {from: account, value: weiPrice} ,(error) => {
+            if(error) {
+                console.log(error);
+            }
+        });
+
+    }
+
  async function getWinner(contract, fightID) {
    let winnerPok_ = await contract.methods.fightIDToWinnerPokemon(3).call();
    setWinnerPok(winnerPok_)
@@ -148,6 +172,16 @@ const App=()=>{
             <span> Start Fight with no params</span>
             <br/>
             <button onClick={() => fightNoParams()} className="btn btn-primary">Start Fight</button>
+        </div>
+        <div>
+            <span> No Param Test. (one L1 handler) </span>
+            <br/>
+            <button onClick={() => oneL1Handler()} className="btn btn-primary">one l1 handler button</button>
+        </div>
+        <div>
+            <span> Set address test (All l1 handler test)</span>
+            <br/>
+            <button onClick={() => addressSetL1Handler()} className="btn btn-primary">set address</button>
         </div>
       <br/>
       <br/>
