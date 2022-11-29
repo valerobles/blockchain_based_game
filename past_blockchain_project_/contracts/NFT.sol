@@ -46,32 +46,22 @@ contract NFT is ERC721, ERC721Enumerable {
         uint256 name_id;
 
     }
-    Pokemon[] public pokemons; // List of all Pokemon
+
 
     IStarknetCore starknetCore;
 
-    uint256 L2_CONTRACT_POK = 0x8cac48be6861cc5546931905f41c3ef65cd4ad5891c3812846f8a7b9188b47; // only 1 l1 handler on pokemon_game_flat
-    uint256 L2_CONTRACT_POK_LOW_PARAM = 0x29d6211b17db87104988e19865f0bc32fee6340a4a03126eb5cd40f520aa9a3; // low param pok
-    uint256 L2_CONTRACT_ALL_L1_HANDLER = 0x5e4150fb681061ad2b5144e56f806bda709fbbb87ef0ff49946d1a280b444b7;
-
-
+    uint256 L2_CONTRACT = 0x25c1f74c1ff372608bfdefa130cf99704ea12b4af9b8667678dd3b56bd6a9c7;
+    uint256 constant SELECTOR = 1625440424450498852892950090004073452274266572863945925863133186904237482575; // pokemon_game_flat as a selector encoded
 
 
     uint256 fightIDCounter = 0;
 
-
-
-    uint256 constant SELECTOR = 1625440424450498852892950090004073452274266572863945925863133186904237482575; // pokemon_game_flat as a selector encoded
-    uint256 constant SELECTORSHORT = 20708754562186431156644569844516723735906655576666629544789946317872496633; // low param as a selector encoded
-    // uint256 constant SELECTOR_NOPARAM = 1011393743699566059363786613911706806670630810185176199006738004708002761258;  // testfunc selector
-    // uint256 constant SELECTOR_ADRESS = 207422004790897179769944665920910064499841236648852597806335524014759737548; // testfunc2 selector
-
-
-
+    Pokemon[] public pokemons; // List of all Pokemon
 
     mapping (uint256 => Pokemon) public fightIDToWinnerPokemon; // mapping of fight ID to Winner Pokemon
 
 
+    // EVENTS
     event startFight(address indexed _from, uint256 _pok1, uint256 _pok2, uint256 l2Contract, uint _value);
 
     event startFightMessage(uint message);
@@ -81,8 +71,6 @@ contract NFT is ERC721, ERC721Enumerable {
     event gettingWinnerFinished(uint256 l2contract, uint256 _winnerPok, uint256 _fightID);
 
     event enteredFunc(uint message);
-
-
 
 
 
@@ -138,35 +126,6 @@ contract NFT is ERC721, ERC721Enumerable {
     // L1 L2 Handlers
 
 
-    // L2 -> L1. Recieve winner from L2
-    function get_winner(
-        uint256 l2ContractAddress,
-        uint256 pokemonWinnerID,
-        uint256 fightID
-    ) external {
-
-        emit gettingWinnerEntered(11111);
-
-        uint256[] memory payload = new uint256[](2);
-        payload[0] = pokemonWinnerID;
-        payload[1] = fightID;
-
-
-        // Consume the message from the StarkNet core contract.
-        // This will revert the (Ethereum) transaction if the message does not exist.
-        starknetCore.consumeMessageFromL2(l2ContractAddress, payload);
-
-        // Update the L1 balance.
-        fightIDToWinnerPokemon[fightID] = pokemons[pokemonWinnerID];
-
-        emit gettingWinnerFinished(l2ContractAddress, pokemonWinnerID, fightID);
-
-
-    }
-
-
-
-
 
     // L1 -> L2. Send 2 pokemon to fight to L2
     function sendPokemonsToL2(
@@ -180,10 +139,6 @@ contract NFT is ERC721, ERC721Enumerable {
         Pokemon memory pok2 = pokemons[enemyPok];
         uint256 fight_ID = createFightID();
 
-        //require(balanceOf(msg.sender) >= msg.value, "Insufficient funds");
-
-        // payable(ownerOf(pok1.id)).transfer(msg.value);
-
         emit startFightMessage(2);
 
         // Construct the message's payload.
@@ -221,203 +176,51 @@ contract NFT is ERC721, ERC721Enumerable {
         // Send the message to the StarkNet core contract, passing any value that was
         // passed to us as message fee.
         starknetCore.sendMessageToL2{value: msg.value}(
-            L2_CONTRACT_POK,
+            L2_CONTRACT,
             SELECTOR,
             payload
         );
 
-        emit startFight(msg.sender, pok1.id, pok2.id, L2_CONTRACT_POK, msg.value);
+        emit startFight(msg.sender, pok1.id, pok2.id, L2_CONTRACT, msg.value);
     }
 
 
-    function sendPokemonsToL2Short(
-    ) external payable {
-
-        emit startFightMessage(1);
-
-        uint256 fight_ID = createFightID();
-
-        // require(balanceOf(msg.sender) >= msg.value, "Insufficient funds");
-
-        // payable(msg.sender).transfer(msg.value);
-
-        emit startFightMessage(2);
-
-        // Construct the message's payload.
-        uint256[] memory payload = new uint256[](1);
-
-        payload[0] = fight_ID;
-
-        emit startFightMessage(3);
-
-        // Send the message to the StarkNet core contract, passing any value that was
-        // passed to us as message fee.
-        starknetCore.sendMessageToL2{value: msg.value}(
-            L2_CONTRACT_POK_LOW_PARAM,
-            SELECTORSHORT,
-            payload
-        );
-
-        emit startFightMessage(fight_ID);
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // WITH HANDLERS
-
-
-
-
-    function sendPokemonsToL2_withHandlers(
-        uint256 myPok,
-        uint256 enemyPok
-    ) external payable {
-
-        emit startFightMessage(1);
-
-        Pokemon memory pok1 = pokemons[myPok];
-        Pokemon memory pok2 = pokemons[enemyPok];
-        uint256 fight_ID = createFightID();
-
-        //require(balanceOf(msg.sender) >= msg.value, "Insufficient funds");
-
-        // payable(ownerOf(pok1.id)).transfer(msg.value);
-
-        emit startFightMessage(2);
-
-        // Construct the message's payload.
-        uint256[] memory payload = new uint256[](25);
-        payload[0] = pok1.id;
-        payload[1] = pok1.hp;
-        payload[2] = pok1.atk;
-        payload[3] = pok1.init;
-        payload[4] = pok1.def;
-        payload[5] = pok1.type1;
-        payload[6] = pok1.type2;
-        payload[7] = pok1.atk1_type;
-        payload[8] = pok1.atk1_damage;
-        payload[9] = pok1.atk2_type;
-        payload[10] = pok1.atk2_damage;
-        payload[11] = pok1.name_id;
-
-        payload[12] = pok2.id;
-        payload[13] = pok2.hp;
-        payload[14] = pok2.atk;
-        payload[15] = pok2.init;
-        payload[16] = pok2.def;
-        payload[17] = pok2.type1;
-        payload[18] = pok2.type2;
-        payload[19] = pok2.atk1_type;
-        payload[20] = pok2.atk1_damage;
-        payload[21] = pok2.atk2_type;
-        payload[22] = pok2.atk2_damage;
-        payload[23] = pok2.name_id;
-
-        payload[24] = fight_ID;
-
-        emit startFightMessage(3);
-
-        // Send the message to the StarkNet core contract, passing any value that was
-        // passed to us as message fee.
-        starknetCore.sendMessageToL2{value: msg.value}(
-            L2_CONTRACT_ALL_L1_HANDLER,
-            SELECTOR,
-            payload
-        );
-
-        emit startFight(msg.sender, pok1.id, pok2.id, L2_CONTRACT_POK, msg.value);
-    }
-
-
-    function sendPokemonsToL2Short_withHandlers(
-    ) external payable {
-
-        emit startFightMessage(1);
-
-        uint256 fight_ID = createFightID();
-
-        // require(balanceOf(msg.sender) >= msg.value, "Insufficient funds");
-
-        // payable(msg.sender).transfer(msg.value);
-
-        emit startFightMessage(2);
-
-        // Construct the message's payload.
-        uint256[] memory payload = new uint256[](1);
-
-        payload[0] = fight_ID;
-
-        emit startFightMessage(3);
-
-        // Send the message to the StarkNet core contract, passing any value that was
-        // passed to us as message fee.
-        starknetCore.sendMessageToL2{value: msg.value}(
-            L2_CONTRACT_ALL_L1_HANDLER,
-            SELECTORSHORT,
-            payload
-        );
-
-        emit startFightMessage(fight_ID);
-    }
-
-
-    // Method to be called from UI
-    //function startFight(uint256 myPok, uint256 enemyPok) public {
-    //    sendPokemonsToL2(L2_CONTRACT, pokemons[myPok], pokemons[enemyPok], createFightID());
-    // }
 
 
     function createFightID() private returns (uint256) {
         return fightIDCounter++;
     }
 
-    // // testfunc
-    // function testL1NoParams() external payable{
-
-    //     uint256[] memory payload = new uint256[](1);
-
-    //     payload[0] = 1234;
-
-    //     emit enteredFunc(888);
-
-    //     starknetCore.sendMessageToL2{value: msg.value}(
-    //         L2_CONTRACT_TEST,
-    //         SELECTOR_NOPARAM,
-    //         payload
-    //     );
-
-    //     emit enteredFunc(payload[0]);
-
-    // }
-
-    // // testfunc 2
-    // function testL1Address() external payable{
 
 
-    //     uint256[] memory payload = new uint256[](0);
+    // L2 -> L1. Recieve winner from L2
+    function get_winner(
+        uint256 pokemonWinnerID,
+        uint256 fightID
+    ) external {
 
-    //     emit enteredFunc(999);
+        emit gettingWinnerEntered(11111);
+
+        uint256[] memory payload = new uint256[](2);
+        payload[0] = pokemonWinnerID;
+        payload[1] = fightID;
 
 
-    //     starknetCore.sendMessageToL2{value: msg.value}(
-    //         L2_CONTRACT_ADDRESS,
-    //         SELECTOR_ADRESS,
-    //         payload
-    //     );
+        // Consume the message from the StarkNet core contract.
+        // This will revert the (Ethereum) transaction if the message does not exist.
+        starknetCore.consumeMessageFromL2(L2_CONTRACT, payload);
 
-    // }
+        // Update the L1 balance.
+        fightIDToWinnerPokemon[fightID] = pokemons[pokemonWinnerID];
 
+        emit gettingWinnerFinished(L2_CONTRACT, pokemonWinnerID, fightID);
+
+
+    }
+
+
+
+    // L2 -> L1 test
     function sendDummyMessage(uint256 test_num) external {
 
         emit enteredFunc(777);
@@ -428,12 +231,18 @@ contract NFT is ERC721, ERC721Enumerable {
 
         // Consume the message from the StarkNet core contract.
         // This will revert the (Ethereum) transaction if the message does not exist.
-        starknetCore.consumeMessageFromL2(L2_CONTRACT_POK, payload);
+        starknetCore.consumeMessageFromL2(L2_CONTRACT, payload);
 
         emit enteredFunc(test_num);
 
 
     }
+
+    // Method to be called from UI
+    //function startFight(uint256 myPok, uint256 enemyPok) public {
+    //    sendPokemonsToL2(L2_CONTRACT, pokemons[myPok], pokemons[enemyPok], createFightID());
+    // }
+
 
 
 
