@@ -192,16 +192,6 @@ const App=()=>{
             <button onClick={() => fightNoParams_handlers()} className="btn btn-primary">Start Fight All handlers</button>
         </div>
         <div>
-            <span> One Param to L2 </span>
-            <br/>
-            <button onClick={() => one_param_to_l2()} className="btn btn-primary">one param </button>
-        </div>
-        {/*<div>*/}
-        {/*    <span> Set address test (All l1 handler test)</span>*/}
-        {/*    <br/>*/}
-        {/*    <button onClick={() => addressSetL1Handler()} className="btn btn-primary">set address</button>*/}
-        {/*</div>*/}
-        <div>
             <span> sendDummyMessage. CONSUME</span>
             <br/>
             <button onClick={() => consume()} className="btn btn-primary">Consume</button>
