@@ -18,6 +18,9 @@ func l1_address() -> (felt,) {
 @event
 func address_set(address: felt) {
 }
+@event
+func winner_event(winner: felt) {
+}
 
 // Setter for L1 address
 @external
@@ -65,7 +68,7 @@ func no_param_fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
 
     return (winner=res);
 }
-
+@l1_handler
 func low_param_fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     from_address: felt, fight_id: felt
 ) {
@@ -82,13 +85,14 @@ func low_param_fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check
     // save winner in map
     winner.write(fight_id, res);
 
-    let (res) = winner.read(fight_id=fight_id);
-    let (message_payload: felt*) = alloc();
-    assert message_payload[0] = res;
-    assert message_payload[1] = fight_id;
-    let (l1_contract_address) = l1_address.read();
-    send_message_to_l1(to_address=l1_contract_address, payload_size=2, payload=message_payload);
-    fight_steps.emit(step=3);
+     let (res) = winner.read(fight_id=fight_id);
+    // let (message_payload: felt*) = alloc();
+    // assert message_payload[0] = res;
+    // assert message_payload[1] = fight_id;
+    // let (l1_contract_address) = l1_address.read();
+    //send_message_to_l1(to_address=l1_contract_address, payload_size=2, payload=message_payload);
+    //fight_steps.emit(step=3);
+    winner_event.emit(winner=res);
     return ();
 }
 @event
@@ -97,12 +101,12 @@ func fight_steps(step: felt) {
 
 // Takes the L1 address, the attributes for two pokemon, and a fight_id
 // Saves the fight_id and winner as a mapping in func winner, sends the winner to L1 contract_address
-
-func testfunc{syscall_ptr: felt*, range_check_ptr}(from_address: felt) {
-    fight_steps.emit(step=99);
+@l1_handler
+func testfunc{syscall_ptr: felt*, range_check_ptr}(from_address: felt, testnr:felt) {
+    fight_steps.emit(step=testnr);
     return ();
 }
-
+@l1_handler
 func testfunc2{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     from_address: felt
 ) {
@@ -323,11 +327,12 @@ func updateHP(pkmn: Pokemon*, hp_: felt) -> Pokemon* {
 func get_random{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}(
     range: felt
 ) -> felt {
-    let (transaction_hash) = get_tx_transaction_hash();
-    let (block_timestamp) = get_block_timestamp();
-    let (rng_hash) = hash2{hash_ptr=pedersen_ptr}(transaction_hash, block_timestamp);
-    let (res, r) = unsigned_div_rem(rng_hash, range);
-    return (r + 1);
+    // let (transaction_hash) = get_tx_transaction_hash();
+   // let (block_timestamp) = get_block_timestamp();
+   // let (rng_hash) = hash2{hash_ptr=pedersen_ptr}(transaction_hash, block_timestamp);
+   // let (res, r) = unsigned_div_rem(rng_hash, range);
+  // return (r + 1);
+   return (range);
 }
 // Returns the transaction hash
 func get_tx_transaction_hash{syscall_ptr: felt*}() -> (transaction_hash: felt) {
