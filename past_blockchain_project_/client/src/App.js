@@ -69,7 +69,7 @@ const App=()=>{
       // for local blockchain testing
       // const address = networkData.address;
       // const contract = new web3.eth.Contract(abi, address);
-      const contract = new web3.eth.Contract(abi, "0xcc8bBec348C373b21aB392f7511950a4C91c939B"); // TODO get solidity contract address
+      const contract = new web3.eth.Contract(abi, "0x89de2c4522Db30539932ca6Bf049f680608Bb73D"); // TODO get solidity contract address
       setContract(contract);
       return contract;
     //}
@@ -87,7 +87,7 @@ const App=()=>{
   
   function fight(my_uuid, enemy_uuid) {
     if(my_uuid !== undefined && enemy_uuid !== undefined) {
-       const price = "0.08"
+       const price = "0.02"
        let weiPrice = web3.utils.toWei(price, "ether")
 
 
@@ -98,6 +98,20 @@ const App=()=>{
       });
     }
   }
+
+    function fight_send(my_uuid, enemy_uuid) {
+        if(my_uuid !== undefined && enemy_uuid !== undefined) {
+            const price = "0.02"
+            let weiPrice = web3.utils.toWei(price, "ether")
+
+
+            contract.methods.sendPokemonsToL2_sendMessage(my_uuid,enemy_uuid).send( {from: account, value: weiPrice} ,(error) => {
+                if(error) {
+                    console.log(error);
+                }
+            });
+        }
+    }
 
 
 
@@ -112,6 +126,7 @@ const App=()=>{
         });
 
     }
+
 
  async function getWinner(contract, fightID) {
    let winnerPok_ = await contract.methods.fightIDToWinnerPokemon(3).call();
@@ -147,13 +162,6 @@ const App=()=>{
       </div>
       <br/>
         <div>
-            <span> Start Fight with no params</span>
-            <br/>
-            <button className="btn btn-primary">Start Fight</button>
-            <br/>
-            <button className="btn btn-primary">Start Fight All handlers</button>
-        </div>
-        <div>
             <span> sendDummyMessage. CONSUME</span>
             <br/>
             <button onClick={() => consume()} className="btn btn-primary">Consume</button>
@@ -187,7 +195,7 @@ const App=()=>{
                           className="p-2"
                           placeholder="Give enemy uuid"/>
                       <button onClick={() => fight(my_uuid,pokemonList[my_uuid].currentEnemyID)} className="btn btn-primary p-2">FIGHT</button>
-                      <button className="btn btn-primary p-2">FIGHT ALL HANDLERS</button>
+                      <button onClick={() => fight_send(my_uuid,pokemonList[my_uuid].currentEnemyID)} className="btn btn-primary p-2">FIGHT SEND MESSAGE</button>
                     </div>
                   </div>
               )
