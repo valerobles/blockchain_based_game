@@ -87,7 +87,7 @@ const App=()=>{
   
   function fight(my_uuid, enemy_uuid) {
     if(my_uuid !== undefined && enemy_uuid !== undefined) {
-       const price = "0.01"
+       const price = "0.04"
        let weiPrice = web3.utils.toWei(price, "ether")
 
 
@@ -128,6 +128,18 @@ const App=()=>{
         let weiPrice = web3.utils.toWei(price, "ether")
 
         contract.methods.testL1Address().send( {from: account, value: weiPrice} ,(error) => {
+            if(error) {
+                console.log(error);
+            }
+        });
+
+    }
+
+    function consume() {
+        const price = "0.01"
+        let weiPrice = web3.utils.toWei(price, "ether")
+
+        contract.methods.sendDummyMessage(99).send( {from: account, value: weiPrice} ,(error) => {
             if(error) {
                 console.log(error);
             }
@@ -182,6 +194,11 @@ const App=()=>{
             <span> Set address test (All l1 handler test)</span>
             <br/>
             <button onClick={() => addressSetL1Handler()} className="btn btn-primary">set address</button>
+        </div>
+        <div>
+            <span> sendDummyMessage</span>
+            <br/>
+            <button onClick={() => consume()} className="btn btn-primary">Consume</button>
         </div>
       <br/>
       <br/>
