@@ -69,7 +69,7 @@ const App=()=>{
       // for local blockchain testing
       // const address = networkData.address;
       // const contract = new web3.eth.Contract(abi, address);
-      const contract = new web3.eth.Contract(abi, "0x303D6D34bE8000Ecc77d6145a6A45994918809c0"); // TODO get solidity contract address
+      const contract = new web3.eth.Contract(abi, "0xcc8bBec348C373b21aB392f7511950a4C91c939B"); // TODO get solidity contract address
       setContract(contract);
       return contract;
     //}
@@ -98,44 +98,6 @@ const App=()=>{
       });
     }
   }
-
-    function fight_handlers(my_uuid, enemy_uuid) {
-        if(my_uuid !== undefined && enemy_uuid !== undefined) {
-            const price = "0.08"
-            let weiPrice = web3.utils.toWei(price, "ether")
-
-
-            contract.methods.sendPokemonsToL2_withHandlers(my_uuid,enemy_uuid).send( {from: account, value: weiPrice} ,(error) => {
-                if(error) {
-                    console.log(error);
-                }
-            });
-        }
-    }
-
-    function fightNoParams() {
-            const price = "0.01"
-            let weiPrice = web3.utils.toWei(price, "ether")
-
-            contract.methods.sendPokemonsToL2Short().send( {from: account, value: weiPrice} ,(error) => {
-                if(error) {
-                    console.log(error);
-                }
-            });
-
-    }
-
-    function fightNoParams_handlers() {
-        const price = "0.01"
-        let weiPrice = web3.utils.toWei(price, "ether")
-
-        contract.methods.sendPokemonsToL2Short_withHandlers().send( {from: account, value: weiPrice} ,(error) => {
-            if(error) {
-                console.log(error);
-            }
-        });
-
-    }
 
 
 
@@ -187,9 +149,9 @@ const App=()=>{
         <div>
             <span> Start Fight with no params</span>
             <br/>
-            <button onClick={() => fightNoParams()} className="btn btn-primary">Start Fight</button>
+            <button className="btn btn-primary">Start Fight</button>
             <br/>
-            <button onClick={() => fightNoParams_handlers()} className="btn btn-primary">Start Fight All handlers</button>
+            <button className="btn btn-primary">Start Fight All handlers</button>
         </div>
         <div>
             <span> sendDummyMessage. CONSUME</span>
@@ -225,7 +187,7 @@ const App=()=>{
                           className="p-2"
                           placeholder="Give enemy uuid"/>
                       <button onClick={() => fight(my_uuid,pokemonList[my_uuid].currentEnemyID)} className="btn btn-primary p-2">FIGHT</button>
-                      <button onClick={() => fight_handlers(my_uuid,pokemonList[my_uuid].currentEnemyID)} className="btn btn-primary p-2">FIGHT ALL HANDLERS</button>
+                      <button className="btn btn-primary p-2">FIGHT ALL HANDLERS</button>
                     </div>
                   </div>
               )
