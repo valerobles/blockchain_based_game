@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useRef, useState} from "react";
 import NFT from "./contracts/NFT.json";
 import getWeb3 from "./getWeb3";
 import './dark_theme/css/mdb.dark.min.css';
@@ -8,7 +8,8 @@ const App=()=>{
 
   const PokemonObj = (nameID, owner, currentEnemyID) => { return { nameID: nameID, owner: owner, currentEnemyID: currentEnemyID } }
   const [web3, setWeb3] = useState();
-  const [contract, setContract] = useState(null);
+
+    const [contract, setContract] = useState(null);
   const [account, setAccounts] = useState("");
   const [nameID, setNameID] = useState(0);
   const [pokemonList, setPokemonList]= useState([PokemonObj()]);
@@ -180,8 +181,7 @@ const App=()=>{
                     <span>My nameID/dex# = {pok.nameID}</span>
                     <span>My UUID = {my_uuid}</span>
                     <div className="d-flex flex-row">
-                      <input
-                          type="number"
+                        <input type="number" onWheel={(e) => e.target.blur()}
                           value={pokemonList[my_uuid].currentEnemyID}
                           onChange={
                             (e) => {
