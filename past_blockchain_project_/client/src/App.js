@@ -69,7 +69,7 @@ const App=()=>{
       // for local blockchain testing
       // const address = networkData.address;
       // const contract = new web3.eth.Contract(abi, address);
-      const contract = new web3.eth.Contract(abi, "0x9a5c996420dc5926143ec2449605ca3e61fb4149"); // TODO get solidity contract address
+      const contract = new web3.eth.Contract(abi, "0x8D652c06cB9e61A0D63C429Fc059e4F0105faA2e"); // TODO get solidity contract address
       setContract(contract);
       return contract;
     //}
