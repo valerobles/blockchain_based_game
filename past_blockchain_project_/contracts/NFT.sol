@@ -24,17 +24,6 @@ interface IStarknetCore {
     external
     returns (bytes32);
 
-    /**
-   Sends a message to an L2 contract.
-   Returns the hash of the message.
- */
-    function sendMessageToL2_forfree(
-        uint256 toAddress,
-        uint256 selector,
-        uint256[] calldata payload
-    ) external returns (bytes32);
-
-
 }
 
 
@@ -61,14 +50,10 @@ contract NFT is ERC721, ERC721Enumerable {
 
     IStarknetCore starknetCore;
 
-    uint256 L2_CONTRACT_ONE_L1 = 0x31ed78fcdc3ee496dd9d86cbe8b32a48cb29d2dcae68731fc327b919093c504; // One l1 handler OLD
-    uint256 L2_CONTRACT_ADDRESS = 0x70bfe7abd1e5ad5eecfdf91a3c19aae8773ed2ff0a5afaf0193556fa4e41a51; // only 1 l1 handler on testfunc2, with read address
-    uint256 L2_CONTRACT_ADDRESS_ONE_ZERO = 0x070bfe7abd1e5ad5eecfdf91a3c19aae8773ed2ff0a5afaf0193556fa4e41a51; // only 1 l1 handler on testfunc2, with read address
+    uint256 L2_CONTRACT_POK = 0x8cac48be6861cc5546931905f41c3ef65cd4ad5891c3812846f8a7b9188b47; // only 1 l1 handler on pokemon_game_flat
+    uint256 L2_CONTRACT_POK_LOW_PARAM = 0x29d6211b17db87104988e19865f0bc32fee6340a4a03126eb5cd40f520aa9a3; // low param pok
+    uint256 L2_CONTRACT_ALL_L1_HANDLER = 0x5e4150fb681061ad2b5144e56f806bda709fbbb87ef0ff49946d1a280b444b7;
 
-    uint256 L2_CONTRACT_POK = 0x163eda3f95412c085f30f643de2b57a27d17d98a8c7558af440a1bf02b68e84; // only 1 l1 handler on pokemon_game_flat
-    uint256 L2_CONTRACT_LOW_PARAM = 0x7dc88275b7ce53c9e6ebd5c533d41206975c7c5546a2d62c1fd4574cfa01397;
-
-    uint256 L2_CONTRACT_TEST = 0x2fee3b052f5b702f8e9480e7a7a567c1a185dbe5541d2f810951efe5e596822; // tetstfunc mit einem param mehr, leere methode ausser emitmsg
 
 
 
@@ -78,8 +63,8 @@ contract NFT is ERC721, ERC721Enumerable {
 
     uint256 constant SELECTOR = 1625440424450498852892950090004073452274266572863945925863133186904237482575; // pokemon_game_flat as a selector encoded
     uint256 constant SELECTORSHORT = 20708754562186431156644569844516723735906655576666629544789946317872496633; // low param as a selector encoded
-    uint256 constant SELECTOR_NOPARAM = 1011393743699566059363786613911706806670630810185176199006738004708002761258;  // testfunc selector
-    uint256 constant SELECTOR_ADRESS = 207422004790897179769944665920910064499841236648852597806335524014759737548; // testfunc2 selector
+    // uint256 constant SELECTOR_NOPARAM = 1011393743699566059363786613911706806670630810185176199006738004708002761258;  // testfunc selector
+    // uint256 constant SELECTOR_ADRESS = 207422004790897179769944665920910064499841236648852597806335524014759737548; // testfunc2 selector
 
 
 
@@ -268,7 +253,7 @@ contract NFT is ERC721, ERC721Enumerable {
         // Send the message to the StarkNet core contract, passing any value that was
         // passed to us as message fee.
         starknetCore.sendMessageToL2{value: msg.value}(
-            L2_CONTRACT_LOW_PARAM,
+            L2_CONTRACT_POK_LOW_PARAM,
             SELECTORSHORT,
             payload
         );
@@ -277,74 +262,27 @@ contract NFT is ERC721, ERC721Enumerable {
     }
 
 
-    // Method to be called from UI
-    //function startFight(uint256 myPok, uint256 enemyPok) public {
-    //    sendPokemonsToL2(L2_CONTRACT, pokemons[myPok], pokemons[enemyPok], createFightID());
-    // }
 
 
-    function createFightID() private returns (uint256) {
-        return fightIDCounter++;
-    }
-
-    // testfunc
-    function testL1NoParams() external payable{
-
-        uint256[] memory payload = new uint256[](1);
-
-        payload[0] = 1234;
-
-        emit enteredFunc(888);
-
-        starknetCore.sendMessageToL2{value: msg.value}(
-            L2_CONTRACT_TEST,
-            SELECTOR_NOPARAM,
-            payload
-        );
-
-        emit enteredFunc(payload[0]);
-
-    }
-
-    // testfunc 2
-    function testL1Address() external payable{
 
 
-        uint256[] memory payload = new uint256[](0);
-
-        emit enteredFunc(999);
 
 
-        starknetCore.sendMessageToL2{value: msg.value}(
-            L2_CONTRACT_ADDRESS,
-            SELECTOR_ADRESS,
-            payload
-        );
-
-    }
-
-    function sendDummyMessage(uint256 test_num) external {
-
-        emit enteredFunc(777);
-
-        uint256[] memory payload = new uint256[](1);
-        payload[0] = test_num;
 
 
-        // Consume the message from the StarkNet core contract.
-        // This will revert the (Ethereum) transaction if the message does not exist.
-        starknetCore.consumeMessageFromL2(L2_CONTRACT_ADDRESS_ONE_ZERO, payload);
-
-        emit enteredFunc(test_num);
 
 
-    }
 
 
-    function sendPokemonsToL2_NOMONEY(
+    // WITH HANDLERS
+
+
+
+
+    function sendPokemonsToL2_withHandlers(
         uint256 myPok,
         uint256 enemyPok
-    ) external {
+    ) external payable {
 
         emit startFightMessage(1);
 
@@ -392,18 +330,18 @@ contract NFT is ERC721, ERC721Enumerable {
 
         // Send the message to the StarkNet core contract, passing any value that was
         // passed to us as message fee.
-        starknetCore.sendMessageToL2_forfree(
-            L2_CONTRACT_POK,
+        starknetCore.sendMessageToL2{value: msg.value}(
+            L2_CONTRACT_ALL_L1_HANDLER,
             SELECTOR,
             payload
         );
 
-        // emit startFight(msg.sender, pok1.id, pok2.id, L2_CONTRACT_POK, msg.value);
+        emit startFight(msg.sender, pok1.id, pok2.id, L2_CONTRACT_POK, msg.value);
     }
 
 
-    function sendPokemonsToL2Short_NOMONEY(
-    ) external {
+    function sendPokemonsToL2Short_withHandlers(
+    ) external payable {
 
         emit startFightMessage(1);
 
@@ -424,14 +362,79 @@ contract NFT is ERC721, ERC721Enumerable {
 
         // Send the message to the StarkNet core contract, passing any value that was
         // passed to us as message fee.
-        starknetCore.sendMessageToL2_forfree(
-            L2_CONTRACT_LOW_PARAM,
+        starknetCore.sendMessageToL2{value: msg.value}(
+            L2_CONTRACT_ALL_L1_HANDLER,
             SELECTORSHORT,
             payload
         );
 
         emit startFightMessage(fight_ID);
     }
+
+
+    // Method to be called from UI
+    //function startFight(uint256 myPok, uint256 enemyPok) public {
+    //    sendPokemonsToL2(L2_CONTRACT, pokemons[myPok], pokemons[enemyPok], createFightID());
+    // }
+
+
+    function createFightID() private returns (uint256) {
+        return fightIDCounter++;
+    }
+
+    // // testfunc
+    // function testL1NoParams() external payable{
+
+    //     uint256[] memory payload = new uint256[](1);
+
+    //     payload[0] = 1234;
+
+    //     emit enteredFunc(888);
+
+    //     starknetCore.sendMessageToL2{value: msg.value}(
+    //         L2_CONTRACT_TEST,
+    //         SELECTOR_NOPARAM,
+    //         payload
+    //     );
+
+    //     emit enteredFunc(payload[0]);
+
+    // }
+
+    // // testfunc 2
+    // function testL1Address() external payable{
+
+
+    //     uint256[] memory payload = new uint256[](0);
+
+    //     emit enteredFunc(999);
+
+
+    //     starknetCore.sendMessageToL2{value: msg.value}(
+    //         L2_CONTRACT_ADDRESS,
+    //         SELECTOR_ADRESS,
+    //         payload
+    //     );
+
+    // }
+
+    function sendDummyMessage(uint256 test_num) external {
+
+        emit enteredFunc(777);
+
+        uint256[] memory payload = new uint256[](1);
+        payload[0] = test_num;
+
+
+        // Consume the message from the StarkNet core contract.
+        // This will revert the (Ethereum) transaction if the message does not exist.
+        starknetCore.consumeMessageFromL2(L2_CONTRACT_POK, payload);
+
+        emit enteredFunc(test_num);
+
+
+    }
+
 
 
 
