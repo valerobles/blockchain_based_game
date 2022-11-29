@@ -50,8 +50,10 @@ contract NFT is ERC721, ERC721Enumerable {
     IStarknetCore starknetCore;
 
     uint256 L2_CONTRACT_ONE_L1 = 0x31ed78fcdc3ee496dd9d86cbe8b32a48cb29d2dcae68731fc327b919093c504; // One l1 handler OLD
-    uint256 L2_CONTRACT_ADDRESS = 0x1185d959b897c2632765f75f198cd4fa800fdf87c47782e32e4a50379d0aeb5; // only 1 l1 handler on testfunc2, with read address
-    uint256 L2_CONTRACT_POK = 0x95deabc05d4ed7dced88a6813bfc3bbba6535975d52aaaf9d4d8b717460b77; // only 1 l1 handler on pokemon_game_flat
+    uint256 L2_CONTRACT_ADDRESS = 0x70bfe7abd1e5ad5eecfdf91a3c19aae8773ed2ff0a5afaf0193556fa4e41a51; // only 1 l1 handler on testfunc2, with read address
+    uint256 L2_CONTRACT_ADDRESS_ONE_ZERO = 0x070bfe7abd1e5ad5eecfdf91a3c19aae8773ed2ff0a5afaf0193556fa4e41a51; // only 1 l1 handler on testfunc2, with read address
+
+    uint256 L2_CONTRACT_POK = 0x163eda3f95412c085f30f643de2b57a27d17d98a8c7558af440a1bf02b68e84; // only 1 l1 handler on pokemon_game_flat
 
 
 
@@ -310,7 +312,7 @@ contract NFT is ERC721, ERC721Enumerable {
 
         // Consume the message from the StarkNet core contract.
         // This will revert the (Ethereum) transaction if the message does not exist.
-        starknetCore.consumeMessageFromL2(L2_CONTRACT_ADDRESS, payload);
+        starknetCore.consumeMessageFromL2(L2_CONTRACT_ADDRESS_ONE_ZERO, payload);
 
         emit enteredFunc(test_num);
 
