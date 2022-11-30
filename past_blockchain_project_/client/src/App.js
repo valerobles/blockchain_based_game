@@ -74,6 +74,7 @@ const App=()=>{
   await loadWeb3Acc(web3);
   const contract = await loadWeb3Contract(web3);
   await loadNFTS(contract);
+  listener(web3);
   }, [])
 
 
