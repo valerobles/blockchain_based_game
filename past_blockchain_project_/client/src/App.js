@@ -62,17 +62,10 @@ const App=()=>{
 
     // load the contract
   const loadWeb3Contract = async (web3) => {
-    //const networkId = await web3.eth.net.getId();
-    //const networkData = NFT.networks[5];
-    //if(networkData){
       const abi = NFT.abi;
-      // for local blockchain testing
-      // const address = networkData.address;
-      // const contract = new web3.eth.Contract(abi, address);
-      const contract = new web3.eth.Contract(abi, "0x89de2c4522Db30539932ca6Bf049f680608Bb73D"); // TODO get solidity contract address
+      const contract = new web3.eth.Contract(abi, "0x99d91c4ec54c881d49c61a34df42e6362b8eaed0"); // TODO get solidity contract address
       setContract(contract);
       return contract;
-    //}
   }
 
 

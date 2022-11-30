@@ -27,8 +27,6 @@ interface IStarknetCore {
 }
 
 
-
-
 contract NFT is ERC721, ERC721Enumerable {
 
     struct Pokemon {
@@ -49,7 +47,7 @@ contract NFT is ERC721, ERC721Enumerable {
 
 
     IStarknetCore starknetCore;
-
+    uint256 nonce = 0;
     uint256 L2_CONTRACT = 0x1379bf21de723323326c564048ef512125de0114b3273b376ac13f888275473; // random fixed, no msg to l1 in pokemon_game_flat
     uint256 L2_CONTRACT_SEND = 0x23dffb3e5bd1ebba20bf94b5fe7d6eedd205b505275353a91c7090c3d47c2d5; //random fixed, with msg to l1 in pokemon_game_flat
     uint256 constant SELECTOR = 1625440424450498852892950090004073452274266572863945925863133186904237482575; // pokemon_game_flat as a selector encoded
@@ -59,7 +57,7 @@ contract NFT is ERC721, ERC721Enumerable {
 
     Pokemon[] public pokemons; // List of all Pokemon
 
-    mapping (uint256 => Pokemon) public fightIDToWinnerPokemon; // mapping of fight ID to Winner Pokemon
+    mapping(uint256 => Pokemon) public fightIDToWinnerPokemon; // mapping of fight ID to Winner Pokemon
 
 
     // EVENTS
@@ -73,35 +71,80 @@ contract NFT is ERC721, ERC721Enumerable {
 
     event enteredFunc(uint message);
 
+    event createdRandomPkmn(uint uuid, uint hp, uint atk, uint init, uint def);
 
 
 
-    constructor() ERC721("NFT","CC") {
-        starknetCore = IStarknetCore(address(0xde29d060D45901Fb19ED6C6e959EB22d8626708e)); // https://docs.starknet.io/documentation/Ecosystem/ref_operational_info/
+
+    constructor() ERC721("NFT", "CC") {
+        starknetCore = IStarknetCore(address(0xde29d060D45901Fb19ED6C6e959EB22d8626708e));
+        // https://docs.starknet.io/documentation/Ecosystem/ref_operational_info/
     }
 
 
 
-    function mint(uint256  _name_id) public {
-        uint256 _uuid = pokemons.length; // TODO: create UUID for unique ID
+    function mint(uint256 _name_id) public {
+        uint256 _uuid = pokemons.length;
+        // TODO: create UUID for unique ID
+        Pokemon memory newPok = createPokemonByNameId(_name_id, _uuid);
+        pokemons.push(newPok);
+        emit createdRandomPkmn(_uuid,newPok.hp,newPok.atk,newPok.init,newPok.def);
 
-        pokemons.push(getStatsByNameID(_name_id,_uuid )); // create Pokemon from json
+        // create Pokemon from json
 
         // _safeMint method from openzeppelin
+        //TODO safe all data in nft
         _safeMint(msg.sender, _uuid);
     }
 
 
     // TODO: get data from json
-    function getStatsByNameID(uint256  _name_id, uint256 _id) public pure returns ( Pokemon memory) {
-        if (_name_id == 1){
-            return(Pokemon(_id,152,111,106,111,8,0,8,30,11,40,_name_id));
-        } else {
-            return(Pokemon(_id,142,117,156,101,3,0,3,30,11,35,_name_id));
+    function createPokemonByNameId(uint256 _name_id, uint256 _id) internal returns (Pokemon memory) {
+        if (_name_id == 1) {
+            return (createPokemon(_id, 152, 111, 106, 111, 8, 0, 8, 30, 11, 40, _name_id));
+        }
+        if (_name_id == 2) {
+            return (createPokemon(_id, 167, 125, 123, 126, 8, 12, 8, 40, 12, 50, _name_id));
+        }
+        if (_name_id == 3) {
+            return (createPokemon(_id, 187, 167, 145, 192, 8, 12, 8, 50, 12, 60, _name_id));
+        }
+        if (_name_id == 4) {
+            return (createPokemon(_id, 146, 114, 128, 104, 5, 0, 5, 40, 12, 50, _name_id));
+        }
+        if (_name_id == 5) {
+            return (createPokemon(_id, 165, 127, 145, 121, 5, 0, 5, 40, 12, 50, _name_id));
+        }
+        if (_name_id == 6) {
+            return (createPokemon(_id, 185, 200, 167, 179, 5, 6, 5, 50, 6, 60, _name_id));
+        }
+        if (_name_id == 7) {
+            return (createPokemon(_id, 151, 110, 104, 128, 15, 0, 15, 30, 11, 40, _name_id));
+        }
+        if (_name_id == 8) {
+            return (createPokemon(_id, 166, 126, 121, 145, 15, 0, 15, 40, 11, 50, _name_id));
+        }
+        if (_name_id == 9) {
+            return (createPokemon(_id, 186, 148, 143, 167, 15, 0, 15, 50, 10, 60, _name_id));
+        }
+        else {
+            return (createPokemon(_id, 142, 117, 156, 101, 3, 0, 3, 30, 11, 35, _name_id));
         }
 
     }
+    //Every pokemon gets random bonus stats on every stat
+    function createPokemon(uint256 id, uint256 hp, uint256 atk, uint256 init, uint256 def, uint256 type1, uint256 type2, uint256 atk1_type, uint256 atk1_damage, uint256 atk2_type, uint256 atk2_damage, uint256 name_id) internal returns (Pokemon memory){
+        return Pokemon(id, hp + getDv(), atk + getDv(), init + getDv(), def + getDv(), type1, type2, atk1_type, atk1_damage, atk2_type, atk2_damage, name_id);
+    }
 
+    function getDv() internal returns (uint) {
+        return random(20);
+    }
+
+    function random(uint _interval) internal returns (uint) {
+        nonce++;
+        return uint(keccak256(abi.encodePacked(block.difficulty, block.timestamp, nonce))) % _interval;
+    }
 
     // override method from ERC721, ERC721Enumerable
     function supportsInterface(bytes4 interfaceId)
@@ -176,7 +219,7 @@ contract NFT is ERC721, ERC721Enumerable {
 
         // Send the message to the StarkNet core contract, passing any value that was
         // passed to us as message fee.
-        starknetCore.sendMessageToL2{value: msg.value}(
+        starknetCore.sendMessageToL2{value : msg.value}(
             L2_CONTRACT,
             SELECTOR,
             payload
@@ -233,7 +276,7 @@ contract NFT is ERC721, ERC721Enumerable {
 
         // Send the message to the StarkNet core contract, passing any value that was
         // passed to us as message fee.
-        starknetCore.sendMessageToL2{value: msg.value}(
+        starknetCore.sendMessageToL2{value : msg.value}(
             L2_CONTRACT_SEND,
             SELECTOR,
             payload
@@ -241,7 +284,6 @@ contract NFT is ERC721, ERC721Enumerable {
 
         emit startFight(msg.sender, pok1.id, pok2.id, L2_CONTRACT, msg.value);
     }
-
 
 
     function createFightID() private returns (uint256) {
