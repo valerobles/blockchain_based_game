@@ -318,14 +318,4 @@ contract NFT is ERC721, ERC721Enumerable {
 
 
     }
-
-    // Method to be called from UI
-    //function startFight(uint256 myPok, uint256 enemyPok) public {
-    //    sendPokemonsToL2(L2_CONTRACT, pokemons[myPok], pokemons[enemyPok], createFightID());
-    // }
-
-
-
-
-
 }

@@ -21,7 +21,6 @@ const App=()=>{
   const mint = () => {
     if (nameID.length > 0 && nameID>0) {
         contract.methods.mint(nameID).send({ from: account }, (error)=>{
-        console.log("it worked")
         if(!error){
           let pok = PokemonObj(nameID,account);
           setPokemonList([...pokemonList, pok]);
@@ -31,7 +30,7 @@ const App=()=>{
         }
 
          else {
-          console.log("did not work")
+          console.log("mint failed")
         }
       });}
   }
@@ -194,8 +193,7 @@ const App=()=>{
                           }
                           className="p-2"
                           placeholder="Give enemy uuid"/>
-                      <button onClick={() => fight(my_uuid,pokemonList[my_uuid].currentEnemyID)} className="btn btn-primary p-2">FIGHT</button>
-                      <button onClick={() => fight_send(my_uuid,pokemonList[my_uuid].currentEnemyID)} className="btn btn-primary p-2">FIGHT SEND MESSAGE</button>
+                      <button onClick={() => fight_send(my_uuid,pokemonList[my_uuid].currentEnemyID)} className="btn btn-primary p-2">FIGHT</button>
                     </div>
                   </div>
               )
