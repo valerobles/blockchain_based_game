@@ -94,17 +94,6 @@ const App=()=>{
 
 
 
-    function consume() {
-        const price = "0.01"
-        let weiPrice = web3.utils.toWei(price, "ether")
-
-        contract.methods.sendDummyMessage(99).send( {from: account, value: weiPrice} ,(error) => {
-            if(error) {
-                console.log(error);
-            }
-        });
-
-    }
 
 
  async function getWinner(contract, fightID) {
@@ -186,11 +175,6 @@ const App=()=>{
         </div>
       </div>
       <br/>
-        <div>
-            <span> sendDummyMessage. CONSUME</span>
-            <br/>
-            <button onClick={() => consume()} className="btn btn-primary">Consume</button>
-        </div>
       <br/>
       <br/>
       <h1>Your collection</h1>
