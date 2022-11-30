@@ -105,6 +105,7 @@ const App=()=>{
 
     function listener(_web3) {
 
+      //             topics: [null, "0x023dffb3e5bd1ebba20bf94b5fe7d6eedd205b505275353a91c7090c3d47c2d5", "0x00000000000000000000000097d2cbaf09cef894c75fbb0a0695c46895a45901", null]
 
 
         // OTHER
@@ -112,7 +113,7 @@ const App=()=>{
         var options_new = {
             fromBlock: 8047300,
             address: '0xde29d060D45901Fb19ED6C6e959EB22d8626708e', // starknetcore
-            topics: [null, "0x023dffb3e5bd1ebba20bf94b5fe7d6eedd205b505275353a91c7090c3d47c2d5", null, null]
+            topics: [null, "0x000000000000000000000000c3511006c04ef1d78af4c8e0e74ec18a6e64ff9e", "0x073314940630fd6dcda0d772d4c972c4e0a9946bef9dabf4ef84eda8ef542b82", "0x02d757788a8d8d6f21d1cd40bce38a8222d70654214e96ff95d8086e684fbee5"]
         };
         _web3.eth.subscribe('logs', options_new,(err,event) => {
             if (!err)
@@ -128,20 +129,20 @@ const App=()=>{
 
 
 
-        var options = {
-            fromBlock: 8047300,
-            address: "0x97d2cbaf09cef894c75fbb0a0695c46895a45901", // our l1 contract
-            topics: [null,"0x023dffb3e5bd1ebba20bf94b5fe7d6eedd205b505275353a91c7090c3d47c2d5" ,null, null] // l2 contract
-        };
-        _web3.eth.subscribe('logs', options,(err,event) => {
-            if (!err)
-                console.log(event);
-        })
-            .on("data", function(log) {
-                console.log(log);
-            })
-            .on("changed", function(log) {
-            });
+        // var options = {
+        //     fromBlock: 8047300,
+        //     address: "0x97d2cbaf09cef894c75fbb0a0695c46895a45901", // our l1 contract
+        //     topics: [null,"0x023dffb3e5bd1ebba20bf94b5fe7d6eedd205b505275353a91c7090c3d47c2d5"] // l2 contract
+        // };
+        // _web3.eth.subscribe('logs', options,(err,event) => {
+        //     if (!err)
+        //         console.log(event);
+        // })
+        //     .on("data", function(log) {
+        //         console.log(log);
+        //     })
+        //     .on("changed", function(log) {
+        //     });
 
 
 
