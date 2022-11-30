@@ -63,7 +63,7 @@ const App=()=>{
     // load the contract
   const loadWeb3Contract = async (web3) => {
       const abi = NFT.abi;
-      const contract = new web3.eth.Contract(abi, "0x99d91c4ec54c881d49c61a34df42e6362b8eaed0"); // TODO get solidity contract address
+      const contract = new web3.eth.Contract(abi, "0x97d2cbaf09cef894c75fbb0a0695c46895a45901"); // TODO get solidity contract address
       setContract(contract);
       return contract;
   }
@@ -92,20 +92,6 @@ const App=()=>{
     }
   }
 
-    function fight_send(my_uuid, enemy_uuid) {
-        if(my_uuid !== undefined && enemy_uuid !== undefined) {
-            const price = "0.02"
-            let weiPrice = web3.utils.toWei(price, "ether")
-
-
-            contract.methods.sendPokemonsToL2_sendMessage(my_uuid,enemy_uuid).send( {from: account, value: weiPrice} ,(error) => {
-                if(error) {
-                    console.log(error);
-                }
-            });
-        }
-    }
-
 
 
     function consume() {
@@ -126,6 +112,52 @@ const App=()=>{
    setWinnerPok(winnerPok_)
    console.log(winnerPok_)
  }
+
+    function listener(_web3) {
+
+
+
+        // OTHER
+
+        var options_new = {
+            fromBlock: 8047300,
+            address: '0xde29d060D45901Fb19ED6C6e959EB22d8626708e', // starknetcore
+            topics: [null, "0x023dffb3e5bd1ebba20bf94b5fe7d6eedd205b505275353a91c7090c3d47c2d5", null, null]
+        };
+        _web3.eth.subscribe('logs', options_new,(err,event) => {
+            if (!err)
+                console.log(event);
+        })
+            .on("data", function(log) {
+                console.log(log);
+            })
+            .on("changed", function(log) {
+            });
+
+
+
+
+
+        var options = {
+            fromBlock: 8047300,
+            address: "0x97d2cbaf09cef894c75fbb0a0695c46895a45901", // our l1 contract
+            topics: [null,"0x023dffb3e5bd1ebba20bf94b5fe7d6eedd205b505275353a91c7090c3d47c2d5" ,null, null] // l2 contract
+        };
+        _web3.eth.subscribe('logs', options,(err,event) => {
+            if (!err)
+                console.log(event);
+        })
+            .on("data", function(log) {
+                console.log(log);
+            })
+            .on("changed", function(log) {
+            });
+
+
+
+    }
+
+
 
   return <div>
 <nav className="navbar navbar-light bg-light px-4">
@@ -186,7 +218,7 @@ const App=()=>{
                           }
                           className="p-2"
                           placeholder="Give enemy uuid"/>
-                      <button onClick={() => fight_send(my_uuid,pokemonList[my_uuid].currentEnemyID)} className="btn btn-primary p-2">FIGHT</button>
+                      <button onClick={() => fight(my_uuid,pokemonList[my_uuid].currentEnemyID)} className="btn btn-primary p-2">FIGHT</button>
                     </div>
                   </div>
               )
