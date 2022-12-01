@@ -60,6 +60,7 @@ func createPikachu() -> Pokemon* {
 @storage_var
 func winner(fight_id: felt) -> (winner_id: felt) {
 }
+//
 // for testing purposes
 @external
 func no_param_fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
