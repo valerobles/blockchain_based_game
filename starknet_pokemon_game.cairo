@@ -50,11 +50,11 @@ struct Pokemon {
 }
 // create a pokemon for testing purposes
 func createBisasam() -> Pokemon* {
-    return (new Pokemon(id=1, hp=152, atk=111, init=106, def=111, type1='grass', type2='', atk1_type='grass', atk1_damage=30, atk2_type='normal', atk2_damage=40, name_id=1));
+    return (new Pokemon(id=1, hp=152, atk=111, init=106, def=111, type1=3, type2=99, atk1_type=3, atk1_damage=30, atk2_type=0, atk2_damage=40, name_id=1));
 }
 // create a pokemon for testing purposes
 func createPikachu() -> Pokemon* {
-    return (new Pokemon(id=2, hp=142, atk=117, init=156, def=101, type1='electro', type2='', atk1_type='electro', atk1_damage=30, atk2_type='normal', atk2_damage=35, name_id=25));
+    return (new Pokemon(id=2, hp=142, atk=117, init=156, def=101, type1=4, type2=99, atk1_type=4, atk1_damage=30, atk2_type=0, atk2_damage=35, name_id=25));
 }
 // Mapping to save the id of the winning pokemon for each fight_id
 @storage_var
@@ -286,6 +286,8 @@ func attackAndGetDamage{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashB
         } else {
             efficiency2 = 1;
         }
+    } else {
+        efficiency2 = 1;
     }
     local total_efficiency: felt;
     if (efficiency1 != 3) {
