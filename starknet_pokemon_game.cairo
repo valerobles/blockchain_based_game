@@ -2,7 +2,7 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.serialize import serialize_word
-from starkware.cairo.common.math import unsigned_div_rem,split_felt
+from starkware.cairo.common.math import unsigned_div_rem, split_felt
 from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.alloc import alloc
@@ -11,6 +11,7 @@ from starkware.starknet.common.messages import send_message_to_l1
 from starkware.starknet.common.syscalls import get_tx_info
 from starkware.starknet.common.syscalls import get_block_timestamp
 from starkware.cairo.common.hash import hash2
+from starkware.cairo.common.registers import get_label_location
 
 @storage_var
 func l1_address() -> (felt,) {
@@ -134,13 +135,13 @@ func pokemon_game_flat{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
     // save winner in map
     winner.write(fight_id, res);
 
-     let (res) = winner.read(fight_id=fight_id);
-     let (message_payload: felt*) = alloc();
-     assert message_payload[0] = res;
-     assert message_payload[1] = fight_id;
-     let (l1_contract_address) = l1_address.read();
-     send_message_to_l1(to_address=l1_contract_address, payload_size=2, payload=message_payload);
-     fight_steps.emit(step=3);
+    let (res) = winner.read(fight_id=fight_id);
+    let (message_payload: felt*) = alloc();
+    assert message_payload[0] = res;
+    assert message_payload[1] = fight_id;
+    let (l1_contract_address) = l1_address.read();
+    send_message_to_l1(to_address=l1_contract_address, payload_size=2, payload=message_payload);
+    fight_steps.emit(step=3);
     return ();
 }
 @l1_handler
@@ -246,6 +247,7 @@ func attackAndGetDamage{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashB
     // Damage formula = (((2* level *1 or 2) / 5  * AttackDamage * Attack.Pok1 / Defense.Pok2) / 50 )* STAB *  random (217 bis 255 / 255)
     alloc_locals;
     local stab;
+
     if (atk_type == pkmn1.type1) {
         stab = 2;
     } else {
@@ -265,7 +267,72 @@ func attackAndGetDamage{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashB
     let (d, r) = unsigned_div_rem(c, 50);
     let e = d * stab;
     let f = get_random(50);
-    let g = e * (f + 205);
+    local z: felt;
+    let (data) = get_data();
+    let index = atk_type * 18 + pkmn2.type1;
+    let efficiency1 = data[index];
+    local efficiency2: felt;
+    if (pkmn2.type2 != 99) {
+        let index2 = atk_type * 18 + pkmn2.type2;
+        let efficiency2temp = data[index2];
+        if (efficiency2temp == 0) {
+            efficiency2 = 0;
+        }
+        if (efficiency2temp == 2) {
+            efficiency2 = 2;
+        }
+        if (efficiency2temp == 3) {
+            efficiency2 = 3;
+        } else {
+            efficiency2 = 1;
+        }
+    }
+    local total_efficiency: felt;
+    if (efficiency1 != 3) {
+        if (efficiency2 != 3) {
+            local total_efficiency = efficiency1 * efficiency2;
+            z = e * total_efficiency;
+        }
+    }
+    let (quotient_four, remain) = unsigned_div_rem(e, 4);
+    let (quotient_two, remain) = unsigned_div_rem(e, 2);
+    if (efficiency1 == 3) {
+        if (efficiency2 == 3) {
+            // durch 4
+            z = quotient_four;
+        }
+        if (efficiency2 == 0) {
+            // mal 0
+            z = 0;
+        }
+        if (efficiency2 == 2) {
+            // mal 1
+            z = e;
+        }
+        if (efficiency2 == 1) {
+            // durch 2
+            z = quotient_two;
+        }
+    }
+    if (efficiency2 == 3) {
+        if (efficiency1 == 3) {
+            // durch 4
+            z = quotient_four;
+        }
+        if (efficiency1 == 0) {
+            // mal 0
+            z = 0;
+        }
+        if (efficiency1 == 2) {
+            // mal 1
+            z = e;
+        }
+        if (efficiency1 == 1) {
+            // durch 2
+            z = quotient_two;
+        }
+    }
+    let g = z * (f + 205);
     let (h, r) = unsigned_div_rem(g, 255);
     let (final, r) = unsigned_div_rem(h, 1000);
     return (final);
@@ -286,26 +353,378 @@ func updateHP(pkmn: Pokemon*, hp_: felt) -> Pokemon* {
 func get_random{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}(
     range: felt
 ) -> felt {
-     let (transaction_hash) = get_tx_transaction_hash();
-     let (block_timestamp) = get_block_timestamp();
-     let (rng_hash) = hash2{hash_ptr=pedersen_ptr}(transaction_hash, block_timestamp);
-     let (high, low) = split_felt(rng_hash);
-     let (res, r) = unsigned_div_rem(low, range);
-     return (r + 1);
-   
+    let (transaction_hash) = get_tx_transaction_hash();
+    let (block_timestamp) = get_block_timestamp();
+    let (rng_hash) = hash2{hash_ptr=pedersen_ptr}(transaction_hash, block_timestamp);
+    // hash too big? split felt
+    let (high, low) = split_felt(rng_hash);
+    let (res, r) = unsigned_div_rem(low, range);
+    return (r + 1);
+    // return (range);
 }
 // Returns the transaction hash
-@external
+
 func get_tx_transaction_hash{syscall_ptr: felt*}() -> (transaction_hash: felt) {
     let (tx_info) = get_tx_info();
 
     return (transaction_hash=tx_info.transaction_hash);
 }
-@external
-func get_timestamp{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}() -> (
-    block_timestamp: felt
-) {
-    let (block_timestamp) = get_block_timestamp();
 
-    return (block_timestamp=block_timestamp);
+// my_dict has key:val pairs {5: 8, 12: 35, 33: 198}.
+
+func get_data() -> (data: felt*) {
+    let (data_address) = get_label_location(data_start);
+    return (data=cast(data_address, felt*));
+
+    data_start:
+    // line 1 normal
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 3;
+    dw 0;
+    dw 1;
+    dw 1;
+    dw 3;
+    dw 1;
+    // line 2 fire
+    dw 1;
+    dw 3;
+    dw 3;
+    dw 2;
+    dw 1;
+    dw 2;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 2;
+    dw 3;
+    dw 1;
+    dw 3;
+    dw 1;
+    dw 2;
+    dw 1;
+    // line 3 water
+    dw 1;
+    dw 2;
+    dw 3;
+    dw 3;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 2;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 2;
+    dw 1;
+    dw 3;
+    dw 1;
+    dw 1;
+    dw 1;
+    // line 4 plant
+    dw 1;
+    dw 3;
+    dw 2;
+    dw 3;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 3;
+    dw 2;
+    dw 3;
+    dw 1;
+    dw 3;
+    dw 2;
+    dw 1;
+    dw 3;
+    dw 1;
+    dw 3;
+    dw 1;
+    // line 5 electro
+    dw 1;
+    dw 1;
+    dw 2;
+    dw 3;
+    dw 3;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 0;
+    dw 2;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 3;
+    dw 1;
+    dw 1;
+    dw 1;
+    // line 6 ice
+    dw 1;
+    dw 3;
+    dw 3;
+    dw 2;
+    dw 1;
+    dw 3;
+    dw 1;
+    dw 1;
+    dw 2;
+    dw 2;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 2;
+    dw 1;
+    dw 3;
+    dw 1;
+    // line 7 fighting
+    dw 2;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 2;
+    dw 1;
+    dw 3;
+    dw 1;
+    dw 3;
+    dw 3;
+    dw 3;
+    dw 2;
+    dw 0;
+    dw 1;
+    dw 2;
+    dw 2;
+    dw 3;
+    // line 8 poison
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 2;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 3;
+    dw 3;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 3;
+    dw 3;
+    dw 1;
+    dw 1;
+    dw 0;
+    dw 2;
+    // line 9 ground
+    dw 1;
+    dw 2;
+    dw 1;
+    dw 3;
+    dw 2;
+    dw 1;
+    dw 1;
+    dw 2;
+    dw 1;
+    dw 0;
+    dw 1;
+    dw 3;
+    dw 2;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 2;
+    dw 1;
+    // line 10 flying
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 2;
+    dw 3;
+    dw 1;
+    dw 2;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 2;
+    dw 3;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 3;
+    dw 1;
+    // line 10 psycho
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 2;
+    dw 2;
+    dw 1;
+    dw 1;
+    dw 3;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 0;
+    dw 3;
+    dw 1;
+    // line 11 bug
+    dw 1;
+    dw 3;
+    dw 1;
+    dw 2;
+    dw 1;
+    dw 1;
+    dw 3;
+    dw 3;
+    dw 1;
+    dw 3;
+    dw 2;
+    dw 1;
+    dw 1;
+    dw 3;
+    dw 1;
+    dw 2;
+    dw 3;
+    dw 3;
+    // line 12 rock
+    dw 1;
+    dw 2;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 2;
+    dw 3;
+    dw 1;
+    dw 3;
+    dw 2;
+    dw 1;
+    dw 2;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 3;
+    dw 1;
+    // line 13 ghost
+    dw 0;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 2;
+    dw 1;
+    dw 1;
+    dw 2;
+    dw 1;
+    dw 3;
+    dw 1;
+    dw 1;
+    // line 14 dragon
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 2;
+    dw 1;
+    dw 3;
+    dw 0;
+    // line 15 dark
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 3;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 2;
+    dw 1;
+    dw 1;
+    dw 2;
+    dw 1;
+    dw 3;
+    dw 1;
+    dw 3;
+    // line 16 steel
+    dw 1;
+    dw 3;
+    dw 3;
+    dw 1;
+    dw 3;
+    dw 2;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 2;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 3;
+    dw 2;
+    // line 16 fairy
+    dw 1;
+    dw 3;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 2;
+    dw 3;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 1;
+    dw 2;
+    dw 2;
+    dw 3;
+    dw 1;
+}
+@external
+func testdw(x: felt) -> (res: felt) {
+    let (data) = get_data();
+
+    let value = data[x];
+
+    return (res=value);
 }
