@@ -253,7 +253,7 @@ const App=()=>{
                     <br/>
                     <br/>
 
-                    <h1>ALL THE WINNER</h1>
+                    <h1>ALL THE WINNERS</h1>
                     <div className="col-8 d-flex justify-content-center flex-wrap">
                         {fightList.slice(1, fightList.length).map((fight, index) => {
                             let shortOwnerText = fight.PokemonObj.owner.substring(0, 10) + "..."

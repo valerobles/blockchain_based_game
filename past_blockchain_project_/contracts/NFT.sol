@@ -48,7 +48,7 @@ contract NFT is ERC721, ERC721Enumerable {
 
     IStarknetCore starknetCore;
     uint256 nonce = 0;
-    uint256 L2_CONTRACT = 0x23dffb3e5bd1ebba20bf94b5fe7d6eedd205b505275353a91c7090c3d47c2d5; //random fixed, with msg to l1 in pokemon_game_flat
+    uint256 L2_CONTRACT = 0x31c59f9319f22b2dc9271b18bfe67ec3d5464ff8327705891a931875f89b148; //random fixed, with msg to l1 in pokemon_game_flat
     uint256 constant SELECTOR = 1625440424450498852892950090004073452274266572863945925863133186904237482575; // pokemon_game_flat as a selector encoded
 
 
@@ -99,41 +99,202 @@ contract NFT is ERC721, ERC721Enumerable {
 
     // TODO: get data from json
     function createPokemonByNameId(uint256 _name_id, uint256 _id) internal returns (Pokemon memory) {
+
+
         if (_name_id == 1) {
-            return (createPokemon(_id, 152, 111, 106, 111, 8, 0, 8, 30, 11, 40, _name_id));
+            return (createPokemon(_id, 152, 111, 106, 111, 3, 99, 3, 30, getType(), getDamage(), _name_id));
         }
         if (_name_id == 2) {
-            return (createPokemon(_id, 167, 125, 123, 126, 8, 12, 8, 40, 12, 50, _name_id));
+            return (createPokemon(_id, 167, 125, 123, 126, 3, 7, 3, 40, getType(), getDamage(), _name_id));
         }
         if (_name_id == 3) {
-            return (createPokemon(_id, 187, 167, 145, 192, 8, 12, 8, 50, 12, 60, _name_id));
+            return (createPokemon(_id, 187, 167, 145, 192, 3, 7, 3, 50, getType(), getDamage(), _name_id));
         }
         if (_name_id == 4) {
-            return (createPokemon(_id, 146, 114, 128, 104, 5, 0, 5, 40, 12, 50, _name_id));
+            return (createPokemon(_id, 146, 114, 128, 104, 1, 99, 1, 40, getType(), getDamage(), _name_id));
         }
         if (_name_id == 5) {
-            return (createPokemon(_id, 165, 127, 145, 121, 5, 0, 5, 40, 12, 50, _name_id));
+            return (createPokemon(_id, 165, 127, 145, 121, 1, 99, 1, 40, getType(), getDamage(), _name_id));
         }
         if (_name_id == 6) {
-            return (createPokemon(_id, 185, 200, 167, 179, 5, 6, 5, 50, 6, 60, _name_id));
+            return (createPokemon(_id, 185, 200, 167, 179, 1, 9, 1, 50, getType(), getDamage(), _name_id));
         }
         if (_name_id == 7) {
-            return (createPokemon(_id, 151, 110, 104, 128, 15, 0, 15, 30, 11, 40, _name_id));
+            return (createPokemon(_id, 151, 110, 104, 128, 2, 99, 2, 30, getType(), getDamage(), _name_id));
         }
         if (_name_id == 8) {
-            return (createPokemon(_id, 166, 126, 121, 145, 15, 0, 15, 40, 11, 50, _name_id));
+            return (createPokemon(_id, 166, 126, 121, 145, 2, 99, 2, 40, getType(), getDamage(), _name_id));
         }
         if (_name_id == 9) {
-            return (createPokemon(_id, 186, 148, 143, 167, 15, 0, 15, 50, 10, 60, _name_id));
+            return (createPokemon(_id, 186, 148, 143, 167, 2, 99, 2, 50, getType(), getDamage(), _name_id));
+        }
+        if (_name_id == 10) {
+            return (createPokemonOther(_id, 11, 99, _name_id, 1));
+        }
+        if (_name_id == 11) {
+            return (createPokemonOther(_id, 11, 99, _name_id, 2));
+        }
+        if (_name_id == 12) {
+            return (createPokemonOther(_id, 11, 9, _name_id, 3));
+        }
+        if (_name_id == 13) {
+            return (createPokemonOther(_id, 11, 7, _name_id,1));
+        }
+        if (_name_id == 14) {
+            return (createPokemonOther(_id, 11, 7, _name_id, 2));
+        }
+        if (_name_id == 15) {
+            return (createPokemonOther(_id, 11, 7, _name_id, 3));
+        }
+        if (_name_id == 16) {
+            return (createPokemonOther(_id, 0, 9, _name_id, 1));
+        }
+        if (_name_id == 17) {
+            return (createPokemonOther(_id, 0, 9, _name_id,2));
+        }
+        if (_name_id == 18) {
+            return (createPokemonOther(_id, 0, 9, _name_id,3));
+        }
+        if (_name_id == 19) {
+            return (createPokemonOther(_id, 0, 99, _name_id,1));
+        }
+        if (_name_id == 20) {
+            return (createPokemonOther(_id, 0, 99, _name_id,2));
+        }
+        if (_name_id == 21) {
+            return (createPokemonOther(_id, 0, 9, _name_id,1));
+        }
+        if (_name_id == 22) {
+            return (createPokemonOther(_id, 0, 9, _name_id,2));
+        }
+        if (_name_id == 23) {
+            return (createPokemonOther(_id, 7, 99, _name_id,1));
+        }
+        if (_name_id == 24) {
+            return (createPokemonOther(_id, 7, 99, _name_id,2));
+        }
+        if (_name_id == 25) {
+            return (createPokemonOther(_id, 4, 99, _name_id,2));
+        }
+        if (_name_id == 26) {
+            return (createPokemonOther(_id, 4, 99, _name_id,3));
+        }
+        if (_name_id == 27) {
+            return (createPokemonOther(_id, 8, 99, _name_id,1));
+        }
+        if (_name_id == 28) {
+            return (createPokemonOther(_id, 8, 99, _name_id,2));
+        }
+        if (_name_id == 29) {
+            return (createPokemonOther(_id, 7, 99, _name_id,1));
+        }
+        if (_name_id == 30) {
+            return (createPokemonOther(_id, 7, 99, _name_id,1));
+        }
+        if (_name_id == 31) {
+            return (createPokemonOther(_id, 7, 8, _name_id,3));
+        }
+        if (_name_id == 32) {
+            return (createPokemonOther(_id, 7, 99, _name_id,1));
+        }
+        if (_name_id == 33) {
+            return (createPokemonOther(_id, 7, 99, _name_id,2));
+        }
+        if (_name_id == 34) {
+            return (createPokemonOther(_id, 7, 8, _name_id,3));
+        }
+        if (_name_id == 35) {
+            return (createPokemonOther(_id, 17, 99, _name_id,1));
+        }
+        if (_name_id == 36) {
+            return (createPokemonOther(_id, 17, 99, _name_id,2));
+        }
+        if (_name_id == 37) {
+            return (createPokemonOther(_id, 1, 99, _name_id,2));
+        }
+        if (_name_id == 38) {
+            return (createPokemonOther(_id, 1, 99, _name_id,3));
+        }
+        if (_name_id == 39) {
+            return (createPokemonOther(_id, 0, 17, _name_id,1));
+        }
+        if (_name_id == 40) {
+            return (createPokemonOther(_id, 0, 17, _name_id,2));
+        }
+        if (_name_id == 41) {
+            return (createPokemonOther(_id, 7, 9, _name_id,1));
+        }
+        if (_name_id == 42) {
+            return (createPokemonOther(_id, 7, 9, _name_id,2));
+        }
+        if (_name_id == 43) {
+            return (createPokemonOther(_id, 3, 7, _name_id,1));
+        }
+        if (_name_id == 44) {
+            return (createPokemonOther(_id, 3, 7, _name_id,2));
+        }
+        if (_name_id == 45) {
+            return (createPokemonOther(_id, 3, 7, _name_id,3));
+        }
+        if (_name_id == 46) {
+            return (createPokemonOther(_id, 11, 3, _name_id,1));
+        }
+        if (_name_id == 47) {
+            return (createPokemonOther(_id, 11, 3, _name_id,2));
+        }
+        if (_name_id == 48) {
+            return (createPokemonOther(_id, 11, 7, _name_id,1));
+        }
+        if (_name_id == 49) {
+            return (createPokemonOther(_id, 11, 7, _name_id,3));
+        }
+        if (_name_id == 50) {
+            return (createPokemonOther(_id, 8, 99, _name_id,2));
+        }
+        if (_name_id == 51) {
+            return (createPokemonOther(_id, 8, 99, _name_id,3));
+        }
+        if (_name_id == 52) {
+            return (createPokemonOther(_id, 0, 99, _name_id,2));
         }
         else {
-            return (createPokemon(_id, 142, 117, 156, 101, 3, 0, 3, 30, 11, 35, _name_id));
+            return (createPokemonOther(_id, 0, 99, _name_id, getStrength()));
         }
 
     }
+
+
+    function getType() internal returns (uint) {
+        return random(17);
+    }
+
+    function getDamage() internal returns (uint) {
+        return random(50) + 40;
+    }
+    function getStrength() internal returns (uint) {
+        return random(2) + 1;
+    }
+
     //Every pokemon gets random bonus stats on every stat
     function createPokemon(uint256 id, uint256 hp, uint256 atk, uint256 init, uint256 def, uint256 type1, uint256 type2, uint256 atk1_type, uint256 atk1_damage, uint256 atk2_type, uint256 atk2_damage, uint256 name_id) internal returns (Pokemon memory){
         return Pokemon(id, hp + getDv(), atk + getDv(), init + getDv(), def + getDv(), type1, type2, atk1_type, atk1_damage, atk2_type, atk2_damage, name_id);
+    }
+
+    //Every pokemon gets random bonus stats on every stat
+    function createPokemonOther(uint256 id, uint256 strength ,uint256 type1, uint256 type2, uint256 name_id) internal returns (Pokemon memory){
+        uint256 base_stat = 100;
+
+        if (strength == 2){
+            base_stat += 20;
+        }
+        if (strength == 3){
+            base_stat += 50;
+        }
+        if (strength == 4){
+            base_stat += 70;
+        }
+
+        return Pokemon(id, base_stat + getDv(), base_stat + getDv(), base_stat + getDv(), base_stat + getDv(), type1, type2, type1, getDamage(), getType(), getDamage(), name_id);
     }
 
     function getDv() internal returns (uint) {
