@@ -16,6 +16,9 @@ from starkware.cairo.common.registers import get_label_location
 @storage_var
 func l1_address() -> (felt,) {
 }
+@storage_var
+func nonce() -> (felt,) {
+}
 @event
 func address_set(address: felt) {
 }
@@ -50,17 +53,16 @@ struct Pokemon {
 }
 // create a pokemon for testing purposes
 func createBisasam() -> Pokemon* {
-    return (new Pokemon(id=1, hp=152, atk=111, init=106, def=111, type1=3, type2=99, atk1_type=3, atk1_damage=30, atk2_type=0, atk2_damage=40, name_id=1));
+    return (new Pokemon(id=5, hp=152, atk=111, init=106, def=111, type1=3, type2=99, atk1_type=3, atk1_damage=100, atk2_type=0, atk2_damage=100, name_id=1));
 }
 // create a pokemon for testing purposes
 func createPikachu() -> Pokemon* {
-    return (new Pokemon(id=2, hp=142, atk=117, init=156, def=101, type1=4, type2=99, atk1_type=4, atk1_damage=30, atk2_type=0, atk2_damage=35, name_id=25));
+    return (new Pokemon(id=6, hp=142, atk=117, init=156, def=101, type1=4, type2=99, atk1_type=4, atk1_damage=1000, atk2_type=0, atk2_damage=1000, name_id=25));
 }
 // Mapping to save the id of the winning pokemon for each fight_id
 @storage_var
 func winner(fight_id: felt) -> (winner_id: felt) {
 }
-//
 // for testing purposes
 @external
 func no_param_fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
@@ -205,9 +207,23 @@ func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     }
 
     // pkmn1 is faster
-    let _dmgx = attackAndGetDamage(
-        faster_pkmn, faster_pkmn.atk1_type, faster_pkmn.atk1_damage, slower_pkmn
-    );
+    let coinflip = get_random(2);
+    local atk_damage_fast: felt;
+    local atk_type_fast: felt;
+    local atk_damage_slow: felt;
+    local atk_type_slow: felt;
+    if (coinflip == 1) {
+        atk_damage_fast = faster_pkmn.atk1_damage;
+        atk_type_fast = faster_pkmn.atk1_type;
+        atk_damage_slow = slower_pkmn.atk1_damage;
+        atk_type_slow = slower_pkmn.atk1_type;
+    } else {
+        atk_damage_fast = faster_pkmn.atk2_damage;
+        atk_type_fast = faster_pkmn.atk2_type;
+        atk_damage_slow = slower_pkmn.atk1_damage;
+        atk_type_slow = slower_pkmn.atk1_type;
+    }
+    let _dmgx = attackAndGetDamage(faster_pkmn, atk_type_fast, atk_damage_fast, slower_pkmn);
     local dmg = _dmgx;
 
     // calculate new HP
@@ -219,10 +235,10 @@ func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     // if new HP value less 0 -> dead
     if (is_le(newPok.hp, 0) == 1) {
         return (res=faster_pkmn.id);
-    }
+    } else {
 
     let _dmgSecondFight = attackAndGetDamage(
-        slower_pkmn, slower_pkmn.atk1_type, slower_pkmn.atk1_damage, faster_pkmn
+        slower_pkmn, atk_type_slow, atk_damage_slow, faster_pkmn
     );
     local dmgSecondFight = _dmgSecondFight;
 
@@ -233,10 +249,10 @@ func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 
     if (is_le(newPok2.hp, 0) == 1) {
         return (res=slower_pkmn.id);
+    }else{
+     let (res) = fight(newPok, newPok2);
     }
-
-    let (res) = fight(newPok, newPok2);
-
+}
     return (res=res);
 }
 
@@ -352,18 +368,21 @@ func updateHP(pkmn: Pokemon*, hp_: felt) -> Pokemon* {
 
 // Takes a max number as a range
 // creates a number (r) based on the hash of the current block_timestamp and transaction hash
-// returns a (pseudo)random number (r) between 1 and range
+// returns a (pseudo)random number (r) between 1 and range 1<=r<=range
 func get_random{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}(
     range: felt
 ) -> felt {
+alloc_locals;
+    let (n) = nonce.read();
+
     let (transaction_hash) = get_tx_transaction_hash();
     let (block_timestamp) = get_block_timestamp();
-    let (rng_hash) = hash2{hash_ptr=pedersen_ptr}(transaction_hash, block_timestamp);
-    // hash too big? split felt
+    let x = block_timestamp+n;
+    let (rng_hash) = hash2{hash_ptr=pedersen_ptr}(transaction_hash, x);
+    nonce.write(value=n+1);
     let (high, low) = split_felt(rng_hash);
     let (res, r) = unsigned_div_rem(low, range);
     return (r + 1);
-    // return (range);
 }
 // Returns the transaction hash
 

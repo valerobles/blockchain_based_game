@@ -44,5 +44,4 @@ async def test_increase_balance():
    # execution_info = await contract.pokemon_game( pkmn1.id=1, pkmn1.hp=152, pkmn1.atk=111, pkmn1.init=106, pkmn1.def=111, pkmn1.type1=1, pkmn1.type2=0, pkmn1.atk1_type=1, pkmn1.atk1_damage=30, pkmn1.atk2_type=2, pkmn1.atk1_damage=40, pkmn2.id=25, pkmn2.hp=142, pkmn2.atk=117, pkmn2.init=156, pkmn2.def=101, pkmn2.type1=3, pkmn2.type2=0, pkmn2.atk1_type=3, pkmn2.atk1_damage=30, pkmn2.atk2_type=2, pkmn2.atk2_damage=35).call()
 
     execution_info = await contract.no_param_fight().call()
-    assert execution_info.result == (1,)
-
+    assert execution_info.result == (2,)
