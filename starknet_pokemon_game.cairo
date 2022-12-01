@@ -53,11 +53,11 @@ struct Pokemon {
 }
 // create a pokemon for testing purposes
 func createBisasam() -> Pokemon* {
-    return (new Pokemon(id=5, hp=152, atk=111, init=106, def=111, type1=3, type2=99, atk1_type=3, atk1_damage=100, atk2_type=0, atk2_damage=100, name_id=1));
+    return (new Pokemon(id=5, hp=152, atk=111, init=106, def=111, type1=3, type2=99, atk1_type=3, atk1_damage=1000, atk2_type=0, atk2_damage=1000, name_id=1));
 }
 // create a pokemon for testing purposes
 func createPikachu() -> Pokemon* {
-    return (new Pokemon(id=6, hp=142, atk=117, init=156, def=101, type1=4, type2=99, atk1_type=4, atk1_damage=1000, atk2_type=0, atk2_damage=1000, name_id=25));
+    return (new Pokemon(id=6, hp=142, atk=117, init=156, def=101, type1=4, type2=99, atk1_type=4, atk1_damage=5, atk2_type=0, atk2_damage=5, name_id=25));
 }
 // Mapping to save the id of the winning pokemon for each fight_id
 @storage_var
@@ -191,11 +191,8 @@ func get_winner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}
 func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     pkmn1: Pokemon*, pkmn2: Pokemon*
 ) -> (res: felt) {
-    // toDo : use random attacks -> use get_random()
 
     alloc_locals;
-    // local firstIsFaster = is_le(pkmn1.init,pkmn2.init);
-
     local faster_pkmn: Pokemon*;
     local slower_pkmn: Pokemon*;
     if (is_le(pkmn1.init, pkmn2.init) == 0) {
@@ -236,24 +233,24 @@ func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     if (is_le(newPok.hp, 0) == 1) {
         return (res=faster_pkmn.id);
     } else {
+        let _dmgSecondFight = attackAndGetDamage(
+            slower_pkmn, atk_type_slow, atk_damage_slow, faster_pkmn
+        );
+        local dmgSecondFight = _dmgSecondFight;
 
-    let _dmgSecondFight = attackAndGetDamage(
-        slower_pkmn, atk_type_slow, atk_damage_slow, faster_pkmn
-    );
-    local dmgSecondFight = _dmgSecondFight;
+        local pkmn1_hp = faster_pkmn.hp - dmg;
 
-    local pkmn1_hp = faster_pkmn.hp - dmg;
+        let newPok_2: Pokemon* = updateHP(faster_pkmn, pkmn1_hp);
+        local newPok2: Pokemon* = newPok_2;
 
-    let newPok_2: Pokemon* = updateHP(faster_pkmn, pkmn1_hp);
-    local newPok2: Pokemon* = newPok_2;
-
-    if (is_le(newPok2.hp, 0) == 1) {
-        return (res=slower_pkmn.id);
-    }else{
-     let (res) = fight(newPok, newPok2);
+        if (is_le(newPok2.hp, 0) == 1) {
+            return (res=slower_pkmn.id);
+        } else {
+            let (res) = fight(newPok, newPok2);
+               return (res=res);
+        }
     }
-}
-    return (res=res);
+
 }
 
 // Takes an attacking pokemon, attack type, attack damage and a defending pokemon
@@ -372,14 +369,14 @@ func updateHP(pkmn: Pokemon*, hp_: felt) -> Pokemon* {
 func get_random{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}(
     range: felt
 ) -> felt {
-alloc_locals;
+    alloc_locals;
     let (n) = nonce.read();
 
     let (transaction_hash) = get_tx_transaction_hash();
     let (block_timestamp) = get_block_timestamp();
-    let x = block_timestamp+n;
+    let x = block_timestamp + n;
     let (rng_hash) = hash2{hash_ptr=pedersen_ptr}(transaction_hash, x);
-    nonce.write(value=n+1);
+    nonce.write(value=n + 1);
     let (high, low) = split_felt(rng_hash);
     let (res, r) = unsigned_div_rem(low, range);
     return (r + 1);
