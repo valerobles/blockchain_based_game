@@ -6,8 +6,8 @@ import "./App.css";
 
 const App = () => {
 
-    const PokemonObj = (nameID, owner, currentEnemyID) => {
-        return {nameID: nameID, owner: owner, currentEnemyID: currentEnemyID}
+    const PokemonObj = (nameID, owner, type1, type2) => {
+        return {nameID: nameID, owner: owner, type1: type1,type2: type2 }
     }
     const FightObj = (fightID, winnerID, winnerPok) => {
         return {fightID: fightID, winnerID: winnerID, PokemonObj: winnerPok}
@@ -18,10 +18,9 @@ const App = () => {
     const [account, setAccounts] = useState("");
     const [nameID, setNameID] = useState(0);
     const [pokemonList, setPokemonList] = useState([PokemonObj()]);
-    const [priceText, setPriceText] = useState("0.0000000000001");
-    const [studentId, setStudentId] = useState(0);
-    // const [winnerPok, setWinnerPok] = useState(PokemonObj());
-    const [fightList, setFightList] = useState([FightObj()])
+    const [fightList, setFightList] = useState([FightObj()]);
+    const [currentEnemyID, setCurrentEnemyID] = useState(0);
+    const typeArray = ["Normal","Fire","Water","Grass","Electric","Ice","Fight","Poison","Ground","Flying","Psychic","Bug","Rock","Ghost","Dragon","Dark","Steel","Fairy"]
 
     const mint = () => {
         if (nameID.length > 0 && nameID > 0) {
@@ -29,9 +28,7 @@ const App = () => {
                 if (!error) {
                     let pok = PokemonObj(nameID, account);
                     setPokemonList([...pokemonList, pok]);
-                    setNameID(0);
-                    // setPriceText("");
-                    setStudentId(pokemonList.length); // TODO read uuid from solidity programm
+
                 } else {
                     console.log("mint failed")
                 }
@@ -49,7 +46,8 @@ const App = () => {
             let pokemon = await contract.methods.pokemons(i).call();
             let newPok = (JSON.parse(JSON.stringify(pokemon))); //use json
             let pokemonToOwner = await contract.methods.ownerOf(i).call();
-            let newPokObj = PokemonObj(newPok.name_id, pokemonToOwner);
+            let type_2 = newPok.type2 == 99? "None" : typeArray[newPok.type2];
+            let newPokObj = PokemonObj(newPok.name_id, pokemonToOwner,typeArray[newPok.type1],type_2 );
             newResults.push(newPokObj);
         }
         setPokemonList(newResults);
@@ -97,6 +95,7 @@ const App = () => {
                     console.log(error);
                 }
             });
+            setCurrentEnemyID(0);
         }
     }
 
@@ -170,6 +169,11 @@ const App = () => {
 
     }
 
+
+    function getTypeName(type){
+
+    }
+
     let previousIndex = -1;
 
     return <div>
@@ -210,31 +214,32 @@ const App = () => {
                     <br/>
                     <br/>
                     <h1>Your collection</h1>
-                    <div className="col-8 d-flex justify-content-center flex-wrap p-4">
+                    <div style={{ width: "70%", overflow: "auto", display: "flex" ,justifyContent: 'center'}}>
 
                         {pokemonList.slice(1, pokemonList.length).map((pok, my_uuid) => {
                             if (pok.owner === account) {
                                 return (
-                                    <div className="d-flex flex-column align-items-center" key={my_uuid}>
+                                    <div className="d-flex flex-column align-items-center" key={my_uuid} style={{marginRight: '20px'}}>
                                         <img height="150"
                                              src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${pok.nameID}.svg`}/>
                                         <span>My nameID/dex# = {pok.nameID}</span>
                                         <span>My UUID = {my_uuid}</span>
+                                        <span>Type 1 : {pok.type1}</span>
+                                        <span>Type 2 : {pok.type2}</span>
                                         <div className="d-flex flex-row">
                                             <input type="number" onWheel={(e) => e.target.blur()}
-                                                   value={pokemonList[my_uuid].currentEnemyID}
+                                                   value={currentEnemyID}
                                                    onChange={
                                                        (e) => {
 
-                                                           pokemonList[my_uuid].currentEnemyID = e.target.value // TODO possible bug: using enemy's uuid for another of your pokemon
-                                                           console.log(pokemonList[my_uuid].currentEnemyID)
+                                                           setCurrentEnemyID(e.target.value) // TODO possible bug: using enemy's uuid for another of your pokemon
 
                                                        }
 
                                                    }
                                                    className="p-2"
                                                    placeholder="Give enemy uuid"/>
-                                            <button onClick={() => fight(my_uuid, pokemonList[my_uuid].currentEnemyID)}
+                                            <button onClick={() => fight(my_uuid, currentEnemyID)}
                                                     className="btn btn-primary p-2">FIGHT
                                             </button>
                                         </div>
@@ -251,16 +256,18 @@ const App = () => {
                     <h1>See your friends NFTS</h1>
                     <div className="col-8 d-flex justify-content-center flex-wrap">
 
-                        {pokemonList.slice(1, pokemonList.length).map((student, index) => {
-                            if (student.owner !== account) {
-                                let shortOwnerText = student.owner.substring(0, 10) + "..."
+                        {pokemonList.slice(1, pokemonList.length).map((pok, index) => {
+                            if (pok.owner !== account) {
+                                let shortOwnerText = pok.owner.substring(0, 10) + "..."
                                 return (
                                     <div className="d-flex flex-column align-items-center p-4" key={index}>
                                         <img height="150"
-                                             src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${student.nameID}.svg`}/>
-                                        <span>My nameID/dex# = {student.nameID}</span>
+                                             src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${pok.nameID}.svg`}/>
+                                        <span>My nameID/dex# = {pok.nameID}</span>
                                         <span>UUID = {index}</span>
                                         <span>Owner : {shortOwnerText}</span>
+                                        <span>Type 1 : {pok.type1}</span>
+                                        <span>Type 2 : {pok.type2}</span>
                                     </div>
                                 )
                             }

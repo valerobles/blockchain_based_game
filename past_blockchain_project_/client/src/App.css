@@ -21,3 +21,24 @@
 .App-link {
   color: #09d3ac;
 }
+
+.outer {
+  width: 500px;
+  height: 100px;
+  white-space: nowrap;
+  position: relative;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+
+.scrollable-div {
+  background-color: #f1f1f1;
+  height: 150px;
+  overflow-x: scroll;
+  margin: 20px;
+  text-align: justify;
+  padding: 20px;
+
+}

@@ -45,10 +45,15 @@ contract NFT is ERC721, ERC721Enumerable {
 
     }
 
+    struct Fight{
+        Pokemon pok1;
+        Pokemon pok2;
+    }
+
 
     IStarknetCore starknetCore;
     uint256 nonce = 0;
-    uint256 L2_CONTRACT = 0x172cdc219c6a41e22ccdcfbfc91b86b866b9746343d55fa38931072ff205447; //random fixed, with msg to l1 in pokemon_game_flat
+    uint256 L2_CONTRACT = 0x31c59f9319f22b2dc9271b18bfe67ec3d5464ff8327705891a931875f89b148; //random fixed, with msg to l1 in pokemon_game_flat
     uint256 constant SELECTOR = 1625440424450498852892950090004073452274266572863945925863133186904237482575; // pokemon_game_flat as a selector encoded
 
 
@@ -57,6 +62,7 @@ contract NFT is ERC721, ERC721Enumerable {
     Pokemon[] public pokemons; // List of all Pokemon
 
     mapping(uint256 => Pokemon) public fightIDToWinnerPokemon; // mapping of fight ID to Winner Pokemon
+    mapping(uint256 => Fight) public fightIDToFighters;
 
 
     // EVENTS
@@ -75,6 +81,8 @@ contract NFT is ERC721, ERC721Enumerable {
 
 
 
+
+
     constructor() ERC721("NFT", "CC") {
         starknetCore = IStarknetCore(address(0xde29d060D45901Fb19ED6C6e959EB22d8626708e));
         // https://docs.starknet.io/documentation/Ecosystem/ref_operational_info/
@@ -83,10 +91,13 @@ contract NFT is ERC721, ERC721Enumerable {
 
 
     function mint(uint256 _name_id) public {
+        require(_name_id > 0 && _name_id < 650, "Only valid dex numbers. Must be between 1 and 649");
+
         uint256 _uuid = pokemons.length;
         // TODO: create UUID for unique ID
         Pokemon memory newPok = createPokemonByNameId(_name_id, _uuid);
         pokemons.push(newPok);
+
         emit createdRandomPkmn(_uuid,newPok.hp,newPok.atk,newPok.init,newPok.def);
 
         // create Pokemon from json
@@ -281,7 +292,7 @@ contract NFT is ERC721, ERC721Enumerable {
     }
 
     //Every pokemon gets random bonus stats on every stat
-    function createPokemonOther(uint256 id,uint256 type1, uint256 type2, uint256 name_id, uint256 strength ) internal returns (Pokemon memory){
+    function createPokemonOther(uint256 id, uint256 strength ,uint256 type1, uint256 type2, uint256 name_id) internal returns (Pokemon memory){
         uint256 base_stat = 100;
 
         if (strength == 2){
@@ -337,6 +348,11 @@ contract NFT is ERC721, ERC721Enumerable {
         uint256 enemyPok
     ) external payable {
 
+        require(ownerOf(myPok) == msg.sender); // myPok has to be from the sender
+        assert(myPok < totalSupply());
+        assert(enemyPok < totalSupply());
+
+
         emit startFightMessage(1);
 
         Pokemon memory pok1 = pokemons[myPok];
@@ -385,6 +401,7 @@ contract NFT is ERC721, ERC721Enumerable {
             payload
         );
 
+        fightIDToFighters[fight_ID] = Fight(pok1,pok2);
         emit startFight(msg.sender, pok1.id, pok2.id, L2_CONTRACT, msg.value);
     }
 
@@ -420,23 +437,4 @@ contract NFT is ERC721, ERC721Enumerable {
 
     }
 
-
-
-    // L2 -> L1 test
-    function sendDummyMessage(uint256 test_num) external {
-
-        emit enteredFunc(777);
-
-        uint256[] memory payload = new uint256[](1);
-        payload[0] = test_num;
-
-
-        // Consume the message from the StarkNet core contract.
-        // This will revert the (Ethereum) transaction if the message does not exist.
-        starknetCore.consumeMessageFromL2(L2_CONTRACT, payload);
-
-        emit enteredFunc(test_num);
-
-
-    }
 }
