@@ -53,11 +53,11 @@ struct Pokemon {
 }
 // create a pokemon for testing purposes
 func createBisasam() -> Pokemon* {
-    return (new Pokemon(id=5, hp=152, atk=111, init=106, def=111, type1=3, type2=99, atk1_type=3, atk1_damage=1000, atk2_type=0, atk2_damage=1000, name_id=1));
+    return (new Pokemon(id=5, hp=152, atk=111, init=106, def=111, type1=1, type2=99, atk1_type=13, atk1_damage=1000, atk2_type=13, atk2_damage=1000, name_id=1));
 }
 // create a pokemon for testing purposes
 func createPikachu() -> Pokemon* {
-    return (new Pokemon(id=6, hp=142, atk=117, init=156, def=101, type1=4, type2=99, atk1_type=4, atk1_damage=500, atk2_type=0, atk2_damage=500, name_id=25));
+    return (new Pokemon(id=6, hp=142, atk=117, init=156, def=101, type1=0, type2=99, atk1_type=13, atk1_damage=100, atk2_type=13, atk2_damage=100, name_id=25));
 }
 // Mapping to save the id of the winning pokemon for each fight_id
 @storage_var
@@ -191,7 +191,6 @@ func get_winner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}
 func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     pkmn1: Pokemon*, pkmn2: Pokemon*
 ) -> (res: felt) {
-
     alloc_locals;
     local faster_pkmn: Pokemon*;
     local slower_pkmn: Pokemon*;
@@ -220,19 +219,26 @@ func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         atk_damage_slow = slower_pkmn.atk1_damage;
         atk_type_slow = slower_pkmn.atk1_type;
     }
+
     let _dmgx = attackAndGetDamage(faster_pkmn, atk_type_fast, atk_damage_fast, slower_pkmn);
+
     local dmg = _dmgx;
 
     // calculate new HP
     local pkmn2_hp = slower_pkmn.hp - dmg;
-
+     let (z) = getEfficiency(atk_type_fast, slower_pkmn.type1, slower_pkmn.type2, 1);
+ if(z==0){
+          pkmn2_hp = pkmn2_hp - 1;
+     }
     let newPok_: Pokemon* = updateHP(slower_pkmn, pkmn2_hp);
     local newPok: Pokemon* = newPok_;
 
     // if new HP value less 0 -> dead
+
     if (is_le(newPok.hp, 0) == 1) {
         return (res=faster_pkmn.id);
     } else {
+
         let _dmgSecondFight = attackAndGetDamage(
             slower_pkmn, atk_type_slow, atk_damage_slow, faster_pkmn
         );
@@ -247,10 +253,9 @@ func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
             return (res=slower_pkmn.id);
         } else {
             let (res) = fight(newPok, newPok2);
-               return (res=res);
+            return (res=res);
         }
     }
-
 }
 
 // Takes an attacking pokemon, attack type, attack damage and a defending pokemon
@@ -281,13 +286,23 @@ func attackAndGetDamage{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashB
     let (d, r) = unsigned_div_rem(c, 50);
     let e = d * stab;
     let f = get_random(50);
+    let (z) = getEfficiency(atk_type, pkmn2.type1, pkmn2.type2, e);
+    let g = z * (f + 205);
+    let (h, r) = unsigned_div_rem(g, 255);
+    let (final, r) = unsigned_div_rem(h, 1000);
+    return (final);
+}
+func getEfficiency{range_check_ptr}(atk_type: felt, type1: felt, type2: felt, e: felt) -> (
+    res: felt
+) {
+    alloc_locals;
     local z: felt;
     let (data) = get_data();
-    let index = atk_type * 18 + pkmn2.type1;
+    let index = atk_type * 18 + type1;
     let efficiency1 = data[index];
     local efficiency2: felt;
-    if (pkmn2.type2 != 99) {
-        let index2 = atk_type * 18 + pkmn2.type2;
+    if (type2 != 99) {
+        let index2 = atk_type * 18 + type2;
         let efficiency2temp = data[index2];
         if (efficiency2temp == 0) {
             efficiency2 = 0;
@@ -348,10 +363,7 @@ func attackAndGetDamage{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashB
             z = quotient_two;
         }
     }
-    let g = z * (f + 205);
-    let (h, r) = unsigned_div_rem(g, 255);
-    let (final, r) = unsigned_div_rem(h, 1000);
-    return (final);
+    return (res=z);
 }
 
 // Takes a pokemon and a new HP value
