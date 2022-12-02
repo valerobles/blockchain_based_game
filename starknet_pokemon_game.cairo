@@ -19,6 +19,19 @@ func l1_address() -> (felt,) {
 @storage_var
 func nonce() -> (felt,) {
 }
+@storage_var
+func attack_counter() -> (felt,) {
+}
+
+@storage_var
+func faster_attacks(id: felt) -> (res: (type: felt, dmg: felt)) {
+}
+@storage_var
+func slower_attacks(id: felt) -> (res: (type: felt, dmg: felt)) {
+}
+@event
+func attacks(count: felt) {
+}
 @event
 func address_set(address: felt) {
 }
@@ -53,11 +66,19 @@ struct Pokemon {
 }
 // create a pokemon for testing purposes
 func createBisasam() -> Pokemon* {
-    return (new Pokemon(id=5, hp=152, atk=111, init=106, def=111, type1=1, type2=99, atk1_type=13, atk1_damage=1000, atk2_type=13, atk2_damage=1000, name_id=1));
+    return (new Pokemon(id=2, hp=152, atk=111, init=106, def=111, type1=1, type2=2, atk1_type=1, atk1_damage=40, atk2_type=1, atk2_damage=40, name_id=1));
 }
 // create a pokemon for testing purposes
 func createPikachu() -> Pokemon* {
-    return (new Pokemon(id=6, hp=142, atk=117, init=156, def=101, type1=0, type2=99, atk1_type=13, atk1_damage=100, atk2_type=13, atk2_damage=100, name_id=25));
+    return (new Pokemon(id=3, hp=142, atk=117, init=156, def=101, type1=1, type2=2, atk1_type=1, atk1_damage=40, atk2_type=1, atk2_damage=40, name_id=25));
+}
+// create a pokemon for testing purposes
+func createBisasamZero() -> Pokemon* {
+    return (new Pokemon(id=4, hp=152, atk=111, init=106, def=111, type1=0, type2=99, atk1_type=13, atk1_damage=40, atk2_type=13, atk2_damage=40, name_id=1));
+}
+// create a pokemon for testing purposes
+func createPikachuZero() -> Pokemon* {
+    return (new Pokemon(id=5, hp=142, atk=117, init=156, def=101, type1=0, type2=99, atk1_type=13, atk1_damage=40, atk2_type=13, atk2_damage=40, name_id=25));
 }
 // Mapping to save the id of the winning pokemon for each fight_id
 @storage_var
@@ -68,22 +89,24 @@ func winner(fight_id: felt) -> (winner_id: felt) {
 func no_param_fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     winner: felt
 ) {
+    attack_counter.write(0);
     let (res) = fight(createBisasam(), createPikachu());
-
+    let (c) = attack_counter.read();
+    attacks.emit(c);
     return (winner=res);
 }
-
+@external
+func no_param_fight_zerodmg{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+    winner: felt
+) {
+    attack_counter.write(0);
+    let (res) = fight(createBisasamZero(), createPikachuZero());
+    let (c) = attack_counter.read();
+    attacks.emit(c);
+    return (winner=res);
+}
 @event
 func fight_steps(step: felt) {
-}
-
-@external
-func sendDummyMessage{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() {
-    let (message_payload: felt*) = alloc();
-    assert message_payload[0] = 98;
-    let (l1_contract_address) = l1_address.read();
-    send_message_to_l1(to_address=l1_contract_address, payload_size=1, payload=message_payload);
-    return ();
 }
 
 // Takes the L1 address, the attributes for two pokemon, and a fight_id
@@ -118,6 +141,7 @@ func pokemon_game_flat{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
     fight_id: felt,
 ) {
     alloc_locals;
+    attack_counter.write(0);
     fight_steps.emit(step=0);
     local pkmn1: Pokemon = Pokemon(id=id1, hp=hp1, atk=atk1, init=init1, def=def1,
         type1=type11, type2=type21, atk1_type=atk1_type1,
@@ -145,6 +169,8 @@ func pokemon_game_flat{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
     let (l1_contract_address) = l1_address.read();
     send_message_to_l1(to_address=l1_contract_address, payload_size=2, payload=message_payload);
     fight_steps.emit(step=3);
+    let (c) = attack_counter.read();
+    attacks.emit(c);
     return ();
 }
 @l1_handler
@@ -165,6 +191,7 @@ func pokemon_game{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
     let (message_payload: felt*) = alloc();
     assert message_payload[0] = res;
     assert message_payload[1] = fight_id;
+
     let (l1_contract_address) = l1_address.read();
     send_message_to_l1(to_address=l1_contract_address, payload_size=2, payload=message_payload);
 
@@ -225,11 +252,16 @@ func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     local dmg = _dmgx;
 
     // calculate new HP
-    local pkmn2_hp = slower_pkmn.hp - dmg;
-     let (z) = getEfficiency(atk_type_fast, slower_pkmn.type1, slower_pkmn.type2, 1);
- if(z==0){
-          pkmn2_hp = pkmn2_hp - 1;
-     }
+    local pkmn2_hp: felt;
+    let (z) = getEfficiency(atk_type_fast, slower_pkmn.type1, slower_pkmn.type2, 1);
+    if (z == 0) {
+        local x = slower_pkmn.hp;
+
+        pkmn2_hp = x - 1;
+    } else {
+        local y = slower_pkmn.hp;
+        pkmn2_hp = y - dmg;
+    }
     let newPok_: Pokemon* = updateHP(slower_pkmn, pkmn2_hp);
     local newPok: Pokemon* = newPok_;
 
@@ -238,14 +270,15 @@ func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     if (is_le(newPok.hp, 0) == 1) {
         return (res=faster_pkmn.id);
     } else {
-
         let _dmgSecondFight = attackAndGetDamage(
             slower_pkmn, atk_type_slow, atk_damage_slow, faster_pkmn
         );
         local dmgSecondFight = _dmgSecondFight;
 
         local pkmn1_hp = faster_pkmn.hp - dmg;
+        let (n) = attack_counter.read();
 
+        attack_counter.write(value=n + 1);
         let newPok_2: Pokemon* = updateHP(faster_pkmn, pkmn1_hp);
         local newPok2: Pokemon* = newPok_2;
 
@@ -750,12 +783,4 @@ func get_data() -> (data: felt*) {
     dw 2;
     dw 3;
     dw 1;
-}
-@external
-func testdw(x: felt) -> (res: felt) {
-    let (data) = get_data();
-
-    let value = data[x];
-
-    return (res=value);
 }
