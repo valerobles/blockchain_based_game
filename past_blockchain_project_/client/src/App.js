@@ -78,9 +78,8 @@ const App = () => {
         const web3 = await getWeb3();
         await loadWeb3Acc(web3);
         const contract = await loadWeb3Contract(web3);
-        const bool = await loadNFTS(contract);
-        while (!bool) {
-        }
+       await loadNFTS(contract);
+
         await listener(web3, contract);
 
 
@@ -115,7 +114,6 @@ const App = () => {
             fromBlock: 8047300,
             address: '0xde29d060D45901Fb19ED6C6e959EB22d8626708e', // starknetcore
             topics: [null, "0x0172cdc219c6a41e22ccdcfbfc91b86b866b9746343d55fa38931072ff205447", "0x000000000000000000000000b2eea57d1a4b0b07c5e4a40dea76a3c0190a7b86", null]
-
         };
         _web3.eth.subscribe('logs', options_new, (err, event) => {
             if (!err)
@@ -128,7 +126,7 @@ const App = () => {
                 let _winnerID = parseInt(tempSub.substring(0, 64), 16)
                 let _fightID = parseInt(tempSub.substring(tempSub.length - 64), 16)
                 // if (_fightID !== 3)
-               createFightObj(_fightID, _winnerID, c).then(r => (  setFightList([...fightList,r])))
+                createFightObj(_fightID, _winnerID, c).then(r => (  setFightList([...fightList,r])))
 
 
 
@@ -143,25 +141,28 @@ const App = () => {
     async function createFightObj(fightID, w, c) {
 
         console.log(fightID, w)
-        let pokemon = await c.methods.pokemons(w).call();
-        let newPok = (JSON.parse(JSON.stringify(pokemon))); //use json
-        let pokemonToOwner = await c.methods.ownerOf(w).call();
-        let newPokObj = PokemonObj(newPok.name_id, pokemonToOwner);
-
         let fightExists = false
         fightList.forEach(f => {
-            if (f.fightID === fightID) {
+            if (f.fightID === fightID)
                 fightExists = true
 
-            }
         })
         if (!fightExists) {
+            let pokemon = await c.methods.pokemons(w).call();
+            let newPok = (JSON.parse(JSON.stringify(pokemon))); //use json
+            let pokemonToOwner = await c.methods.ownerOf(w).call();
+            let newPokObj = PokemonObj(newPok.name_id, pokemonToOwner);
             fightList.push( FightObj(fightID, w, newPokObj))
+            // setFightList([...fightList, FightObj(fightID, w, newPokObj)]);
 
+
+            console.log("set list " + fightList.length);
+            return FightObj(fightID, w, newPokObj)
         }
 
 
     }
+
 
 
     return <div>
