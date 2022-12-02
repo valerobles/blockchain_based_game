@@ -57,7 +57,7 @@ func createBisasam() -> Pokemon* {
 }
 // create a pokemon for testing purposes
 func createPikachu() -> Pokemon* {
-    return (new Pokemon(id=6, hp=142, atk=117, init=156, def=101, type1=4, type2=99, atk1_type=4, atk1_damage=5, atk2_type=0, atk2_damage=5, name_id=25));
+    return (new Pokemon(id=6, hp=142, atk=117, init=156, def=101, type1=4, type2=99, atk1_type=4, atk1_damage=500, atk2_type=0, atk2_damage=500, name_id=25));
 }
 // Mapping to save the id of the winning pokemon for each fight_id
 @storage_var

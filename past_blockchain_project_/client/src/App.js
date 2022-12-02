@@ -111,7 +111,7 @@ const App=()=>{
 
 
 
-    function listener(_web3,c) {
+     function listener(_web3,c) {
 
         var options_new = {
             fromBlock: 8047300,
@@ -130,9 +130,6 @@ const App=()=>{
                 let _fightID = parseInt(tempSub.substring(tempSub.length - 64), 16)
                 if (_fightID !== 3)
                     await createFightObj(_fightID, _winnerID,c)
-
-                console.log("Winner ID: " + _winnerID)
-                console.log("Fight ID: " + _fightID)
             })
             .on("changed", function(log) {
             });
@@ -157,7 +154,7 @@ const App=()=>{
             let newPokObj = PokemonObj(newPok.name_id, pokemonToOwner);
             setFightList([...fightList, FightObj(fightID, w, newPokObj)]);
 
-
+console.log("set list "+fightList.length);
         }
 
 
