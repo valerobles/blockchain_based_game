@@ -68,7 +68,7 @@ const App = () => {
     // load the contract
     const loadWeb3Contract = async (web3) => {
         const abi = NFT.abi;
-        const contract = new web3.eth.Contract(abi, "0x97d2cbaf09cef894c75fbb0a0695c46895a45901"); // TODO get solidity contract address
+        const contract = new web3.eth.Contract(abi, "0x0835A97D4aa62ed7C10A156207b2312028bDC1A7"); // TODO get solidity contract address
         setContract(contract);
         return contract;
     }
@@ -114,7 +114,7 @@ const App = () => {
         var options_new = {
             fromBlock: 8047300,
             address: '0xde29d060D45901Fb19ED6C6e959EB22d8626708e', // starknetcore
-            topics: [null, "0x023dffb3e5bd1ebba20bf94b5fe7d6eedd205b505275353a91c7090c3d47c2d5", "0x00000000000000000000000097d2cbaf09cef894c75fbb0a0695c46895a45901", null]
+            topics: [null, "0x172cdc219c6a41e22ccdcfbfc91b86b866b9746343d55fa38931072ff205447", "0x0000000000000000000000000835A97D4aa62ed7C10A156207b2312028bDC1A7", null]
         };
         _web3.eth.subscribe('logs', options_new, (err, event) => {
             if (!err)
