@@ -48,7 +48,7 @@ contract NFT is ERC721, ERC721Enumerable {
 
     IStarknetCore starknetCore;
     uint256 nonce = 0;
-    uint256 L2_CONTRACT = 0x31c59f9319f22b2dc9271b18bfe67ec3d5464ff8327705891a931875f89b148; //random fixed, with msg to l1 in pokemon_game_flat
+    uint256 L2_CONTRACT = 0x172cdc219c6a41e22ccdcfbfc91b86b866b9746343d55fa38931072ff205447; //random fixed, with msg to l1 in pokemon_game_flat
     uint256 constant SELECTOR = 1625440424450498852892950090004073452274266572863945925863133186904237482575; // pokemon_game_flat as a selector encoded
 
 
