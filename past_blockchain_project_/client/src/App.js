@@ -22,7 +22,6 @@ const App = () => {
     const [studentId, setStudentId] = useState(0);
     // const [winnerPok, setWinnerPok] = useState(PokemonObj());
     const [fightList, setFightList] = useState([FightObj()])
-    let lock = false;
 
     const mint = () => {
         if (nameID.length > 0 && nameID > 0) {
