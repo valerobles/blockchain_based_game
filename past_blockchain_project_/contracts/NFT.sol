@@ -281,7 +281,7 @@ contract NFT is ERC721, ERC721Enumerable {
     }
 
     //Every pokemon gets random bonus stats on every stat
-    function createPokemonOther(uint256 id, uint256 strength ,uint256 type1, uint256 type2, uint256 name_id) internal returns (Pokemon memory){
+    function createPokemonOther(uint256 id,uint256 type1, uint256 type2, uint256 name_id, uint256 strength ) internal returns (Pokemon memory){
         uint256 base_stat = 100;
 
         if (strength == 2){

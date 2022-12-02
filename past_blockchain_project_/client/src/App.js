@@ -68,7 +68,7 @@ const App = () => {
     // load the contract
     const loadWeb3Contract = async (web3) => {
         const abi = NFT.abi;
-        const contract = new web3.eth.Contract(abi, "0x0835A97D4aa62ed7C10A156207b2312028bDC1A7"); // TODO get solidity contract address
+        const contract = new web3.eth.Contract(abi, "0xb2eea57d1a4b0b07c5e4a40dea76a3c0190a7b86"); // TODO get solidity contract address
         setContract(contract);
         return contract;
     }
@@ -114,7 +114,8 @@ const App = () => {
         var options_new = {
             fromBlock: 8047300,
             address: '0xde29d060D45901Fb19ED6C6e959EB22d8626708e', // starknetcore
-            topics: [null, "0x172cdc219c6a41e22ccdcfbfc91b86b866b9746343d55fa38931072ff205447", "0x0000000000000000000000000835A97D4aa62ed7C10A156207b2312028bDC1A7", null]
+            topics: [null, "0x0172cdc219c6a41e22ccdcfbfc91b86b866b9746343d55fa38931072ff205447", "0x000000000000000000000000b2eea57d1a4b0b07c5e4a40dea76a3c0190a7b86", null]
+
         };
         _web3.eth.subscribe('logs', options_new, (err, event) => {
             if (!err)
@@ -142,23 +143,21 @@ const App = () => {
     async function createFightObj(fightID, w, c) {
 
         console.log(fightID, w)
+        let pokemon = await c.methods.pokemons(w).call();
+        let newPok = (JSON.parse(JSON.stringify(pokemon))); //use json
+        let pokemonToOwner = await c.methods.ownerOf(w).call();
+        let newPokObj = PokemonObj(newPok.name_id, pokemonToOwner);
+
         let fightExists = false
         fightList.forEach(f => {
-            if (f.fightID === fightID)
+            if (f.fightID === fightID) {
                 fightExists = true
 
+            }
         })
         if (!fightExists) {
-            let pokemon = await c.methods.pokemons(w).call();
-            let newPok = (JSON.parse(JSON.stringify(pokemon))); //use json
-            let pokemonToOwner = await c.methods.ownerOf(w).call();
-            let newPokObj = PokemonObj(newPok.name_id, pokemonToOwner);
             fightList.push( FightObj(fightID, w, newPokObj))
-           // setFightList([...fightList, FightObj(fightID, w, newPokObj)]);
 
-
-            console.log("set list " + fightList.length);
-            return FightObj(fightID, w, newPokObj)
         }
 
 
