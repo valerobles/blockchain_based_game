@@ -78,7 +78,7 @@ const App = () => {
         const web3 = await getWeb3();
         await loadWeb3Acc(web3);
         const contract = await loadWeb3Contract(web3);
-       await loadNFTS(contract);
+        await loadNFTS(contract);
 
         await listener(web3, contract);
 
@@ -119,15 +119,16 @@ const App = () => {
             if (!err)
                 console.log(event);
         })
-            .on("data",   function (log) {
+            .on("data", function (log) {
 
                 let temp = log.data
                 let tempSub = temp.substring(temp.length - 128)
                 let _winnerID = parseInt(tempSub.substring(0, 64), 16)
                 let _fightID = parseInt(tempSub.substring(tempSub.length - 64), 16)
                 // if (_fightID !== 3)
-                createFightObj(_fightID, _winnerID, c).then(r => (  setFightList([...fightList,r])))
-
+                createFightObj(_fightID, _winnerID, c).then(r => {
+                    setFightList([...fightList, r])
+                })
 
 
             })
@@ -137,33 +138,39 @@ const App = () => {
 
     }
 
+    function fightExists(fightID) {
+        let fightExistsB = false
+        fightList.forEach(f => {
+            if (f.fightID === fightID) {
+                fightExistsB = true
+                console.log("exists")
+            }
+
+        })
+        return fightExistsB;
+    }
 
     async function createFightObj(fightID, w, c) {
 
         console.log(fightID, w)
-        let fightExists = false
-        fightList.forEach(f => {
-            if (f.fightID === fightID)
-                fightExists = true
-
-        })
-        if (!fightExists) {
+        if (!fightExists(fightID)) {
             let pokemon = await c.methods.pokemons(w).call();
             let newPok = (JSON.parse(JSON.stringify(pokemon))); //use json
             let pokemonToOwner = await c.methods.ownerOf(w).call();
             let newPokObj = PokemonObj(newPok.name_id, pokemonToOwner);
-            fightList.push( FightObj(fightID, w, newPokObj))
+            const fightObj = FightObj(fightID, w, newPokObj);
+            fightList.push(fightObj)
             // setFightList([...fightList, FightObj(fightID, w, newPokObj)]);
 
 
             console.log("set list " + fightList.length);
-            return FightObj(fightID, w, newPokObj)
+            return fightObj
         }
 
 
     }
 
-
+    let previousIndex = -1;
 
     return <div>
         <nav className="navbar navbar-light bg-light px-4">
@@ -265,19 +272,24 @@ const App = () => {
 
                     <h1>ALL THE WINNERS</h1>
                     <div className="col-8 d-flex justify-content-center flex-wrap">
-                        {fightList.slice(1, fightList.length).map((fight, index) => {
-                            let shortOwnerText = fight.PokemonObj.owner.substring(0, 10) + "..."
-                            return (
-                                <div className="d-flex flex-column align-items-center p-4" key={index}>
-                                    <img height="150"
-                                         src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${fight.PokemonObj.nameID}.svg`}/>
-                                    <span>My nameID/dex# = {fight.PokemonObj.nameID}</span>
-                                    <span>WINNER = {fight.winnerID}</span>
-                                    <span>FIGHTID = {fight.fightID}</span>
-                                    <span>Owner : {shortOwnerText}</span>
-                                </div>
-                            )
-                        })
+                        {
+                            fightList.filter((value, index, self) =>
+                                    index === self.findIndex((t) => (
+                                        t.fightID === value.fightID
+                                    ))
+                            ).slice(1, fightList.length).map((fight, index) => {
+                                let shortOwnerText = fight.PokemonObj.owner.substring(0, 10) + "..."
+                                return (
+                                    <div className="d-flex flex-column align-items-center p-4" key={index}>
+                                        <img height="150"
+                                             src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${fight.PokemonObj.nameID}.svg`}/>
+                                        <span>My nameID/dex# = {fight.PokemonObj.nameID}</span>
+                                        <span>WINNER = {fight.winnerID}</span>
+                                        <span>FIGHTID = {fight.fightID}</span>
+                                        <span>Owner : {shortOwnerText}</span>
+                                    </div>
+                                )
+                            })
                         }
                     </div>
 
