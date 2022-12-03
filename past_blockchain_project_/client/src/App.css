@@ -1,26 +1,4 @@
-.App {
-  text-align: center;
-  background-color: grey;
-}
 
-.App-logo {
-  height: 40vmin;
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #09d3ac;
-}
 
 .outer {
   width: 500px;
@@ -33,34 +11,24 @@
 }
 
 
-.scrollable-div {
-  background-color: #f1f1f1;
-  height: 150px;
-  overflow-x: scroll;
-  margin: 20px;
-  text-align: justify;
-  padding: 20px;
-
-}
-
 
 
 .slideshow {
   margin: 0 auto;
-  overflow: hidden;
-  max-width: 600px;
+  /*overflow: hidden;*/
+  max-width: 80%;
 }
 
 .slideshowSlider {
   white-space: nowrap;
-  transition: ease 1000ms;
+  transition: ease 1500ms;
 }
 
 .slide {
   display: inline-block;
 
   height: 400px;
-  width: 100%;
+  width: 70%;
   border-radius: 40px;
 }
 
@@ -86,3 +54,6 @@
   background-color: #6a0dad;
 }
 
+.selectPok:hover{
+  background-color: #212121;
+}

@@ -1,16 +1,19 @@
 import React, {useEffect, useRef, useState} from "react";
 import NFT from "./contracts/NFT.json";
 import getWeb3 from "./getWeb3";
-import './dark_theme/css/mdb.dark.min.css';
+// import './styles/css/styles.css';
+import './dark_theme/css/mdb.dark.min.css'
 import "./App.css";
+
+
 
 const App = () => {
 
-    const PokemonObj = (nameID, owner, type1, type2) => {
-        return {nameID: nameID, owner: owner, type1: type1,type2: type2 }
+    const PokemonObj = (nameID, owner, type1, type2,id) => {
+        return {nameID: nameID, owner: owner, type1: type1,type2: type2,id:id }
     }
-    const FightObj = (fightID, winnerID, winnerPok) => {
-        return {fightID: fightID, winnerID: winnerID, PokemonObj: winnerPok}
+    const FightObj = (fightID, winnerID, winnerPok, firstPok, secondPok) => {
+        return {fightID: fightID, winnerID: winnerID, winnerPok: winnerPok, firstPok: firstPok, secondPok : secondPok}
     }
     const [web3, setWeb3] = useState();
 
@@ -21,6 +24,9 @@ const App = () => {
     const [fightList, setFightList] = useState([FightObj()]);
     const [currentEnemyID, setCurrentEnemyID] = useState(0);
     const typeArray = ["Normal","Fire","Water","Grass","Electric","Ice","Fight","Poison","Ground","Flying","Psychic","Bug","Rock","Ghost","Dragon","Dark","Steel","Fairy"]
+
+    const [mySelectedPok, setMySelectedPok] = useState(PokemonObj);
+    const [oponentSelectedPok, setOponentSelectedPok] = useState(PokemonObj);
 
     const mint = () => {
         if (nameID.length > 0 && nameID > 0) {
@@ -47,7 +53,7 @@ const App = () => {
             let newPok = (JSON.parse(JSON.stringify(pokemon))); //use json
             let pokemonToOwner = await contract.methods.ownerOf(i).call();
             let type_2 = newPok.type2 == 99? "None" : typeArray[newPok.type2];
-            let newPokObj = PokemonObj(newPok.name_id, pokemonToOwner,typeArray[newPok.type1],type_2 );
+            let newPokObj = PokemonObj(newPok.name_id, pokemonToOwner,typeArray[newPok.type1],type_2 ,i);
             newResults.push(newPokObj);
         }
         setPokemonList(newResults);
@@ -159,6 +165,23 @@ const App = () => {
             let newPok = (JSON.parse(JSON.stringify(pokemon))); //use json
             let pokemonToOwner = await c.methods.ownerOf(w).call();
             let newPokObj = PokemonObj(newPok.name_id, pokemonToOwner);
+
+            // TODO after deploying new contract. This is to show the two contestants
+            // let constestantsJ = await c.methods.fightIDToFighters(fightID).call();
+            // let contestants = (JSON.parse(JSON.stringify(constestantsJ)));
+            // let firstPok = contestant.pok1
+            // let secondPok = contestant.pok2
+            // let firstPokOwner =  await c.methods.ownerOf(firstPok.id).call();
+            // let secondPokOwner =  await c.methods.ownerOf(secondPok.id).call();
+            //
+            // let firstType2 = firstPok.type2 == 99? "None": typeArray[firstPok.type2]
+            // let firstPokObj = PokemonObj(firstPok.name_id, firstPokOwner,typeArray[firstPok.type1],firstType2 )
+            // let secondType2 = secondPok.type2 == 99? "None": typeArray[secondPok.type2]
+            // let secondPokObj = PokemonObj(secondPok.name_id, secondPokOwner,typeArray[secondPok.type1],secondType2 )
+            //
+            // const fightObj = FightObj(fightID,w,newPokObj,firstPokObj,secondPokObj)
+
+
             const fightObj = FightObj(fightID, w, newPokObj);
             fightList.push(fightObj)
             // setFightList([...fightList, FightObj(fightID, w, newPokObj)]);
@@ -170,6 +193,8 @@ const App = () => {
 
 
     }
+
+
 
 
 
@@ -208,13 +233,13 @@ const App = () => {
                                     t.fightID === value.fightID
                                 ))
                         ).slice(1, fightList.length).map((fight, index) => {
-                            let shortOwnerText = fight.PokemonObj.owner.substring(0, 10) + "..."
+                            let shortOwnerText = fight.winnerPok.owner.substring(0, 10) + "..."
                                 return(
                         <div className="slide" key={index}>
                             <div className="d-flex flex-column align-items-center p-4">
                                 <img height="150"
-                                     src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${fight.PokemonObj.nameID}.svg`}/>
-                                <span>My nameID/dex# = {fight.PokemonObj.nameID}</span>
+                                     src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${fight.winnerPok.nameID}.svg`}/>
+                                <span>My nameID/dex# = {fight.winnerPok.nameID}</span>
                                 <span>WINNER = {fight.winnerID}</span>
                                 <span>FIGHTID = {fight.fightID}</span>
                                 <span>Owner : {shortOwnerText}</span>
@@ -228,6 +253,56 @@ const App = () => {
 
             </div>
         );
+    }
+
+
+    function selectMyFighter(myPok) {
+        setMySelectedPok(myPok)
+    }
+
+    function selectOtherFighter(pok) {
+        setOponentSelectedPok(pok)
+    }
+
+    function showYourPok(){
+        if (mySelectedPok.nameID !== undefined)
+            return(
+                <div className="d-flex flex-column align-items-center p-4 ">
+                <img height="80"
+                             src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${mySelectedPok.nameID}.svg`}/>
+                        <span>My nameID/dex# = {mySelectedPok.nameID}</span>
+                        <span>Type 1 : {mySelectedPok.type1}</span>
+                        <span>Type 2 : {mySelectedPok.type2}</span>
+
+                </div>
+            )
+    }
+
+    function showChosenOponent(){
+        if (oponentSelectedPok.nameID !== undefined)
+            return(
+                <div className="d-flex flex-column align-items-center p-4 ">
+                        <img height="80"
+                             src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${oponentSelectedPok.nameID}.svg`}/>
+                        <span>My nameID/dex# = {oponentSelectedPok.nameID}</span>
+                        <span>Type 1 : {oponentSelectedPok.type1}</span>
+                        <span>Type 2 : {oponentSelectedPok.type2}</span>
+
+                </div>
+            )
+    }
+
+    function fightButton(){
+        if (oponentSelectedPok.nameID !== undefined && mySelectedPok.nameID !== undefined)
+            return (
+                // <button onClick={() => fight(mySelectedPok.id, oponentSelectedPok.id)}
+                //             className="btn btn-primary p-2">FIGHT
+                // </button>
+                <button onClick={() => console.log("my pokemon: ",mySelectedPok.id," other pokemon: " ,oponentSelectedPok.id)}
+                            className="btn btn-primary p-3">FIGHT
+                </button>
+
+            )
     }
 
 
@@ -254,19 +329,25 @@ const App = () => {
                              src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/25.svg"
                              alt="" height="85"/>
                     </div>
-                    <h1 className="display-5 fw-bold">Create your own Pokémon</h1>
+                    <h1 className="display-5 fw-bold" style={{width: '70%', textAlign: 'center'}}>Create your own Pokémon NFT and Fight against Friends</h1>
                     <div className="col-6 text-center mb-3">
                         <div>
                             <input
                                 type="text"
                                 value={nameID}
                                 onChange={(e) => setNameID(e.target.value)}
-                                className="form-control mb-2"
-                                placeholder="e.g. Beethoven"/>
+                                className="form-control mb-2"/>
                             <button onClick={mint} className="btn btn-primary">Mint</button>
                         </div>
                     </div>
                     <br/>
+                    <div className="d-flex flex-row">
+                        {showYourPok()}
+                        {showChosenOponent()}
+
+                    </div>
+                    {fightButton()}
+
                     <br/>
                     <br/>
                     <h1>Your collection</h1>
@@ -275,30 +356,14 @@ const App = () => {
                         {pokemonList.slice(1, pokemonList.length).map((pok, my_uuid) => {
                             if (pok.owner === account) {
                                 return (
-                                    <div className="d-flex flex-column align-items-center" key={my_uuid} style={{marginRight: '20px'}}>
-                                        <img height="150"
+                                    <div className="d-flex flex-column align-items-center p-5" key={my_uuid} style={{backgroundColor: mySelectedPok == pok ? 'black': '#303030'}} onClick={() => selectMyFighter(pok)}>
+                                        <img height="160"
                                              src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${pok.nameID}.svg`}/>
                                         <span>My nameID/dex# = {pok.nameID}</span>
                                         <span>My UUID = {my_uuid}</span>
                                         <span>Type 1 : {pok.type1}</span>
                                         <span>Type 2 : {pok.type2}</span>
-                                        <div className="d-flex flex-row">
-                                            <input type="number" onWheel={(e) => e.target.blur()}
-                                                   value={currentEnemyID}
-                                                   onChange={
-                                                       (e) => {
 
-                                                           setCurrentEnemyID(e.target.value) // TODO possible bug: using enemy's uuid for another of your pokemon
-
-                                                       }
-
-                                                   }
-                                                   className="p-2"
-                                                   placeholder="Give enemy uuid"/>
-                                            <button onClick={() => fight(my_uuid, currentEnemyID)}
-                                                    className="btn btn-primary p-2">FIGHT
-                                            </button>
-                                        </div>
                                     </div>
                                 )
                             }
@@ -309,14 +374,14 @@ const App = () => {
                     <br/>
                     <br/>
 
-                    <h1>See your friends NFTS</h1>
+                    <h1>Choose your fighter</h1>
                     <div className="col-8 d-flex justify-content-center flex-wrap">
 
                         {pokemonList.slice(1, pokemonList.length).map((pok, index) => {
                             if (pok.owner !== account) {
                                 let shortOwnerText = pok.owner.substring(0, 10) + "..."
                                 return (
-                                    <div className="d-flex flex-column align-items-center p-4" key={index}>
+                                    <div className="d-flex flex-column align-items-center p-4 " key={index} style={{backgroundColor: oponentSelectedPok == pok ? 'black': '#303030'}} onClick={() => selectOtherFighter(pok)}>
                                         <img height="150"
                                              src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${pok.nameID}.svg`}/>
                                         <span>My nameID/dex# = {pok.nameID}</span>
@@ -334,30 +399,30 @@ const App = () => {
                     <br/>
 
                     <h1>ALL THE WINNERS</h1>
-                    <div className="col-8 d-flex justify-content-center flex-wrap">
-                        {
-                            fightList.filter((value, index, self) =>
-                                    index === self.findIndex((t) => (
-                                        t.fightID === value.fightID
-                                    ))
-                            ).slice(1, fightList.length).map((fight, index) => {
-                                let shortOwnerText = fight.PokemonObj.owner.substring(0, 10) + "..."
-                                return (
-                                    <div className="d-flex flex-column align-items-center p-4" key={index}>
-                                        <img height="150"
-                                             src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${fight.PokemonObj.nameID}.svg`}/>
-                                        <span>My nameID/dex# = {fight.PokemonObj.nameID}</span>
-                                        <span>WINNER = {fight.winnerID}</span>
-                                        <span>FIGHTID = {fight.fightID}</span>
-                                        <span>Owner : {shortOwnerText}</span>
-                                    </div>
-                                )
-                            })
-                        }
-                    </div>
-                    <h1>
-                        Slideshow
-                    </h1>
+                    {/*<div className="col-8 d-flex justify-content-center flex-wrap">*/}
+                    {/*    {*/}
+                    {/*        fightList.filter((value, index, self) =>*/}
+                    {/*                index === self.findIndex((t) => (*/}
+                    {/*                    t.fightID === value.fightID*/}
+                    {/*                ))*/}
+                    {/*        ).slice(1, fightList.length).map((fight, index) => {*/}
+                    {/*            let shortOwnerText = fight.winnerPok.owner.substring(0, 10) + "..."*/}
+                    {/*            return (*/}
+                    {/*                <div className="d-flex flex-column align-items-center p-4" key={index}>*/}
+                    {/*                    <img height="150"*/}
+                    {/*                         src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${fight.winnerPok.nameID}.svg`}/>*/}
+                    {/*                    <span>My nameID/dex# = {fight.winnerPok.nameID}</span>*/}
+                    {/*                    <span>WINNER = {fight.winnerID}</span>*/}
+                    {/*                    <span>FIGHTID = {fight.fightID}</span>*/}
+                    {/*                    <span>Owner : {shortOwnerText}</span>*/}
+                    {/*                </div>*/}
+                    {/*            )*/}
+                    {/*        })*/}
+                    {/*    }*/}
+                    {/*</div>*/}
+                    {/*<h1>*/}
+                    {/*    Slideshow*/}
+                    {/*</h1>*/}
                     {Slideshow()}
 
 
