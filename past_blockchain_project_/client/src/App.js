@@ -135,6 +135,8 @@ const App = () => {
             });
 
 
+
+
     }
 
     function fightExists(fightID) {
@@ -170,11 +172,65 @@ const App = () => {
     }
 
 
-    function getTypeName(type){
 
+    const delay = 2500;
+
+    function Slideshow() {
+        const [index, setIndex] = useState(0);
+        const timeoutRef = useRef(null);
+
+        function resetTimeout() {
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+            }
+        }
+
+        useEffect(() => {
+            resetTimeout();
+            timeoutRef.current = setTimeout(
+                () =>
+                    setIndex((prevIndex) =>
+                        prevIndex === fightList.length - 1 ? 0 : prevIndex + 1
+                    ),
+                delay
+            );
+
+            return () => {
+                resetTimeout();
+            };
+        }, [index]);
+
+        return (
+            <div className="slideshow">
+                <div className="slideshowSlider" style={{ transform: `translate3d(${-index * 100}%, 0, 0)` }}>
+                    {fightList.filter((value, index, self) =>
+                                index === self.findIndex((t) => (
+                                    t.fightID === value.fightID
+                                ))
+                        ).slice(1, fightList.length).map((fight, index) => {
+                            let shortOwnerText = fight.PokemonObj.owner.substring(0, 10) + "..."
+                                return(
+                        <div className="slide" key={index}>
+                            <div className="d-flex flex-column align-items-center p-4">
+                                <img height="150"
+                                     src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${fight.PokemonObj.nameID}.svg`}/>
+                                <span>My nameID/dex# = {fight.PokemonObj.nameID}</span>
+                                <span>WINNER = {fight.winnerID}</span>
+                                <span>FIGHTID = {fight.fightID}</span>
+                                <span>Owner : {shortOwnerText}</span>
+                            </div>
+
+                        </div>
+                                    )})}
+
+
+                </div>
+
+            </div>
+        );
     }
 
-    let previousIndex = -1;
+
 
     return <div>
         <nav className="navbar navbar-light bg-light px-4">
@@ -214,7 +270,7 @@ const App = () => {
                     <br/>
                     <br/>
                     <h1>Your collection</h1>
-                    <div style={{ width: "70%", overflow: "auto", display: "flex" ,justifyContent: 'center'}}>
+                    <div style={{ width: "70%", overflow: "auto", display: "flex" }}>
 
                         {pokemonList.slice(1, pokemonList.length).map((pok, my_uuid) => {
                             if (pok.owner === account) {
@@ -299,6 +355,11 @@ const App = () => {
                             })
                         }
                     </div>
+                    <h1>
+                        Slideshow
+                    </h1>
+                    {Slideshow()}
+
 
 
                 </div>
