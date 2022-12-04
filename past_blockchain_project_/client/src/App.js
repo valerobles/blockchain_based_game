@@ -27,6 +27,8 @@ const App = () => {
     const [oponentSelectedPok, setOponentSelectedPok] = useState(PokemonObj);
     const names = [];
 
+    const [animationClass, setAnimationClass] = useState('test');
+
     const mint = () => {
         if (nameID.length > 0 && nameID > 0) {
             contract.methods.mint(nameID).send({from: account}, (error) => {
@@ -244,7 +246,7 @@ const App = () => {
                                     <span>{fight.winnerPok.name}</span>
                                     <span>My nameID/dex# = {fight.winnerPok.nameID}</span>
                                     <span>WINNER = {fight.winnerID}</span>
-                                    <span>FIGHTID = {fight.fightID}</span>
+                                    <span>FIGHT ID = {fight.fightID}</span>
                                     <span>Owner : {shortOwnerText}</span>
                                 </div>
 
@@ -272,6 +274,7 @@ const App = () => {
         if (mySelectedPok.nameID !== undefined)
             return (
                 <div className="d-flex flex-column align-items-center p-4 ">
+                    <span className="font-weight-bold">Your Pokemon</span>
                     <img height="80"
                          src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${mySelectedPok.nameID}.svg`}/>
                     <span>{mySelectedPok.name}</span>
@@ -287,6 +290,7 @@ const App = () => {
         if (oponentSelectedPok.nameID !== undefined)
             return (
                 <div className="d-flex flex-column align-items-center p-4 ">
+                    <span className="font-weight-bold">Your Opponent Pokemon</span>
                     <img height="80"
                          src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${oponentSelectedPok.nameID}.svg`}/>
                     <span>{oponentSelectedPok.name}</span>
@@ -302,16 +306,15 @@ const App = () => {
         if (oponentSelectedPok.nameID !== undefined && mySelectedPok.nameID !== undefined)
             //console.log("my pokemon: ",mySelectedPok.id," other pokemon: " ,oponentSelectedPok.id)
             return (
-                <button onClick={() => fight(mySelectedPok.id, oponentSelectedPok.id)} className="btn btn-primary p-2">
+                <button onClick={() => fight(mySelectedPok.id, oponentSelectedPok.id)} className="btn btn-secondary p-3">
                     FIGHT
                 </button>
 
-                // <button onClick={() => console.log("my pokemon: ",mySelectedPok.id," other pokemon: " ,oponentSelectedPok.id)}
-                //             className="btn btn-primary p-3">FIGHT
-                // </button>
 
             )
     }
+
+
 
     const baseUrl = 'https://pokeapi.co/api/v2/pokemon/?offset='
 
@@ -330,8 +333,8 @@ const App = () => {
             <span className="navbar-brand">{account}</span>
         </nav>
         <div className="container-fluid mt-5">
-            <div className="row">
-                <div className="col d-flex flex-column align-items-center">
+            <div className="row ">
+                <div className="col d-flex flex-column align-items-center ">
                     <div className="row-6">
                         <img className="mb-4"
                              src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/1.svg"
@@ -365,6 +368,7 @@ const App = () => {
 
                     </div>
                     {fightButton()}
+
 
                     <br/>
                     <br/>
@@ -432,6 +436,10 @@ const App = () => {
         </div>
     </div>;
 };
+
+
+
+
 
 
 export default App;

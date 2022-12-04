@@ -1,4 +1,4 @@
-
+@import url(https://fonts.googleapis.com/css?family=Lato:300,700,300italic);
 
 .outer {
   width: 500px;
@@ -50,10 +50,31 @@
   background-color: #c4c4c4;
 }
 
-.slideshowDot.active {
-  background-color: #6a0dad;
+
+
+
+.wrapper {
+  --pp-purple: #673753;
+  --pp-blue: #0b3956;
+  --pp-ltblue: #293133;
+  --sp-yellow: #605d48;
+  background-image: linear-gradient(to right, var(--pp-blue),var(--pp-ltblue),var(--sp-yellow),var(--pp-purple),var(--pp-blue));
+  background-size: 600%;
+  background-position: 0 0;
+  box-shadow: inset 0 0 5em rgba(0,0,0,.5);
+  font-family: 'Lato', Arial, sans-serif;
+  height: 100%;
+  /* Animation */
+  animation-duration: 20s;
+  animation-iteration-count: infinite;
+  animation-name: gradients;
 }
 
-.selectPok:hover{
-  background-color: #212121;
+@keyframes gradients {
+  0%   {background-position: 0 0;}
+  25% {background-position: 50% 0;}
+  50% {background-position: 90% 0;}
+  60% {background-position: 60%;}
+  75% {background-position: 40%;}
+  100%  {background-position: 0 0;}
 }
