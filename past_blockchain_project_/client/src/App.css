@@ -57,3 +57,26 @@
 .selectPok:hover{
   background-color: #212121;
 }
+.rcorners1 {
+  border-radius: 25px 0px 0px 25px;
+  background: black;
+  padding: 10px;
+  margin-bottom: 5px;
+  color:white;
+  width:80px;
+  max-width: 80px;
+}
+.rcorners2 {
+  border-radius: 0px 25px 25px 0px;
+  background: white;
+  padding: 10px;
+  margin-bottom: 5px;
+  color: black;
+  width:80px;
+  max-width: 80px;
+}
+.corners {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
