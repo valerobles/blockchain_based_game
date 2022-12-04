@@ -332,7 +332,7 @@ const App = () => {
             <a className="navbar-brand" href="#">Crypto Pokémon</a>
             <span className="navbar-brand">{account}</span>
         </nav>
-        <div className="container-fluid mt-5">
+        <div className="container-fluid mt-5 wrapper">
             <div className="row ">
                 <div className="col d-flex flex-column align-items-center ">
                     <div className="row-6">
@@ -379,7 +379,7 @@ const App = () => {
                             if (pok.owner === account) {
                                 return (
                                     <div className="d-flex flex-column align-items-center p-5" key={my_uuid}
-                                         style={{backgroundColor: mySelectedPok == pok ? 'black' : '#303030'}}
+                                         style={{backgroundColor: mySelectedPok == pok ? 'darkgray' : 'transparent'}}
                                          onClick={() => selectMyFighter(pok)}>
                                         <img height="160"
                                              src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${pok.nameID}.svg`}/>
@@ -407,7 +407,7 @@ const App = () => {
 
                                 return (
                                     <div className="d-flex flex-column align-items-center p-4 " key={index}
-                                         style={{backgroundColor: oponentSelectedPok == pok ? 'black' : '#303030'}}
+                                         style={{backgroundColor: oponentSelectedPok == pok ? 'darkgray' : 'transparent'}}
                                          onClick={() => selectOtherFighter(pok)}>
                                         <img height="150"
                                              src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${pok.nameID}.svg`}/>
