@@ -278,9 +278,9 @@ const App = () => {
                     <img height="80"
                          src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${mySelectedPok.nameID}.svg`}/>
                     <span>{mySelectedPok.name}</span>
+                    <span className="corners"><div className="rcorners1">Type:</div> <div className="rcorners2">{mySelectedPok.type1} </div></span>
+                    <span className="corners"><div className="rcorners1">Type:</div> <div className="rcorners2">{mySelectedPok.type2} </div></span>
                     <span>My nameID/dex# = {mySelectedPok.nameID}</span>
-                    <span>Type 1 : {mySelectedPok.type1}</span>
-                    <span>Type 2 : {mySelectedPok.type2}</span>
 
                 </div>
             )
@@ -294,9 +294,9 @@ const App = () => {
                     <img height="80"
                          src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${oponentSelectedPok.nameID}.svg`}/>
                     <span>{oponentSelectedPok.name}</span>
+                    <span className="corners"><div className="rcorners1">Type:</div> <div className="rcorners2">{oponentSelectedPok.type1} </div></span>
+                    <span className="corners"><div className="rcorners1">Type:</div> <div className="rcorners2">{oponentSelectedPok.type2} </div></span>
                     <span>My nameID/dex# = {oponentSelectedPok.nameID}</span>
-                    <span>Type 1 : {oponentSelectedPok.type1}</span>
-                    <span>Type 2 : {oponentSelectedPok.type2}</span>
 
                 </div>
             )
@@ -384,11 +384,10 @@ const App = () => {
                                         <img height="160"
                                              src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${pok.nameID}.svg`}/>
                                         <span>{pok.name}</span>
+                                        <span className="corners"><div className="rcorners1">Type:</div> <div className="rcorners2">{pok.type1} </div></span>
+                                        <span className="corners"><div className="rcorners1">Type:</div> <div className="rcorners2">{pok.type2} </div></span>
                                         <span>My nameID/dex# = {pok.nameID}</span>
                                         <span>My UUID = {my_uuid}</span>
-                                        <span>Type 1 : {pok.type1}</span>
-                                        <span>Type 2 : {pok.type2}</span>
-
                                     </div>
                                 )
                             }
@@ -413,11 +412,10 @@ const App = () => {
                                         <img height="150"
                                              src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${pok.nameID}.svg`}/>
                                         <span>{pok.name}</span>
+                                        <span className="corners"><div className="rcorners1">Type:</div> <div className="rcorners2">{pok.type1} </div></span>
+                                        <span className="corners"><div className="rcorners1">Type:</div> <div className="rcorners2">{pok.type2} </div></span>
                                         <span>My nameID/dex# = {pok.nameID}</span>
                                         <span>UUID = {index}</span>
-                                        <span>Owner : {shortOwnerText}</span>
-                                        <span>Type 1 : {pok.type1}</span>
-                                        <span>Type 2 : {pok.type2}</span>
                                     </div>
                                 )
                             }
