@@ -27,7 +27,10 @@ const App = () => {
     const [oponentSelectedPok, setOponentSelectedPok] = useState(PokemonObj);
     const names = [];
 
-    const [animationClass, setAnimationClass] = useState('test');
+    const L2_CONTRACT = "0x037ffd04fa12a5ab356e2d4d1436e2ab09cc5255373cca1d4a52feea480bf338";
+    const L1_CONTRACT = "0xD4f8293b2F4Ad43E7b13974bDa74dfeb1676A442";
+    const L1_CONTRACT_ZERO = "0x000000000000000000000000D4f8293b2F4Ad43E7b13974bDa74dfeb1676A442";
+    const StarkNetCore = '0xde29d060D45901Fb19ED6C6e959EB22d8626708e';
 
     const mint = () => {
         if (nameID.length > 0 && nameID > 0) {
@@ -79,7 +82,7 @@ const App = () => {
     // load the contract
     const loadWeb3Contract = async (web3) => {
         const abi = NFT.abi;
-        const contract = new web3.eth.Contract(abi, "0xb2eea57d1a4b0b07c5e4a40dea76a3c0190a7b86"); // TODO get solidity contract address
+        const contract = new web3.eth.Contract(abi, L1_CONTRACT); // TODO get solidity contract address
         setContract(contract);
         return contract;
     }
@@ -126,8 +129,8 @@ const App = () => {
 
         var options_new = {
             fromBlock: 8047300,
-            address: '0xde29d060D45901Fb19ED6C6e959EB22d8626708e', // starknetcore
-            topics: [null, "0x0172cdc219c6a41e22ccdcfbfc91b86b866b9746343d55fa38931072ff205447", "0x000000000000000000000000b2eea57d1a4b0b07c5e4a40dea76a3c0190a7b86", null]
+            address: StarkNetCore, // starknetcore
+            topics: [null, L2_CONTRACT, L1_CONTRACT_ZERO, null]
         };
         _web3.eth.subscribe('logs', options_new, (err, event) => {
             if (!err)
@@ -166,32 +169,39 @@ const App = () => {
 
         console.log(fightID, w)
         if (!fightExists(fightID)) {
-            // let pokemon = await c.methods.pokemons(w).call();
-            // let newPok = (JSON.parse(JSON.stringify(pokemon))); //use json
+             // let pokemon = await c.methods.pokemons(w).call();
+             // let newPok = (JSON.parse(JSON.stringify(pokemon))); //use json
+            //console.log(newPok)
             // let pokemonToOwner = await c.methods.ownerOf(w).call();
             // let name = await getNameByIndex(newPok.name_id);
             // let newPokObj = PokemonObj(newPok.name_id, pokemonToOwner,0,0,name=name);
-            await getPokByUUID(w, c).then(pok => {
-                let fightobj=FightObj(fightID, w, pok)
+            await getPokByUUID(w, c).then(async pok => {
+                let constestantsJ = await c.methods.fightIDToFighters(fightID).call();
+
+                let firstPok = constestantsJ.pok1
+                let secondPok = constestantsJ.pok2
+                let firstPokOwner = await c.methods.ownerOf(firstPok.id).call();
+                let secondPokOwner = await c.methods.ownerOf(secondPok.id).call();
+
+                let firstName =  await getNameByIndex(firstPok.nameID)
+                let secondName = await getNameByIndex(secondPok.nameID)
+
+
+                let firstType2 = firstPok.type2 == 99 ? "None" : typeArray[firstPok.type2]
+                let firstPokObj = PokemonObj(firstPok.name_id, firstPokOwner, typeArray[firstPok.type1], firstType2,firstPok.id,firstName)
+                let secondType2 = secondPok.type2 == 99 ? "None" : typeArray[secondPok.type2]
+                let secondPokObj = PokemonObj(secondPok.name_id, secondPokOwner, typeArray[secondPok.type1], secondType2,secondPok.id, secondName)
+
+                let fightobj = FightObj(fightID, w, pok, firstPokObj, secondPokObj)
+
+                //let fightobj = FightObj(fightID, w, pok)
                 fightList.push(fightobj)
                 setFightList([...fightList, fightobj])
             });
-            // TODO after deploying new contract. This is to show the two contestants
-            // let constestantsJ = await c.methods.fightIDToFighters(fightID).call();
-            // let contestants = (JSON.parse(JSON.stringify(constestantsJ)));
-            // let firstPok = contestant.pok1
-            // let secondPok = contestant.pok2
-            // let firstPokOwner =  await c.methods.ownerOf(firstPok.id).call();
-            // let secondPokOwner =  await c.methods.ownerOf(secondPok.id).call();
-            //
-            // let firstType2 = firstPok.type2 == 99? "None": typeArray[firstPok.type2]
-            // let firstPokObj = PokemonObj(firstPok.name_id, firstPokOwner,typeArray[firstPok.type1],firstType2 )
-            // let secondType2 = secondPok.type2 == 99? "None": typeArray[secondPok.type2]
-            // let secondPokObj = PokemonObj(secondPok.name_id, secondPokOwner,typeArray[secondPok.type1],secondType2 )
-            //
-            // const fightObj = FightObj(fightID,w,newPokObj,firstPokObj,secondPokObj)
+           // TODO after deploying new contract. This is to show the two contestants
 
-            // setFightList([...fightList, FightObj(fightID, w, newPokObj)]);
+
+           // setFightList([...fightList,fightObj]);
 
 
             console.log("set list " + fightList.length);
@@ -240,15 +250,28 @@ const App = () => {
                         let shortOwnerText = fight.winnerPok.owner.substring(0, 10) + "..."
                         return (
                             <div className="slide" key={index}>
-                                <div className="d-flex flex-column align-items-center p-4">
-                                    <img height="150"
-                                         src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${fight.winnerPok.nameID}.svg`}/>
-                                    <span>{fight.winnerPok.name}</span>
-                                    <span>My nameID/dex# = {fight.winnerPok.nameID}</span>
-                                    <span>WINNER = {fight.winnerID}</span>
-                                    <span>FIGHT ID = {fight.fightID}</span>
-                                    <span>Owner : {shortOwnerText}</span>
+                                <div className="d-flex flex-column align-items-center">
+                                    <div className="row-10">
+
+                                        <img height="80"
+                                             src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${fight.firstPok.nameID}.svg`}/>
+                                        <span>{fight.firstPok.name}</span>
+                                        <img height="80"
+                                             src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${fight.secondPok.nameID}.svg`}/>
+                                        <span>{fight.secondPok.name}</span>
+                                    </div>
+                                    <div className="d-flex flex-column align-items-center p-4">
+                                        <img height="150"
+                                             src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${fight.winnerPok.nameID}.svg`}/>
+                                        <span>{fight.winnerPok.name}</span>
+                                        <span>My nameID/dex# = {fight.winnerPok.nameID}</span>
+                                        <span>WINNER = {fight.winnerID}</span>
+                                        <span>FIGHT ID = {fight.fightID}</span>
+                                        <span>Owner : {shortOwnerText}</span>
+                                    </div>
+
                                 </div>
+
 
                             </div>
                         )
@@ -303,10 +326,19 @@ const App = () => {
     }
 
     function fightButton() {
-        if (oponentSelectedPok.nameID !== undefined && mySelectedPok.nameID !== undefined)
+        // if (oponentSelectedPok.nameID !== undefined && mySelectedPok.nameID !== undefined)
+        //     //console.log("my pokemon: ",mySelectedPok.id," other pokemon: " ,oponentSelectedPok.id)
+        //     return (
+        //         <button onClick={() => fight(mySelectedPok.id, oponentSelectedPok.id)} className="btn btn-secondary p-3">
+        //             FIGHT
+        //         </button>
+        //
+        //
+        //     )
+        if (mySelectedPok.nameID !== undefined)
             //console.log("my pokemon: ",mySelectedPok.id," other pokemon: " ,oponentSelectedPok.id)
             return (
-                <button onClick={() => fight(mySelectedPok.id, oponentSelectedPok.id)} className="btn btn-secondary p-3">
+                <button onClick={() => fight(mySelectedPok.id,2)} className="btn btn-secondary p-3">
                     FIGHT
                 </button>
 

@@ -53,7 +53,7 @@ contract NFT is ERC721, ERC721Enumerable {
 
     IStarknetCore starknetCore;
     uint256 nonce = 0;
-    uint256 L2_CONTRACT = 0x31c59f9319f22b2dc9271b18bfe67ec3d5464ff8327705891a931875f89b148; //random fixed, with msg to l1 in pokemon_game_flat
+    uint256 L2_CONTRACT = 0x037ffd04fa12a5ab356e2d4d1436e2ab09cc5255373cca1d4a52feea480bf338; //random fixed, with msg to l1 in pokemon_game_flat
     uint256 constant SELECTOR = 1625440424450498852892950090004073452274266572863945925863133186904237482575; // pokemon_game_flat as a selector encoded
 
 
@@ -292,7 +292,7 @@ contract NFT is ERC721, ERC721Enumerable {
     }
 
     //Every pokemon gets random bonus stats on every stat
-    function createPokemonOther(uint256 id, uint256 strength ,uint256 type1, uint256 type2, uint256 name_id) internal returns (Pokemon memory){
+    function createPokemonOther(uint256 id,uint256 type1, uint256 type2, uint256 name_id, uint256 strength ) internal returns (Pokemon memory){
         uint256 base_stat = 100;
 
         if (strength == 2){
@@ -349,8 +349,8 @@ contract NFT is ERC721, ERC721Enumerable {
     ) external payable {
 
         require(ownerOf(myPok) == msg.sender); // myPok has to be from the sender
-        assert(myPok < totalSupply());
-        assert(enemyPok < totalSupply());
+        require(myPok < totalSupply());
+        require(enemyPok < totalSupply());
 
 
         emit startFightMessage(1);
