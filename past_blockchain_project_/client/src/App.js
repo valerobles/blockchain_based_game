@@ -326,24 +326,24 @@ const App = () => {
     }
 
     function fightButton() {
-        // if (oponentSelectedPok.nameID !== undefined && mySelectedPok.nameID !== undefined)
-        //     //console.log("my pokemon: ",mySelectedPok.id," other pokemon: " ,oponentSelectedPok.id)
-        //     return (
-        //         <button onClick={() => fight(mySelectedPok.id, oponentSelectedPok.id)} className="btn btn-secondary p-3">
-        //             FIGHT
-        //         </button>
-        //
-        //
-        //     )
-        if (mySelectedPok.nameID !== undefined)
+        if (oponentSelectedPok.nameID !== undefined && mySelectedPok.nameID !== undefined)
             //console.log("my pokemon: ",mySelectedPok.id," other pokemon: " ,oponentSelectedPok.id)
             return (
-                <button onClick={() => fight(mySelectedPok.id,2)} className="btn btn-secondary p-3">
+                <button onClick={() => fight(mySelectedPok.id, oponentSelectedPok.id)} className="btn btn-secondary p-3">
                     FIGHT
                 </button>
 
 
             )
+        // if (mySelectedPok.nameID !== undefined)
+        //     //console.log("my pokemon: ",mySelectedPok.id," other pokemon: " ,oponentSelectedPok.id)
+        //     return (
+        //         <button onClick={() => fight(mySelectedPok.id,2)} className="btn btn-secondary p-3">
+        //             FIGHT
+        //         </button>
+        //
+        //
+        //     )
     }
 
 
