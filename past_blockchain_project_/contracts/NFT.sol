@@ -412,7 +412,7 @@ contract NFT is ERC721, ERC721Enumerable {
 
 
 
-    // L2 -> L1. Recieve winner from L2
+    // L2 -> L1. Consume winner from L2
     function get_winner(
         uint256 pokemonWinnerID,
         uint256 fightID

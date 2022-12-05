@@ -15,8 +15,8 @@
 
 .slideshow {
   margin: 0 auto;
-  /*overflow: hidden;*/
   max-width: 80%;
+  height: 30%;
 }
 
 .slideshowSlider {

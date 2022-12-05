@@ -4,6 +4,7 @@ import getWeb3 from "./getWeb3";
 import './dark_theme/css/mdb.dark.min.css'
 import "./App.css";
 import eth from "./eth.png"
+import starknet_logo from "./starknet.png"
 
 
 const App = () => {
@@ -31,6 +32,7 @@ const App = () => {
     const L1_CONTRACT = "0xD4f8293b2F4Ad43E7b13974bDa74dfeb1676A442";
     const L1_CONTRACT_ZERO = "0x000000000000000000000000D4f8293b2F4Ad43E7b13974bDa74dfeb1676A442";
     const StarkNetCore = '0xde29d060D45901Fb19ED6C6e959EB22d8626708e';
+    const StarkNetCore_Zero = '0x000000000000000000000000de29d060D45901Fb19ED6C6e959EB22d8626708e';
 
     const mint = () => {
         if (nameID.length > 0 && nameID > 0) {
@@ -115,10 +117,37 @@ const App = () => {
     }
 
 
-    async function getWinner(contract, fightID) {
-        let winnerPok_ = await contract.methods.fightIDToWinnerPokemon(3).call();
-        // setWinnerPok(winnerPok_)
+    async function getWinner(obj) {
 
+            const price = "0.001"
+            let weiPrice = web3.utils.toWei(price, "ether")
+
+            console.log(obj.winnerPok.id, obj.fightID)
+            await contract.methods.get_winner(obj.winnerPok.id, obj.fightID).send( {from: account, value: weiPrice} ,(error) => {
+                if(error) {
+                    console.log(error);
+                } else {
+                }
+            });
+
+
+
+
+
+    }
+
+    function isOnBlockchainMessage(fightOb){
+        if (fightOb.onBlockchain){
+            return (
+                <p >Is saved forever on Ethereum blockchain</p>
+
+            )
+        } else {
+            return(
+                 <button className="btn btn-black p-2" onClick={() => getWinner(fightOb)}>Save results on blockchain</button>
+                )
+
+        }
     }
 
 
@@ -127,7 +156,7 @@ const App = () => {
         const fromL2toStarkNetCore = {
             fromBlock: 807000,
             address: StarkNetCore, // starknetcore
-            topics: [null, L2_CONTRACT, L1_CONTRACT_ZERO, null]
+            topics: ["0x4264ac208b5fde633ccdd42e0f12c3d6d443a4f3779bbf886925b94665b63a22", L2_CONTRACT, L1_CONTRACT_ZERO, null]
         };
         _web3.eth.subscribe('logs', fromL2toStarkNetCore, (err, event) => {
             if (!err)
@@ -147,19 +176,32 @@ const App = () => {
 
         const consumedOnL1 = {
             fromBlock: 807000,
-            address: L1_CONTRACT, //
-            topics: [null, StarkNetCore, L1_CONTRACT_ZERO, null]
+            address: StarkNetCore, //
+            topics: ["0x7a06c571aa77f34d9706c51e5d8122b5595aebeaa34233bfe866f22befb973b1", L2_CONTRACT, L1_CONTRACT_ZERO, null]
         };
-        _web3.eth.subscribe('logs', fromL2toStarkNetCore, (err, event) => {
+        _web3.eth.subscribe('logs', consumedOnL1, (err, event) => {
             if (!err)
                 console.log(event);
         })
             .on("data", function (log) {
 
+
+
                 let temp = log.data
                 let tempSub = temp.substring(temp.length - 128)
                 let _fightID = parseInt(tempSub.substring(tempSub.length - 64), 16)
-                //fightList.forEach()
+
+                //TODO: Problem when this listener is catched before the list of fighters is filled
+
+                const index = fightList.findIndex(f => {
+                    return f.fightID === _fightID;
+                });
+                console.log(index)
+                console.log(_fightID)
+
+                //fightList[index].onBlockchain = true;
+
+                //console.log(fightList[index])
 
 
             });
@@ -196,8 +238,8 @@ const App = () => {
                 let firstPokOwner = await c.methods.ownerOf(firstPok.id).call();
                 let secondPokOwner = await c.methods.ownerOf(secondPok.id).call();
 
-                let firstName =  await getNameByIndex(firstPok.nameID)
-                let secondName = await getNameByIndex(secondPok.nameID)
+                let firstName =  await getNameByIndex(firstPok.name_id)
+                let secondName = await getNameByIndex(secondPok.name_id)
 
 
                 let firstType2 = firstPok.type2 == 99 ? "None" : typeArray[firstPok.type2]
@@ -231,7 +273,7 @@ const App = () => {
 
 
     function Slideshow() {
-        const delay = 2000;
+        const delay = 4000;
         const [index, setIndex] = useState(0);
         const timeoutRef = useRef(null);
 
@@ -281,7 +323,9 @@ const App = () => {
                                         <span>WINNER = {fight.winnerID}</span>
                                         <span>FIGHT ID = {fight.fightID}</span>
                                         <span>Owner : {shortOwnerText}</span>
+                                        {isOnBlockchainMessage(fight)}
                                     </div>
+
 
                                 </div>
 
@@ -475,7 +519,7 @@ const App = () => {
                     <br/>
 
                     <h1>All the winners</h1>
-                    <p>Fresh out of StarkNet</p>
+                    <p>Fresh out of StarkNet <img src={starknet_logo} height="30px"/></p>
                     {Slideshow()}
 
 
