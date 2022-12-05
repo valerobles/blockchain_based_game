@@ -20,7 +20,7 @@ const App = () => {
     const [account, setAccounts] = useState("");
     const [nameID, setNameID] = useState(0);
     const [pokemonList, setPokemonList] = useState([PokemonObj()]);
-    const [fightList, setFightList] = useState([FightObj()]);
+    const [fightList, setFightList] = useState([]);
     const typeArray = ["Normal", "Fire", "Water", "Grass", "Electric", "Ice", "Fight", "Poison", "Ground", "Flying", "Psychic", "Bug", "Rock", "Ghost", "Dragon", "Dark", "Steel", "Fairy"]
 
     const [mySelectedPok, setMySelectedPok] = useState(PokemonObj);
@@ -194,17 +194,23 @@ const App = () => {
 
                 let fightobj = FightObj(fightID, w, pok, firstPokObj, secondPokObj)
 
-                //let fightobj = FightObj(fightID, w, pok)
+
                 fightList.push(fightobj)
-                setFightList([...fightList, fightobj])
+
+                setFightList(fightList.filter((value, index, self) =>
+                        index === self.findIndex((t) => (
+                            t.fightID === value.fightID
+                        )) || value.fightID !== undefined
+                ))
+
+
+
+
             });
-           // TODO after deploying new contract. This is to show the two contestants
 
 
-           // setFightList([...fightList,fightObj]);
 
 
-            console.log("set list " + fightList.length);
             //return fightObj
         }
 
@@ -212,9 +218,10 @@ const App = () => {
     }
 
 
-    const delay = 2500;
+
 
     function Slideshow() {
+        const delay = 2500;
         const [index, setIndex] = useState(0);
         const timeoutRef = useRef(null);
 
@@ -241,12 +248,8 @@ const App = () => {
 
         return (
             <div className="slideshow">
-                <div className="slideshowSlider" style={{transform: `translate3d(${-index * 100}%, 0, 0)`}}>
-                    {fightList.filter((value, index, self) =>
-                            index === self.findIndex((t) => (
-                                t.fightID === value.fightID
-                            ))
-                    ).slice(1, fightList.length).map((fight, index) => {
+                <div className="slideshowSlider" style={{transform: `translate3d(${-index * 80}%, 0, 0)`}}>
+                    {fightList.map((fight, index) => {
                         let shortOwnerText = fight.winnerPok.owner.substring(0, 10) + "..."
                         return (
                             <div className="slide" key={index}>
