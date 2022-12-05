@@ -369,9 +369,10 @@ const App = () => {
                              src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/25.svg"
                              alt="" height="85"/>
                     </div>
-                    <h1 className="display-5 fw-bold" style={{width: '70%', textAlign: 'center'}}>Create your own
-                        Pokémon NFT and Fight against Friends</h1>
+                    <h2 className="display-7 fw-bold" style={{width: '70%', textAlign: 'center', marginBottom:'150px'}}>Create your own
+                        Pokémon NFT and fight against friends on the Ethereum blockchain using ZK-Rollups on <a href="https://starkware.co/starknet/">StarkNet*</a> </h2>
                     <div className="col-6 text-center mb-3">
+                        <h3>Mint your pokemon</h3>
                         <div>
                             <input
                                 type="text"
@@ -393,6 +394,7 @@ const App = () => {
                     <br/>
                     <br/>
                     <h1>Your collection</h1>
+                    <p>Select a Pokemon to fight</p>
                     <div style={{width: "70%", overflow: "auto", display: "flex"}}>
 
                         {pokemonList.slice(1, pokemonList.length).map((pok, my_uuid) => {
