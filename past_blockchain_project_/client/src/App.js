@@ -1,9 +1,9 @@
 import React, {useEffect, useRef, useState} from "react";
 import NFT from "./contracts/NFT.json";
 import getWeb3 from "./getWeb3";
-// import './styles/css/styles.css';
 import './dark_theme/css/mdb.dark.min.css'
 import "./App.css";
+import eth from "./eth.png"
 
 
 const App = () => {
@@ -11,8 +11,8 @@ const App = () => {
     const PokemonObj = (nameID, owner, type1, type2, id, name) => {
         return {nameID: nameID, owner: owner, type1: type1, type2: type2, id: id, name: name}
     }
-    const FightObj = (fightID, winnerID, winnerPok, firstPok, secondPok) => {
-        return {fightID: fightID, winnerID: winnerID, winnerPok: winnerPok, firstPok: firstPok, secondPok: secondPok}
+    const FightObj = (fightID, winnerID, winnerPok, firstPok, secondPok, onBlockchain) => {
+        return {fightID: fightID, winnerID: winnerID, winnerPok: winnerPok, firstPok: firstPok, secondPok: secondPok, onBlockchain:onBlockchain}
     }
     const [web3, setWeb3] = useState();
 
@@ -124,12 +124,12 @@ const App = () => {
 
     function listener(_web3, c) {
 
-        var options_new = {
-            fromBlock: 8047300,
+        const fromL2toStarkNetCore = {
+            fromBlock: 807000,
             address: StarkNetCore, // starknetcore
             topics: [null, L2_CONTRACT, L1_CONTRACT_ZERO, null]
         };
-        _web3.eth.subscribe('logs', options_new, (err, event) => {
+        _web3.eth.subscribe('logs', fromL2toStarkNetCore, (err, event) => {
             if (!err)
                 console.log(event);
         })
@@ -143,9 +143,30 @@ const App = () => {
                 createFightObj(_fightID, _winnerID, c)
 
 
-            })
-            .on("changed", function (log) {
             });
+
+        const consumedOnL1 = {
+            fromBlock: 807000,
+            address: L1_CONTRACT, //
+            topics: [null, StarkNetCore, L1_CONTRACT_ZERO, null]
+        };
+        _web3.eth.subscribe('logs', fromL2toStarkNetCore, (err, event) => {
+            if (!err)
+                console.log(event);
+        })
+            .on("data", function (log) {
+
+                let temp = log.data
+                let tempSub = temp.substring(temp.length - 128)
+                let _fightID = parseInt(tempSub.substring(tempSub.length - 64), 16)
+                //fightList.forEach()
+
+
+            });
+
+
+
+
 
 
     }
@@ -184,7 +205,7 @@ const App = () => {
                 let secondType2 = secondPok.type2 == 99 ? "None" : typeArray[secondPok.type2]
                 let secondPokObj = PokemonObj(secondPok.name_id, secondPokOwner, typeArray[secondPok.type1], secondType2,secondPok.id, secondName)
 
-                let fightobj = FightObj(fightID, w, pok, firstPokObj, secondPokObj)
+                let fightobj = FightObj(fightID, w, pok, firstPokObj, secondPokObj, false)
 
 
                 fightList.push(fightobj)
@@ -355,7 +376,10 @@ const App = () => {
         <div className="container-fluid mt-5 ">
             <div className="row ">
                 <div className="col d-flex flex-column align-items-center ">
-                    <div className="row-6">
+                    <div className="row-7">
+                        <img className="mb-4" style={{padding: '10px'}}
+                             src={eth}
+                             alt="" height="60"/>
                         <img className="mb-4"
                              src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/1.svg"
                              alt="" height="85"/>
@@ -368,11 +392,14 @@ const App = () => {
                         <img className="mb-4"
                              src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/25.svg"
                              alt="" height="85"/>
+                        <img className="mb-4" style={{padding: '10px'}}
+                             src={eth}
+                             alt="" height="60"/>
                     </div>
                     <h2 className="display-7 fw-bold" style={{width: '70%', textAlign: 'center', marginBottom:'150px'}}>Create your own
                         Pokémon NFT and fight against friends on the Ethereum blockchain using ZK-Rollups on <a href="https://starkware.co/starknet/">StarkNet*</a> </h2>
                     <div className="col-6 text-center mb-3">
-                        <h3>Mint your pokemon</h3>
+                        <h3>Mint your pokemon <img src={eth} height="30"/></h3>
                         <div>
                             <input
                                 type="text"
@@ -448,6 +475,7 @@ const App = () => {
                     <br/>
 
                     <h1>All the winners</h1>
+                    <p>Fresh out of StarkNet</p>
                     {Slideshow()}
 
 
