@@ -37,7 +37,7 @@ const App = () => {
             contract.methods.mint(nameID).send({from: account}, (error) => {
                 if (!error) {
 
-                    let pok = PokemonObj(nameID, account);
+                    let pok = PokemonObj(nameID, account,"Loading", "Loading",-1,"Loading");
                     setPokemonList([...pokemonList, pok]);
 
                 } else {
@@ -95,9 +95,6 @@ const App = () => {
         await loadNFTS(contract);
 
         await listener(web3, contract);
-        // const n = await foo()
-        // console.log( n)
-
     }, [])
 
 
@@ -169,17 +166,12 @@ const App = () => {
 
         console.log(fightID, w)
         if (!fightExists(fightID)) {
-             // let pokemon = await c.methods.pokemons(w).call();
-             // let newPok = (JSON.parse(JSON.stringify(pokemon))); //use json
-            //console.log(newPok)
-            // let pokemonToOwner = await c.methods.ownerOf(w).call();
-            // let name = await getNameByIndex(newPok.name_id);
-            // let newPokObj = PokemonObj(newPok.name_id, pokemonToOwner,0,0,name=name);
-            await getPokByUUID(w, c).then(async pok => {
-                let constestantsJ = await c.methods.fightIDToFighters(fightID).call();
 
-                let firstPok = constestantsJ.pok1
-                let secondPok = constestantsJ.pok2
+            await getPokByUUID(w, c).then(async pok => {
+                let constestants = await c.methods.fightIDToFighters(fightID).call(); // call mapping in solidity contract
+
+                let firstPok = constestants.pok1
+                let secondPok = constestants.pok2
                 let firstPokOwner = await c.methods.ownerOf(firstPok.id).call();
                 let secondPokOwner = await c.methods.ownerOf(secondPok.id).call();
 
@@ -209,9 +201,6 @@ const App = () => {
             });
 
 
-
-
-            //return fightObj
         }
 
 
@@ -221,7 +210,7 @@ const App = () => {
 
 
     function Slideshow() {
-        const delay = 2500;
+        const delay = 2000;
         const [index, setIndex] = useState(0);
         const timeoutRef = useRef(null);
 
@@ -330,23 +319,19 @@ const App = () => {
 
     function fightButton() {
         if (oponentSelectedPok.nameID !== undefined && mySelectedPok.nameID !== undefined)
-            //console.log("my pokemon: ",mySelectedPok.id," other pokemon: " ,oponentSelectedPok.id)
             return (
-                <button onClick={() => fight(mySelectedPok.id, oponentSelectedPok.id)} className="btn btn-secondary p-3">
-                    FIGHT
-                </button>
+                <div className="row align-items-center" style={{width: '50%'}} >
+                    <button onClick={() => fight(mySelectedPok.id, oponentSelectedPok.id)} className="btn btn-secondary p-3" style={{marginBottom: '5px',width:'50%'}}>
+                        FIGHT </button>
+                    <span style={{paddingTop: '10px'}}>The fight will be sent to the StarkNet platform where the fight will be calculated and later return to the Ethereum blockchain.</span>
+                    <span>This usually takes 30 min to 1 hour depending on the traffic on the blockchain</span>
+                    <span>Once the winner results are in, you will see it under "All the winners"</span>
+                </div>
+
 
 
             )
-        // if (mySelectedPok.nameID !== undefined)
-        //     //console.log("my pokemon: ",mySelectedPok.id," other pokemon: " ,oponentSelectedPok.id)
-        //     return (
-        //         <button onClick={() => fight(mySelectedPok.id,2)} className="btn btn-secondary p-3">
-        //             FIGHT
-        //         </button>
-        //
-        //
-        //     )
+
     }
 
 
@@ -362,12 +347,12 @@ const App = () => {
         return name
     }
 
-    return <div>
+    return <div className="wrapper">
         <nav className="navbar navbar-light bg-light px-4">
             <a className="navbar-brand" href="#">Crypto Pokémon</a>
             <span className="navbar-brand">{account}</span>
         </nav>
-        <div className="container-fluid mt-5 wrapper">
+        <div className="container-fluid mt-5 ">
             <div className="row ">
                 <div className="col d-flex flex-column align-items-center ">
                     <div className="row-6">
