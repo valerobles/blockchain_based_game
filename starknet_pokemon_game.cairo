@@ -11,6 +11,7 @@ from starkware.starknet.common.messages import send_message_to_l1
 from starkware.starknet.common.syscalls import get_tx_info
 from starkware.starknet.common.syscalls import get_block_timestamp
 from starkware.cairo.common.hash import hash2
+from starkware.cairo.common.pow import pow
 from starkware.cairo.common.registers import get_label_location
 
 @storage_var
@@ -24,10 +25,10 @@ func attack_counter() -> (felt,) {
 }
 
 @storage_var
-func faster_attacks(id: felt) -> (res: (type: felt, dmg: felt)) {
+func faster_efficiency() -> (felt,) {
 }
 @storage_var
-func slower_attacks(id: felt) -> (res: (type: felt, dmg: felt)) {
+func slower_efficiency() -> (felt,) {
 }
 @event
 func attacks(count: felt) {
@@ -38,7 +39,12 @@ func address_set(address: felt) {
 @event
 func winner_event(winner: felt) {
 }
-
+@event
+func efficiency_faster_event(efficiency: felt) {
+}
+@event
+func efficiency_slower_event(efficiency: felt) {
+}
 // Setter for L1 address
 @external
 func set_l1_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -89,10 +95,18 @@ func winner(fight_id: felt) -> (winner_id: felt) {
 func no_param_fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     winner: felt
 ) {
+    faster_efficiency.write(0);
+    slower_efficiency.write(0);
     attack_counter.write(0);
     let (res) = fight(createBisasam(), createPikachu());
     let (c) = attack_counter.read();
     attacks.emit(c);
+    let (e1) = faster_efficiency.read();
+    let (e2) = slower_efficiency.read();
+
+    efficiency_faster_event.emit(e1);
+
+    efficiency_slower_event.emit(e2);
     return (winner=res);
 }
 @external
@@ -141,6 +155,8 @@ func pokemon_game_flat{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
     fight_id: felt,
 ) {
     alloc_locals;
+    faster_efficiency.write(0);
+    slower_efficiency.write(0);
     attack_counter.write(0);
     fight_steps.emit(step=0);
     local pkmn1: Pokemon = Pokemon(id=id1, hp=hp1, atk=atk1, init=init1, def=def1,
@@ -161,16 +177,24 @@ func pokemon_game_flat{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
     fight_steps.emit(step=2);
     // save winner in map
     winner.write(fight_id, res);
-
+    let (e1) = faster_efficiency.read();
+    let (e2) = slower_efficiency.read();
     let (res) = winner.read(fight_id=fight_id);
     let (message_payload: felt*) = alloc();
     assert message_payload[0] = res;
     assert message_payload[1] = fight_id;
+    assert message_payload[2] = e1;
+    assert message_payload[3] = e2;
     let (l1_contract_address) = l1_address.read();
-    send_message_to_l1(to_address=l1_contract_address, payload_size=2, payload=message_payload);
+    send_message_to_l1(to_address=l1_contract_address, payload_size=4, payload=message_payload);
     fight_steps.emit(step=3);
     let (c) = attack_counter.read();
     attacks.emit(c);
+
+    efficiency_faster_event.emit(e1);
+
+    efficiency_slower_event.emit(e2);
+
     return ();
 }
 @l1_handler
@@ -219,6 +243,8 @@ func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     pkmn1: Pokemon*, pkmn2: Pokemon*
 ) -> (res: felt) {
     alloc_locals;
+    let (n) = attack_counter.read();
+    attack_counter.write(value=n + 1);
     local faster_pkmn: Pokemon*;
     local slower_pkmn: Pokemon*;
     if (is_le(pkmn1.init, pkmn2.init) == 0) {
@@ -253,15 +279,24 @@ func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 
     // calculate new HP
     local pkmn2_hp: felt;
+
     let (z) = getEfficiency(atk_type_fast, slower_pkmn.type1, slower_pkmn.type2, 1);
+    let (eff) = faster_efficiency.read();
+    let (mul) = pow(10, n);
+    local mull = mul;
+    local newEff: felt;
     if (z == 0) {
         local x = slower_pkmn.hp;
-
+        newEff = mull * 5;
         pkmn2_hp = x - 1;
     } else {
+        newEff = z * mull;
         local y = slower_pkmn.hp;
         pkmn2_hp = y - dmg;
     }
+    let addEff = eff + newEff;
+    faster_efficiency.write(addEff);
+
     let newPok_: Pokemon* = updateHP(slower_pkmn, pkmn2_hp);
     local newPok: Pokemon* = newPok_;
 
@@ -276,9 +311,19 @@ func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         local dmgSecondFight = _dmgSecondFight;
 
         local pkmn1_hp = faster_pkmn.hp - dmg;
-        let (n) = attack_counter.read();
 
-        attack_counter.write(value=n + 1);
+        let (z2) = getEfficiency(atk_type_slow, faster_pkmn.type1, faster_pkmn.type2, 1);
+        let (eff2) = slower_efficiency.read();
+        let (mul2) = pow(10, n);
+        local mull2 = mul2;
+        local newEff2: felt;
+        if (z2 == 0) {
+            newEff2 = mull2 * 5;
+        } else {
+            newEff2 = z2 * mull2;
+        }
+        let addEff2 = eff2 + newEff2;
+        slower_efficiency.write(addEff2);
         let newPok_2: Pokemon* = updateHP(faster_pkmn, pkmn1_hp);
         local newPok2: Pokemon* = newPok_2;
 
