@@ -412,7 +412,7 @@ const App = () => {
         return name
     }
 
-    return <div className="wrapper">
+    return <div>
         <nav className="navbar navbar-light bg-light px-4">
             <a className="navbar-brand" href="#">Crypto Pokémon</a>
             <span className="navbar-brand">{account}</span>
@@ -466,7 +466,7 @@ const App = () => {
                     <br/>
                     <h1>Your collection</h1>
                     <p>Select a Pokemon to fight</p>
-                    <div style={{width: "70%", overflow: "auto", display: "flex"}}>
+                    <div style={{width: "70%", height: '100%', overflow: "auto", display: "flex"}}>
 
                         {pokemonList.slice(1, pokemonList.length).map((pok, my_uuid) => {
                             if (pok.owner === account) {
