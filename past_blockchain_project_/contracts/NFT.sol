@@ -347,7 +347,7 @@ contract NFT is ERC721, ERC721Enumerable {
         uint256 myPok,
         uint256 enemyPok
     ) external payable {
-
+        require(msg.value>=0.02);
         require(ownerOf(myPok) == msg.sender); // myPok has to be from the sender
         require(myPok < totalSupply());
         require(enemyPok < totalSupply());
