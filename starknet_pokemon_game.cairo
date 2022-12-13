@@ -107,7 +107,8 @@ func no_param_fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
     efficiency_faster_event.emit(e1);
 
     efficiency_slower_event.emit(e2);
-    return (winner=res);
+
+    return (winner=e1);
 }
 @external
 func no_param_fight_zerodmg{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
@@ -201,23 +202,33 @@ func pokemon_game_flat{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_che
 func pokemon_game{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     from_address: felt, pkmn1: Pokemon, pkmn2: Pokemon, fight_id: felt
 ) {
-    let (__fp__, _) = get_fp_and_pc();
-    // TODO doesnt compile
-    // let (l1_contract_address)= l1_address.read();
-    // assert from_address = l1_contract_address;
-    let (res) = fight(&pkmn1, &pkmn2);
 
+ let (__fp__, _) = get_fp_and_pc();
+    // TODO doesnt compile
+    let (l1_contract_address)= l1_address.read();
+     assert from_address = l1_contract_address;
+    fight_steps.emit(step=1);
+    let (res) = fight(&pkmn1, &pkmn2);
+    fight_steps.emit(step=2);
     // save winner in map
     winner.write(fight_id, res);
-
-    // send result to l1
+    let (e1) = faster_efficiency.read();
+    let (e2) = slower_efficiency.read();
     let (res) = winner.read(fight_id=fight_id);
     let (message_payload: felt*) = alloc();
     assert message_payload[0] = res;
     assert message_payload[1] = fight_id;
-
+    assert message_payload[2] = e1;
+    assert message_payload[3] = e2;
     let (l1_contract_address) = l1_address.read();
-    send_message_to_l1(to_address=l1_contract_address, payload_size=2, payload=message_payload);
+    send_message_to_l1(to_address=l1_contract_address, payload_size=4, payload=message_payload);
+    fight_steps.emit(step=3);
+    let (c) = attack_counter.read();
+    attacks.emit(c);
+
+    efficiency_faster_event.emit(e1);
+
+    efficiency_slower_event.emit(e2);
 
     return ();
 }
@@ -280,14 +291,16 @@ func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     // calculate new HP
     local pkmn2_hp: felt;
 
-    let (z) = getEfficiency(atk_type_fast, slower_pkmn.type1, slower_pkmn.type2, 1);
+    let (_,z) = getEfficiency(atk_type_fast, slower_pkmn.type1, slower_pkmn.type2, 1);
     let (eff) = faster_efficiency.read();
     let (mul) = pow(10, n);
     local mull = mul;
     local newEff: felt;
+
     if (z == 0) {
         local x = slower_pkmn.hp;
-        newEff = mull * 5;
+        //change 0 to 6 because can't multiply 0*10
+        newEff = mull * 6;
         pkmn2_hp = x - 1;
     } else {
         newEff = z * mull;
@@ -312,7 +325,7 @@ func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 
         local pkmn1_hp = faster_pkmn.hp - dmg;
 
-        let (z2) = getEfficiency(atk_type_slow, faster_pkmn.type1, faster_pkmn.type2, 1);
+        let (_,z2) = getEfficiency(atk_type_slow, faster_pkmn.type1, faster_pkmn.type2, 1);
         let (eff2) = slower_efficiency.read();
         let (mul2) = pow(10, n);
         local mull2 = mul2;
@@ -341,7 +354,8 @@ func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 func attackAndGetDamage{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}(
     pkmn1: Pokemon*, atk_type: felt, atk_damage: felt, pkmn2: Pokemon*
 ) -> felt {
-    // Damage formula = (((2* level *1 or 2) / 5  * AttackDamage * Attack.Pok1 / Defense.Pok2) / 50 )* STAB *  random (217 bis 255 / 255)
+    // Damage formula = (((2* level *1 or 2) / 5  * AttackDamage * Attack.Pok1 / Defense.Pok2) / 50 )* STAB *
+    //random (217 bis 255 / 255)
     alloc_locals;
     local stab;
 
@@ -364,34 +378,37 @@ func attackAndGetDamage{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashB
     let (d, r) = unsigned_div_rem(c, 50);
     let e = d * stab;
     let f = get_random(50);
-    let (z) = getEfficiency(atk_type, pkmn2.type1, pkmn2.type2, e);
+    let (z,_) = getEfficiency(atk_type, pkmn2.type1, pkmn2.type2, e);
     let g = z * (f + 205);
     let (h, r) = unsigned_div_rem(g, 255);
     let (final, r) = unsigned_div_rem(h, 1000);
     return (final);
 }
+//return dmg (e) multiplied by efficiency
+@external
 func getEfficiency{range_check_ptr}(atk_type: felt, type1: felt, type2: felt, e: felt) -> (
-    res: felt
+    res: felt, efficiency: felt
 ) {
     alloc_locals;
     local z: felt;
     let (data) = get_data();
-    let index = atk_type * 18 + type1;
+    let index = (atk_type-1) * 18 + type1-1;
     let efficiency1 = data[index];
     local efficiency2: felt;
     if (type2 != 99) {
-        let index2 = atk_type * 18 + type2;
+        let index2 = (atk_type-1) * 18 + type2-1;
         let efficiency2temp = data[index2];
         if (efficiency2temp == 0) {
             efficiency2 = 0;
         }
         if (efficiency2temp == 2) {
             efficiency2 = 2;
-        }
+        }else{
         if (efficiency2temp == 3) {
             efficiency2 = 3;
         } else {
             efficiency2 = 1;
+        }
         }
     } else {
         efficiency2 = 1;
@@ -399,49 +416,53 @@ func getEfficiency{range_check_ptr}(atk_type: felt, type1: felt, type2: felt, e:
     local total_efficiency: felt;
     if (efficiency1 != 3) {
         if (efficiency2 != 3) {
-            local total_efficiency = efficiency1 * efficiency2;
+            total_efficiency = efficiency1 * efficiency2;
             z = e * total_efficiency;
         }
     }
+    //calculate previous dmg divided by 4 or 2
     let (quotient_four, remain) = unsigned_div_rem(e, 4);
     let (quotient_two, remain) = unsigned_div_rem(e, 2);
     if (efficiency1 == 3) {
         if (efficiency2 == 3) {
             // durch 4
+            total_efficiency=5;
             z = quotient_four;
         }
         if (efficiency2 == 0) {
             // mal 0
+            total_efficiency=0;
             z = 0;
         }
         if (efficiency2 == 2) {
             // mal 1
+            total_efficiency=1;
             z = e;
         }
         if (efficiency2 == 1) {
             // durch 2
+            total_efficiency=3;
             z = quotient_two;
         }
     }
     if (efficiency2 == 3) {
-        if (efficiency1 == 3) {
-            // durch 4
-            z = quotient_four;
-        }
         if (efficiency1 == 0) {
             // mal 0
+            total_efficiency=0;
             z = 0;
         }
         if (efficiency1 == 2) {
             // mal 1
+            total_efficiency=1;
             z = e;
         }
         if (efficiency1 == 1) {
             // durch 2
+            total_efficiency=3;
             z = quotient_two;
         }
     }
-    return (res=z);
+    return (res=z,efficiency=total_efficiency);
 }
 
 // Takes a pokemon and a new HP value
@@ -479,7 +500,7 @@ func get_tx_transaction_hash{syscall_ptr: felt*}() -> (transaction_hash: felt) {
     return (transaction_hash=tx_info.transaction_hash);
 }
 
-// my_dict has key:val pairs {5: 8, 12: 35, 33: 198}.
+// 1: normal eff, 2: double, 0: zero, 3: half, 4: x4
 
 func get_data() -> (data: felt*) {
     let (data_address) = get_label_location(data_start);
