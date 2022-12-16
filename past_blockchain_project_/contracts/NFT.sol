@@ -53,7 +53,7 @@ contract NFT is ERC721, ERC721Enumerable {
 
     IStarknetCore starknetCore;
     uint256 nonce = 0;
-    uint256 L2_CONTRACT = 0x052196409d8edbeb0e7b3a27fe529115aa12af80dbc468a3e6a112a265b11eb1; //random fixed, with msg to l1 in pokemon_game_flat
+    uint256 L2_CONTRACT = 0x052196409d8edbeb0e7b3a27fe529115aa12af80dbc468a3e6a112a265b11eb1; //fixed efficiency,
     uint256 constant SELECTORF = 1625440424450498852892950090004073452274266572863945925863133186904237482575; // pokemon_game_flat as a selector encoded
     uint256 constant SELECTOR = 1287792748861478314957917789548421785918690629705705918786662048852425233154; //pokemon_game selector
 
@@ -348,7 +348,7 @@ contract NFT is ERC721, ERC721Enumerable {
         uint256 myPok,
         uint256 enemyPok
     ) external payable {
-        require(msg.value>=0.02);
+        require(msg.value>=0.002 ether);
         require(ownerOf(myPok) == msg.sender); // myPok has to be from the sender
         require(myPok < totalSupply());
         require(enemyPok < totalSupply());
@@ -406,7 +406,67 @@ contract NFT is ERC721, ERC721Enumerable {
         emit startFight(msg.sender, pok1.id, pok2.id, L2_CONTRACT, msg.value);
     }
 
+    function sendPokemonsToL2Flat(
+        uint256 myPok,
+        uint256 enemyPok
+    ) external payable {
+        require(msg.value>=0.002 ether);
+        require(ownerOf(myPok) == msg.sender); // myPok has to be from the sender
+        require(myPok < totalSupply());
+        require(enemyPok < totalSupply());
 
+
+        emit startFightMessage(1);
+
+        Pokemon memory pok1 = pokemons[myPok];
+        Pokemon memory pok2 = pokemons[enemyPok];
+        uint256 fight_ID = createFightID();
+
+        emit startFightMessage(2);
+
+        // Construct the message's payload.
+        uint256[] memory payload = new uint256[](25);
+        payload[0] = pok1.id;
+        payload[1] = pok1.hp;
+        payload[2] = pok1.atk;
+        payload[3] = pok1.init;
+        payload[4] = pok1.def;
+        payload[5] = pok1.type1;
+        payload[6] = pok1.type2;
+        payload[7] = pok1.atk1_type;
+        payload[8] = pok1.atk1_damage;
+        payload[9] = pok1.atk2_type;
+        payload[10] = pok1.atk2_damage;
+        payload[11] = pok1.name_id;
+
+        payload[12] = pok2.id;
+        payload[13] = pok2.hp;
+        payload[14] = pok2.atk;
+        payload[15] = pok2.init;
+        payload[16] = pok2.def;
+        payload[17] = pok2.type1;
+        payload[18] = pok2.type2;
+        payload[19] = pok2.atk1_type;
+        payload[20] = pok2.atk1_damage;
+        payload[21] = pok2.atk2_type;
+        payload[22] = pok2.atk2_damage;
+        payload[23] = pok2.name_id;
+
+        payload[24] = fight_ID;
+
+        emit startFightMessage(3);
+
+        // Send the message to the StarkNet core contract, passing any value that was
+        // passed to us as message fee.
+        starknetCore.sendMessageToL2{value : msg.value}(
+            L2_CONTRACT,
+            SELECTORF,
+            payload
+        );
+
+        fightIDToFighters[fight_ID] = Fight(pok1,pok2);
+        emit startFight(msg.sender, pok1.id, pok2.id, L2_CONTRACT, msg.value);
+    }
     function createFightID() private returns (uint256) {
         return fightIDCounter++;
     }
