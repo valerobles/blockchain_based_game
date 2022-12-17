@@ -486,8 +486,9 @@ contract NFT is ERC721, ERC721Enumerable {
     ) external {
 
         emit gettingWinnerEntered(11111);
-
-        uint256[] memory payload = new uint256[](2);
+        //TODO this method change is not yet in the current L1 contract 0x0D6C36F5a0518B282E6171aE7Ee39838F413e855, but it is in 0x54f0f5C15f12DD72F2C78000D43Ea56C70a08b94
+        //however, write l1 adress on l2 didnt work, so currently still using 0x0D6C36F5a0518B282E6171aE7Ee39838F413e855 with broken get_winner
+        uint256[] memory payload = new uint256[](4);
         payload[0] = pokemonWinnerID;
         payload[1] = fightID;
         payload[2] = effFast;
