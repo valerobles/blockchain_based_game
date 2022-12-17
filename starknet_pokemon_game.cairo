@@ -109,7 +109,7 @@ func createPikachuZero() -> Pokemon* {
     return (new Pokemon(id=5, hp=142, atk=117, init=156, def=101, type1=0, type2=99, atk1_type=13, atk1_damage=40, atk2_type=13, atk2_damage=40, name_id=25));
 }
 
-// fight without params
+// fight without params, returns history of winner
 @external
 func no_param_fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     winner: felt
