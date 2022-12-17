@@ -14,6 +14,9 @@ from starkware.cairo.common.hash import hash2
 from starkware.cairo.common.pow import pow
 from starkware.cairo.common.registers import get_label_location
 
+//------------------------------------------------------------------------------------------------------------------------
+//Storage vars
+
 @storage_var
 func l1_address() -> (felt,) {
 }
@@ -23,13 +26,20 @@ func nonce() -> (felt,) {
 @storage_var
 func attack_counter() -> (felt,) {
 }
-
 @storage_var
 func faster_efficiency() -> (felt,) {
 }
 @storage_var
 func slower_efficiency() -> (felt,) {
 }
+// Mapping to save the id of the winning pokemon for each fight_id
+@storage_var
+func winner(fight_id: felt) -> (winner_id: felt) {
+}
+
+//------------------------------------------------------------------------------------------------------------------------
+//events
+
 @event
 func attacks(count: felt) {
 }
@@ -45,6 +55,13 @@ func efficiency_faster_event(efficiency: felt) {
 @event
 func efficiency_slower_event(efficiency: felt) {
 }
+@event
+func fight_steps(step: felt) {
+}
+@event
+func get_winner_called(winner: felt) {
+}
+//------------------------------------------------------------------------------------------------------------------------
 // Setter for L1 address
 @external
 func set_l1_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
@@ -54,6 +71,10 @@ func set_l1_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
     address_set.emit(address=address);
     return ();
 }
+
+//------------------------------------------------------------------------------------------------------------------------
+//Struct
+
 struct Pokemon {
     id: felt,
     hp: felt,
@@ -70,6 +91,9 @@ struct Pokemon {
     // atk3: Attack*,
     // atk4: Attack*,
 }
+
+//------------------------------------------------------------------------------------------------------------------------
+//Functions for testing
 // create a pokemon for testing purposes
 func createBisasam() -> Pokemon* {
     return (new Pokemon(id=2, hp=152, atk=111, init=106, def=111, type1=1, type2=2, atk1_type=1, atk1_damage=40, atk2_type=1, atk2_damage=40, name_id=1));
@@ -86,11 +110,8 @@ func createBisasamZero() -> Pokemon* {
 func createPikachuZero() -> Pokemon* {
     return (new Pokemon(id=5, hp=142, atk=117, init=156, def=101, type1=0, type2=99, atk1_type=13, atk1_damage=40, atk2_type=13, atk2_damage=40, name_id=25));
 }
-// Mapping to save the id of the winning pokemon for each fight_id
-@storage_var
-func winner(fight_id: felt) -> (winner_id: felt) {
-}
-// for testing purposes
+
+// fight without params
 @external
 func no_param_fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     winner: felt
@@ -110,6 +131,7 @@ func no_param_fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
 
     return (winner=e1);
 }
+//fight with pokemon not dealing dmg to eachother
 @external
 func no_param_fight_zerodmg{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     winner: felt
@@ -120,84 +142,12 @@ func no_param_fight_zerodmg{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, rang
     attacks.emit(c);
     return (winner=res);
 }
-@event
-func fight_steps(step: felt) {
-}
+
+//------------------------------------------------------------------------------------------------------------------------
+//Functions to interact with l1
 
 // Takes the L1 address, the attributes for two pokemon, and a fight_id
 // Saves the fight_id and winner as a mapping in func winner, sends the winner to L1 contract_address
-@l1_handler
-func pokemon_game_flat{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    from_address: felt,
-    id1: felt,
-    hp1: felt,
-    atk1: felt,
-    init1: felt,
-    def1: felt,
-    type11: felt,
-    type21: felt,
-    atk1_type1: felt,
-    atk1_damage1: felt,
-    atk2_type1: felt,
-    atk2_damage1: felt,
-    name_id1: felt,
-    id2: felt,
-    hp2: felt,
-    atk2: felt,
-    init2: felt,
-    def2: felt,
-    type12: felt,
-    type22: felt,
-    atk1_type2: felt,
-    atk1_damage2: felt,
-    atk2_type2: felt,
-    atk2_damage2: felt,
-    name_id2: felt,
-    fight_id: felt,
-) {
-    alloc_locals;
-    faster_efficiency.write(0);
-    slower_efficiency.write(0);
-    attack_counter.write(0);
-    fight_steps.emit(step=0);
-    local pkmn1: Pokemon = Pokemon(id=id1, hp=hp1, atk=atk1, init=init1, def=def1,
-        type1=type11, type2=type21, atk1_type=atk1_type1,
-        atk1_damage=atk1_damage1, atk2_type=atk2_type1,
-        atk2_damage=atk2_damage1, name_id=name_id1);
-
-    local pkmn2: Pokemon = Pokemon(id=id2, hp=hp2, atk=atk2, init=init2, def=def2,
-        type1=type12, type2=type22, atk1_type=atk1_type2,
-        atk1_damage=atk1_damage2, atk2_type=atk2_type2,
-        atk2_damage=atk2_damage2, name_id=name_id2);
-    let (__fp__, _) = get_fp_and_pc();
-    // TODO doesnt compile
-    // let (l1_contract_address)= l1_address.read();
-    // assert from_address = l1_contract_address;
-    fight_steps.emit(step=1);
-    let (res) = fight(&pkmn1, &pkmn2);
-    fight_steps.emit(step=2);
-    // save winner in map
-    winner.write(fight_id, res);
-    let (e1) = faster_efficiency.read();
-    let (e2) = slower_efficiency.read();
-    let (res) = winner.read(fight_id=fight_id);
-    let (message_payload: felt*) = alloc();
-    assert message_payload[0] = res;
-    assert message_payload[1] = fight_id;
-    assert message_payload[2] = e1;
-    assert message_payload[3] = e2;
-    let (l1_contract_address) = l1_address.read();
-    send_message_to_l1(to_address=l1_contract_address, payload_size=4, payload=message_payload);
-    fight_steps.emit(step=3);
-    let (c) = attack_counter.read();
-    attacks.emit(c);
-
-    efficiency_faster_event.emit(e1);
-
-    efficiency_slower_event.emit(e2);
-
-    return ();
-}
 @l1_handler
 func pokemon_game{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     from_address: felt, pkmn1: Pokemon, pkmn2: Pokemon, fight_id: felt
@@ -232,9 +182,7 @@ func pokemon_game{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
 
     return ();
 }
-@event
-func get_winner_called(winner: felt) {
-}
+
 
 // Takes a fight_id
 // Returns the winner of that fight
@@ -247,6 +195,9 @@ func get_winner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}
     return (winner=res);
 }
 
+//------------------------------------------------------------------------------------------------------------------------
+//Internal functions for fighting
+
 // Takes two pokemon to fight
 // Pokemon take turns to deal damage to eachother, until one of them has 0 HP
 // Returns the ID of the winning pokemon
@@ -254,8 +205,11 @@ func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     pkmn1: Pokemon*, pkmn2: Pokemon*
 ) -> (res: felt) {
     alloc_locals;
+    //Count attacks for testing
     let (n) = attack_counter.read();
     attack_counter.write(value=n + 1);
+
+    //Check who is faster
     local faster_pkmn: Pokemon*;
     local slower_pkmn: Pokemon*;
     if (is_le(pkmn1.init, pkmn2.init) == 0) {
@@ -266,80 +220,95 @@ func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         slower_pkmn = pkmn1;
     }
 
-    // pkmn1 is faster
-    let coinflip = get_random(2);
+    //Coinflip for which attack to use for the faster pkmn
+    let coinflip1 = get_random(2);
     local atk_damage_fast: felt;
     local atk_type_fast: felt;
-    local atk_damage_slow: felt;
-    local atk_type_slow: felt;
-    if (coinflip == 1) {
+    if (coinflip1 == 1) {
         atk_damage_fast = faster_pkmn.atk1_damage;
         atk_type_fast = faster_pkmn.atk1_type;
-        atk_damage_slow = slower_pkmn.atk1_damage;
-        atk_type_slow = slower_pkmn.atk1_type;
     } else {
         atk_damage_fast = faster_pkmn.atk2_damage;
         atk_type_fast = faster_pkmn.atk2_type;
-        atk_damage_slow = slower_pkmn.atk1_damage;
-        atk_type_slow = slower_pkmn.atk1_type;
     }
+      //Coinflip for which attack to use for the slower pkmn
+      let coinflip2 = get_random(2);
+        local atk_damage_slow: felt;
+        local atk_type_slow: felt;
+        if (coinflip2 == 1) {
+            atk_damage_slow = slower_pkmn.atk1_damage;
+            atk_type_slow = slower_pkmn.atk1_type;
+        } else {
+            atk_damage_slow = slower_pkmn.atk1_damage;
+            atk_type_slow = slower_pkmn.atk1_type;
+        }
 
+    //Calculate dmg of faster pkmn attacking slower pkmn
     let _dmgx = attackAndGetDamage(faster_pkmn, atk_type_fast, atk_damage_fast, slower_pkmn);
-
     local dmg = _dmgx;
 
     // calculate new HP
     local pkmn2_hp: felt;
 
+    //Get efficiency without previous dmg to save to fight history
     let (_,z) = getEfficiency(atk_type_fast, slower_pkmn.type1, slower_pkmn.type2, 1);
     let (eff) = faster_efficiency.read();
     let (mul) = pow(10, n);
     local mull = mul;
     local newEff: felt;
-
+    local currentHPSlower = slower_pkmn.hp;
     if (z == 0) {
-        local x = slower_pkmn.hp;
+
         //change 0 to 6 because can't multiply 0*10
         newEff = mull * 6;
-        pkmn2_hp = x - 1;
+        //-1 to prevent endless fights if dmg is 0
+        pkmn2_hp = currentHPSlower - 1;
     } else {
         newEff = z * mull;
-        local y = slower_pkmn.hp;
-        pkmn2_hp = y - dmg;
+        pkmn2_hp = currentHPSlower - dmg;
     }
     let addEff = eff + newEff;
     faster_efficiency.write(addEff);
 
+    //Set new health points
     let newPok_: Pokemon* = updateHP(slower_pkmn, pkmn2_hp);
     local newPok: Pokemon* = newPok_;
 
-    // if new HP value less 0 -> dead
-
+    // if new HP value less 0 -> fight over
     if (is_le(newPok.hp, 0) == 1) {
         return (res=faster_pkmn.id);
     } else {
+
+        //Slower pkmn gets to attack
         let _dmgSecondFight = attackAndGetDamage(
             slower_pkmn, atk_type_slow, atk_damage_slow, faster_pkmn
         );
         local dmgSecondFight = _dmgSecondFight;
-
-        local pkmn1_hp = faster_pkmn.hp - dmg;
+        local pkmn1_hp :felt;
 
         let (_,z2) = getEfficiency(atk_type_slow, faster_pkmn.type1, faster_pkmn.type2, 1);
         let (eff2) = slower_efficiency.read();
         let (mul2) = pow(10, n);
         local mull2 = mul2;
         local newEff2: felt;
+         local currentHPFaster = faster_pkmn.hp;
         if (z2 == 0) {
-            newEff2 = mull2 * 5;
+            newEff2 = mull2 * 6;
+            //-1 to prevent endless fights if dmg is 0
+                    pkmn1_hp = currentHPFaster - 1;
         } else {
             newEff2 = z2 * mull2;
+             local y = faster_pkmn.hp;
+                    pkmn1_hp = currentHPFaster - dmg;
         }
         let addEff2 = eff2 + newEff2;
         slower_efficiency.write(addEff2);
+
+        //update hp of faster pkmn
         let newPok_2: Pokemon* = updateHP(faster_pkmn, pkmn1_hp);
         local newPok2: Pokemon* = newPok_2;
 
+        //if faster is dead end, else start new fight round
         if (is_le(newPok2.hp, 0) == 1) {
             return (res=slower_pkmn.id);
         } else {
@@ -354,11 +323,12 @@ func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
 func attackAndGetDamage{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}(
     pkmn1: Pokemon*, atk_type: felt, atk_damage: felt, pkmn2: Pokemon*
 ) -> felt {
+ alloc_locals;
     // Damage formula = (((2* level *1 or 2) / 5  * AttackDamage * Attack.Pok1 / Defense.Pok2) / 50 )* STAB *
     //random (217 bis 255 / 255)
-    alloc_locals;
-    local stab;
 
+    //Apply above formula
+    local stab;
     if (atk_type == pkmn1.type1) {
         stab = 2;
     } else {
@@ -368,7 +338,7 @@ func attackAndGetDamage{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashB
             stab = 1;
         }
     }
-
+    //increase level by 1000 to prevent rounding issues
     let level = 50000;
     let rand1 = get_random(2);
     let a = 2 * level * rand1;
@@ -381,10 +351,12 @@ func attackAndGetDamage{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashB
     let (z,_) = getEfficiency(atk_type, pkmn2.type1, pkmn2.type2, e);
     let g = z * (f + 205);
     let (h, r) = unsigned_div_rem(g, 255);
+
+    //divide by 1000 again to get correct number
     let (final, r) = unsigned_div_rem(h, 1000);
     return (final);
 }
-//return dmg (e) multiplied by efficiency
+//return dmg (e) multiplied by efficiency, external for testing
 @external
 func getEfficiency{range_check_ptr}(atk_type: felt, type1: felt, type2: felt, e: felt) -> (
     res: felt, efficiency: felt
@@ -425,39 +397,39 @@ func getEfficiency{range_check_ptr}(atk_type: felt, type1: felt, type2: felt, e:
     let (quotient_two, remain) = unsigned_div_rem(e, 2);
     if (efficiency1 == 3) {
         if (efficiency2 == 3) {
-            // durch 4
+            // divided by 4
             total_efficiency=5;
             z = quotient_four;
         }
         if (efficiency2 == 0) {
-            // mal 0
+            // times 0
             total_efficiency=0;
             z = 0;
         }
         if (efficiency2 == 2) {
-            // mal 1
+            // times 1
             total_efficiency=1;
             z = e;
         }
         if (efficiency2 == 1) {
-            // durch 2
+            // divided by 2
             total_efficiency=3;
             z = quotient_two;
         }
     }
     if (efficiency2 == 3) {
         if (efficiency1 == 0) {
-            // mal 0
+            // times 0
             total_efficiency=0;
             z = 0;
         }
         if (efficiency1 == 2) {
-            // mal 1
+            // times 1
             total_efficiency=1;
             z = e;
         }
         if (efficiency1 == 1) {
-            // durch 2
+            // divided by  2
             total_efficiency=3;
             z = quotient_two;
         }
@@ -499,9 +471,8 @@ func get_tx_transaction_hash{syscall_ptr: felt*}() -> (transaction_hash: felt) {
 
     return (transaction_hash=tx_info.transaction_hash);
 }
-
+//Table for efficiency, line 1: normal attacks vs all others, line 2: fire attacks vs all others etc.
 // 1: normal eff, 2: double, 0: zero, 3: half, 4: x4
-
 func get_data() -> (data: felt*) {
     let (data_address) = get_label_location(data_start);
     return (data=cast(data_address, felt*));
