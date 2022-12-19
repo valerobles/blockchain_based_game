@@ -7,8 +7,12 @@ import eth from "./eth.png"
 import starknet_logo from "./starknet.png"
 
 
+
+
+
 const App = () => {
 
+    // TODO: Add fight rounds won -> methods.pokemonIDToFightsWon(winnerID).call()
     const PokemonObj = (nameID, owner, type1, type2, id, name) => {
         return {nameID: nameID, owner: owner, type1: type1, type2: type2, id: id, name: name}
     }
@@ -29,8 +33,8 @@ const App = () => {
     const names = [];
 
     const L2_CONTRACT =       "0x052196409d8edbeb0e7b3a27fe529115aa12af80dbc468a3e6a112a265b11eb1";
-    const L1_CONTRACT      =  "0x0D6C36F5a0518B282E6171aE7Ee39838F413e855";
-    const L1_CONTRACT_ZERO =  "0x0000000000000000000000000D6C36F5a0518B282E6171aE7Ee39838F413e855";
+    const L1_CONTRACT      =  "0xaB5eb5D77365f45c1675ed4450DF30105290a166";
+    const L1_CONTRACT_ZERO =  "0x000000000000000000000000aB5eb5D77365f45c1675ed4450DF30105290a166";
     const StarkNetCore =      '0xde29d060D45901Fb19ED6C6e959EB22d8626708e';
     const StarkNetCore_Zero = '0x000000000000000000000000de29d060D45901Fb19ED6C6e959EB22d8626708e';
 
@@ -97,7 +101,7 @@ const App = () => {
         await loadNFTS(contract);
 
         await listener_fights(web3, contract);
-        await listener_consumed(web3);
+        //await listener_consumed(web3);
     }, [])
 
 
@@ -107,7 +111,7 @@ const App = () => {
             let weiPrice = web3.utils.toWei(price, "ether")
 
 
-            contract.methods.sendPokemonsToL2(my_uuid, enemy_uuid).send({from: account, value: weiPrice}, (error) => {
+            contract.methods.sendPokemonsToL2Struct(my_uuid, enemy_uuid).send({from: account, value: weiPrice}, (error) => {
                 if (error) {
                     console.log(error);
                 }
@@ -118,16 +122,15 @@ const App = () => {
     }
 
 
+
     async function getWinner(obj) {
 
-        const price = "0.001"
-        let weiPrice = web3.utils.toWei(price, "ether")
-
         console.log(obj.winnerPok.id, obj.fightID)
-        await contract.methods.get_winner(obj.winnerPok.id, obj.fightID).send( {from: account, value: weiPrice} ,(error) => {
+        await contract.methods.get_winner(obj.winnerPok.id, obj.fightID).send( {from: account} ,(error) => {
             if(error) {
                 console.log(error);
             } else {
+                obj.onBlockchain=true
             }
         });
 
@@ -150,6 +153,7 @@ const App = () => {
 
         }
     }
+
 
 
     function listener_fights(_web3, c) {
@@ -243,49 +247,27 @@ const App = () => {
         if (!fightExists(fightID)) {
 
             await getPokByUUID(w, c).then(async pok => {
+                let constestants = await c.methods.fightIDToFighters(fightID).call(); // call mapping in solidity contract
 
-                let eff_fast_list = []
-
-                for (let i = 0; i < eff_fast.length; i++) {
-                    eff_fast_list.push(eff_fast.charAt(i))
-
-                }
-
-                let eff_slow_list = []
-
-                for (let i = 0; i < eff_slow.length; i++) {
-                    eff_slow_list.push(eff_slow.charAt(i))
-
-                }
-
-                let contestants = await c.methods.fightIDToFighters(fightID).call(); // call mapping in solidity contract
-
-                let firstPok = contestants.pok1
-                let secondPok = contestants.pok2
+                let firstPok = constestants.pok1
+                let secondPok = constestants.pok2
                 let firstPokOwner = await c.methods.ownerOf(firstPok.id).call();
                 let secondPokOwner = await c.methods.ownerOf(secondPok.id).call();
 
-                let firstName =  await getNameByIndex(firstPok.name_id)
+                let firstName = await getNameByIndex(firstPok.name_id)
                 let secondName = await getNameByIndex(secondPok.name_id)
 
+
                 let firstType2 = firstPok.type2 == 99 ? "None" : typeArray[firstPok.type2]
+                let firstPokObj = PokemonObj(firstPok.name_id, firstPokOwner, typeArray[firstPok.type1], firstType2, firstPok.id, firstName)
                 let secondType2 = secondPok.type2 == 99 ? "None" : typeArray[secondPok.type2]
+                let secondPokObj = PokemonObj(secondPok.name_id, secondPokOwner, typeArray[secondPok.type1], secondType2, secondPok.id, secondName)
 
-                let pok1_eff;
-                let pok2_eff;
-                if(firstPok.init > secondPok.init){
-                    pok1_eff = eff_fast_list
-                    pok2_eff = eff_slow_list
-                } else {
-                    pok1_eff = eff_slow_list
-                    pok2_eff = eff_fast_list
-                }
+                let fightobj = FightObj(fightID, w, pok, firstPokObj, secondPokObj, false)
 
-                let firstPokObj = PokemonObj(firstPok.name_id, firstPokOwner, typeArray[firstPok.type1], firstType2,firstPok.id,firstName)
-                let secondPokObj = PokemonObj(secondPok.name_id, secondPokOwner, typeArray[secondPok.type1], secondType2,secondPok.id, secondName)
+                let winnerExists = await c.methods.fightIDToWinnerPokemon(fightID).call();
 
-                let fightobj = FightObj(fightID, w, pok, firstPokObj, secondPokObj, false,pok1_eff,pok2_eff)
-
+                fightobj.onBlockchain = winnerExists.name_id !== '0';
 
                 fightList.push(fightobj)
 
@@ -296,20 +278,16 @@ const App = () => {
                 ))
 
 
-
-
             });
 
 
         }
 
-
     }
 
 
 
-
-    function Slideshow() {
+        function Slideshow() {
         const delay = 4000;
         const [index, setIndex] = useState(0);
         const timeoutRef = useRef(null);
