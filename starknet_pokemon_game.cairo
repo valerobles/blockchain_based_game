@@ -92,6 +92,7 @@ struct Pokemon {
 
 //------------------------------------------------------------------------------------------------------------------------
 //Functions for testing
+
 // create a pokemon for testing purposes
 func createBisasam() -> Pokemon* {
     return (new Pokemon(id=2, hp=152, atk=111, init=106, def=111, type1=1, type2=2, atk1_type=1, atk1_damage=40, atk2_type=1, atk2_damage=40, name_id=1));
@@ -129,7 +130,7 @@ func no_param_fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
 
     return (winner=e1);
 }
-//fight with pokemon not dealing dmg to eachother
+//fight with pokemon that can do zero damage (dmg) to eachother -> type1 & atk_dmg = 0
 @external
 func no_param_fight_zerodmg{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     winner: felt
@@ -151,18 +152,21 @@ func pokemon_game{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
     from_address: felt, pkmn1: Pokemon, pkmn2: Pokemon, fight_id: felt
 ) {
 
+// Get values of the fp register.
  let (__fp__, _) = get_fp_and_pc();
-    // TODO doesnt compile
+
     let (l1_contract_address)= l1_address.read();
-     assert from_address = l1_contract_address;
+    assert from_address = l1_contract_address;
     fight_steps.emit(step=1);
     let (res) = fight(&pkmn1, &pkmn2);
     fight_steps.emit(step=2);
     // save winner in map
     winner.write(fight_id, res);
+    // reading storage vars for l1 payload
     let (e1) = faster_efficiency.read();
     let (e2) = slower_efficiency.read();
     let (res) = winner.read(fight_id=fight_id);
+    // Filling payload to send to L1
     let (message_payload: felt*) = alloc();
     assert message_payload[0] = res;
     assert message_payload[1] = fight_id;
@@ -196,14 +200,14 @@ func get_winner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}
 //------------------------------------------------------------------------------------------------------------------------
 //Internal functions for fighting
 
-// Takes two pokemon to fight
+// Takes two pokemon struct to fight
 // Pokemon take turns to deal damage to eachother, until one of them has 0 HP
 // Returns the ID of the winning pokemon
 func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     pkmn1: Pokemon*, pkmn2: Pokemon*
 ) -> (res: felt) {
     alloc_locals;
-    //Count attacks for testing
+    //Count attacks for testing & for calculating length of efficiency payload variable (see line 258)
     let (n) = attack_counter.read();
     attack_counter.write(value=n + 1);
 
@@ -245,7 +249,7 @@ func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     let _dmgx = attackAndGetDamage(faster_pkmn, atk_type_fast, atk_damage_fast, slower_pkmn);
     local dmg = _dmgx;
 
-    // calculate new HP
+    // calculate new (health points) HP
     local pkmn2_hp: felt;
 
     //Get efficiency without previous dmg to save to fight history
@@ -316,7 +320,7 @@ func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     }
 }
 
-// Takes an attacking pokemon, attack type, attack damage and a defending pokemon
+// Takes an attacking pokemon, it's attack type, it's attack damage and a defending pokemon
 // Returns the damage dealt to the defending pokemon
 func attackAndGetDamage{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}(
     pkmn1: Pokemon*, atk_type: felt, atk_damage: felt, pkmn2: Pokemon*
@@ -365,6 +369,7 @@ func getEfficiency{range_check_ptr}(atk_type: felt, type1: felt, type2: felt, e:
     let index = (atk_type-1) * 18 + type1-1;
     let efficiency1 = data[index];
     local efficiency2: felt;
+    // if type2 is not "none"
     if (type2 != 99) {
         let index2 = (atk_type-1) * 18 + type2-1;
         let efficiency2temp = data[index2];
