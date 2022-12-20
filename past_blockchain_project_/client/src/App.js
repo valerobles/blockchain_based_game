@@ -13,8 +13,8 @@ import starknet_logo from "./starknet.png"
 const App = () => {
 
     // TODO: Add fight rounds won -> methods.pokemonIDToFightsWon(winnerID).call()
-    const PokemonObj = (nameID, owner, type1, type2, id, name) => {
-        return {nameID: nameID, owner: owner, type1: type1, type2: type2, id: id, name: name}
+    const PokemonObj = (nameID, owner, type1, type2, id, name, winCounts) => {
+        return {nameID: nameID, owner: owner, type1: type1, type2: type2, id: id, name: name, winCounts: winCounts}
     }
     const FightObj = (fightID, winnerID, winnerPok, firstPok, secondPok, onBlockchain, eff_pok1, eff_pok2) => {
         return {fightID: fightID, winnerID: winnerID, winnerPok: winnerPok, firstPok: firstPok, secondPok: secondPok, onBlockchain:onBlockchain, eff_pok1:eff_pok1,eff_pok2:eff_pok2 }
@@ -73,7 +73,8 @@ const App = () => {
         let pokemonToOwner = await contract.methods.ownerOf(uuid).call();
         let type_2 = newPok.type2 == 99 ? "None" : typeArray[newPok.type2];
         let name = await getNameByIndex(newPok.name_id);
-        return PokemonObj(newPok.name_id, pokemonToOwner, typeArray[newPok.type1], type_2, uuid, name);
+        let winCounts = await contract.methods.pokemonIDToFightsWon(uuid).call()
+        return PokemonObj(newPok.name_id, pokemonToOwner, typeArray[newPok.type1], type_2, uuid, name, winCounts);
     }
 
     // load web3 account from metamask
@@ -247,6 +248,24 @@ const App = () => {
         if (!fightExists(fightID)) {
 
             await getPokByUUID(w, c).then(async pok => {
+
+
+                let eff_fast_list = []
+
+                for (let i = 0; i < eff_fast.length; i++) {
+                    eff_fast_list.push(eff_fast.charAt(i))
+
+                }
+
+                let eff_slow_list = []
+
+                for (let i = 0; i < eff_slow.length; i++) {
+                    eff_slow_list.push(eff_slow.charAt(i))
+
+                }
+
+
+
                 let constestants = await c.methods.fightIDToFighters(fightID).call(); // call mapping in solidity contract
 
                 let firstPok = constestants.pok1
@@ -257,13 +276,27 @@ const App = () => {
                 let firstName = await getNameByIndex(firstPok.name_id)
                 let secondName = await getNameByIndex(secondPok.name_id)
 
-
                 let firstType2 = firstPok.type2 == 99 ? "None" : typeArray[firstPok.type2]
-                let firstPokObj = PokemonObj(firstPok.name_id, firstPokOwner, typeArray[firstPok.type1], firstType2, firstPok.id, firstName)
                 let secondType2 = secondPok.type2 == 99 ? "None" : typeArray[secondPok.type2]
-                let secondPokObj = PokemonObj(secondPok.name_id, secondPokOwner, typeArray[secondPok.type1], secondType2, secondPok.id, secondName)
 
-                let fightobj = FightObj(fightID, w, pok, firstPokObj, secondPokObj, false)
+                let pok1Wins = await contract.methods.pokemonIDToFightsWon(firstPok.id).call();
+                let pok2Wins = await contract.methods.pokemonIDToFightsWon(secondPok.id).call();
+
+                let pok1_eff;
+                let pok2_eff;
+                if(firstPok.init > secondPok.init){
+                    pok1_eff = eff_fast_list
+                    pok2_eff = eff_slow_list
+                } else {
+                    pok1_eff = eff_slow_list
+                    pok2_eff = eff_fast_list
+                }
+
+
+                let firstPokObj = PokemonObj(firstPok.name_id, firstPokOwner, typeArray[firstPok.type1], firstType2, firstPok.id, firstName,pok1Wins)
+                let secondPokObj = PokemonObj(secondPok.name_id, secondPokOwner, typeArray[secondPok.type1], secondType2, secondPok.id, secondName, pok2Wins)
+
+                let fightobj = FightObj(fightID, w, pok, firstPokObj, secondPokObj, false,pok1_eff,pok2_eff)
 
                 let winnerExists = await c.methods.fightIDToWinnerPokemon(fightID).call();
 
@@ -326,15 +359,18 @@ const App = () => {
                                         <img height="80"
                                              src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${fight.firstPok.nameID}.svg`}/>
                                         <span>{fight.firstPok.name}</span>
+                                        <span>Win counts: {fight.firstPok.winCounts}</span>
                                         <img height="80"
                                              src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${fight.secondPok.nameID}.svg`}/>
                                         <span>{fight.secondPok.name}</span>
+                                        <span>Win counts: {fight.secondPok.winCounts}</span>
                                     </div>
                                     <div className="d-flex flex-column align-items-center p-4">
                                         <img height="150"
                                              src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${fight.winnerPok.nameID}.svg`}/>
                                         <span>{fight.winnerPok.name}</span>
                                         <span>My nameID/dex# = {fight.winnerPok.nameID}</span>
+                                        <span>Win counts = {fight.winnerPok.winCounts}</span>
                                         <span>WINNER = {fight.winnerID}</span>
                                         <span>FIGHT ID = {fight.fightID}</span>
                                         <span>Owner : {shortOwnerText}</span>
@@ -481,13 +517,13 @@ const App = () => {
                     <br/>
                     <h1>Your collection</h1>
                     <p>Select a Pokemon to fight</p>
-                    <div style={{width: "70%", height: '100%', overflow: "auto", display: "flex"}}>
+                    <div style={{width: "70%", height: '1350px', overflow: "auto", display: "flex"}}>
 
                         {pokemonList.slice(1, pokemonList.length).map((pok, my_uuid) => {
                             if (pok.owner === account) {
                                 return (
                                     <div className="d-flex flex-column align-items-center p-5" key={my_uuid}
-                                         style={{backgroundColor: mySelectedPok == pok ? 'darkgray' : 'transparent'}}
+                                         style={{backgroundColor: mySelectedPok == pok ? 'darkgray' : 'transparent', height: '100%'}}
                                          onClick={() => selectMyFighter(pok)}>
                                         <img height="160"
                                              src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${pok.nameID}.svg`}/>
@@ -495,6 +531,7 @@ const App = () => {
                                         <span className="corners"><div className="rcorners1">Type:</div> <div className="rcorners2">{pok.type1} </div></span>
                                         <span className="corners"><div className="rcorners1">Type:</div> <div className="rcorners2">{pok.type2} </div></span>
                                         <span>My nameID/dex# = {pok.nameID}</span>
+                                        <span>Win counts = {pok.winCounts}</span>
                                         <span>My UUID = {my_uuid}</span>
                                     </div>
                                 )
@@ -523,6 +560,7 @@ const App = () => {
                                         <span className="corners"><div className="rcorners1">Type:</div> <div className="rcorners2">{pok.type1} </div></span>
                                         <span className="corners"><div className="rcorners1">Type:</div> <div className="rcorners2">{pok.type2} </div></span>
                                         <span>My nameID/dex# = {pok.nameID}</span>
+                                        <span>Win counts = {pok.winCounts}</span>
                                         <span>UUID = {index}</span>
                                     </div>
                                 )
