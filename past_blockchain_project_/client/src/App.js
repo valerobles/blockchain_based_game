@@ -5,6 +5,7 @@ import './dark_theme/css/mdb.dark.min.css'
 import "./App.css";
 import eth from "./eth.png"
 import starknet_logo from "./starknet.png"
+import bigInt from "big-integer";
 
 
 
@@ -30,6 +31,7 @@ const App = () => {
 
     const [mySelectedPok, setMySelectedPok] = useState(PokemonObj);
     const [oponentSelectedPok, setOponentSelectedPok] = useState(PokemonObj);
+    const [selectedFight, setSelectedFight] = useState(null);
     const names = [];
 
     const L2_CONTRACT =       "0x052196409d8edbeb0e7b3a27fe529115aa12af80dbc468a3e6a112a265b11eb1";
@@ -123,11 +125,18 @@ const App = () => {
     }
 
 
-
+    // TODO: NOT WORKING
+    // TODO: which one is faster?
     async function getWinner(obj) {
 
         console.log(obj.winnerPok.id, obj.fightID)
-        await contract.methods.get_winner(obj.winnerPok.id, obj.fightID).send( {from: account} ,(error) => {
+
+
+        console.log(obj.eff_pok1.reverse().toString().replaceAll(',',''))
+        console.log(obj.eff_pok2.reverse().toString().replaceAll(',',''))
+        let eff_ = obj.eff_pok1.reverse().toString().replaceAll(',','')
+        let eff = obj.eff_pok2.reverse().toString().replaceAll(',','')
+        await contract.methods.get_winner(obj.winnerPok.id, obj.fightID,eff,eff_).send( {from: account} ,(error) => {
             if(error) {
                 console.log(error);
             } else {
@@ -177,8 +186,8 @@ const App = () => {
                 let _winnerID = parseInt(temp.substring((l-4*s) , (l-3*s) ), 16)
                 let _fightID = parseInt(temp.substring((l-3*s)  , (l-2*s) ), 16)
 
-                let _faster_eff = parseInt(temp.substring((l-2*s) , (l-s)), 16).toString().split('').reverse().join('')
-                let _slower_eff = parseInt(temp.substring((l-s) , l), 16).toString().split('').reverse().join('')
+                let _faster_eff = bigInt(temp.substring((l-2*s) , (l-s)), 16).toString().split('').reverse().join('')
+                let _slower_eff = bigInt(temp.substring((l-s) , l), 16).toString().split('').reverse().join('')
 
                 createFightObj(_fightID, _winnerID, c,_faster_eff,_slower_eff)
 
@@ -263,7 +272,8 @@ const App = () => {
                     eff_slow_list.push(eff_slow.charAt(i))
 
                 }
-
+                console.log(eff_fast_list);
+                console.log(eff_slow_list);
 
 
                 let constestants = await c.methods.fightIDToFighters(fightID).call(); // call mapping in solidity contract
@@ -279,8 +289,8 @@ const App = () => {
                 let firstType2 = firstPok.type2 == 99 ? "None" : typeArray[firstPok.type2]
                 let secondType2 = secondPok.type2 == 99 ? "None" : typeArray[secondPok.type2]
 
-                let pok1Wins = await contract.methods.pokemonIDToFightsWon(firstPok.id).call();
-                let pok2Wins = await contract.methods.pokemonIDToFightsWon(secondPok.id).call();
+                let pok1Wins = await c.methods.pokemonIDToFightsWon(firstPok.id).call();
+                let pok2Wins = await c.methods.pokemonIDToFightsWon(secondPok.id).call();
 
                 let pok1_eff;
                 let pok2_eff;
@@ -352,9 +362,9 @@ const App = () => {
                     {fightList.map((fight, index) => {
                         let shortOwnerText = fight.winnerPok.owner.substring(0, 10) + "..."
                         return (
-                            <div className="slide" key={index}>
+                            <div className="slide" key={index} onClick={() => getFight(fight)}>
                                 <div className="d-flex flex-column align-items-center">
-                                    <div className="row-10">
+                                    <div className="row-10" >
 
                                         <img height="80"
                                              src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${fight.firstPok.nameID}.svg`}/>
@@ -452,6 +462,8 @@ const App = () => {
 
 
 
+
+
     const baseUrl = 'https://pokeapi.co/api/v2/pokemon/?offset='
 
     async function getNameByIndex(index) {
@@ -461,6 +473,24 @@ const App = () => {
         let str = obj.results[0].name
         let name = str.charAt(0).toUpperCase() + str.slice(1);
         return name
+    }
+
+    function showRounds(){
+        console.log(selectedFight)
+        if(selectedFight != null){
+            return(
+                <div>
+                    <span>Efficiency pok 1 {selectedFight.eff_pok1}</span>
+                    <br/>
+                    <span>Efficiency pok 2  {selectedFight.eff_pok2}</span>
+                </div>
+            )
+        }
+
+    }
+
+    function getFight(fightObj){
+        setSelectedFight(fightObj)
     }
 
     return <div>
@@ -517,7 +547,7 @@ const App = () => {
                     <br/>
                     <h1>Your collection</h1>
                     <p>Select a Pokemon to fight</p>
-                    <div style={{width: "70%", height: '1350px', overflow: "auto", display: "flex"}}>
+                    <div style={{width: "70%", overflow: "auto", display: "flex"}}>
 
                         {pokemonList.slice(1, pokemonList.length).map((pok, my_uuid) => {
                             if (pok.owner === account) {
@@ -574,6 +604,7 @@ const App = () => {
                     <h1>All the winners</h1>
                     <p>Fresh out of StarkNet <img src={starknet_logo} height="30px"/></p>
                     {Slideshow()}
+                    {showRounds()}
 
 
                 </div>

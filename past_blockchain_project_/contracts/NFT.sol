@@ -27,7 +27,9 @@ interface IStarknetCore {
 }
 
 
-contract NFT is ERC721, ERC721Enumerable {
+contract Pokemon is ERC721, ERC721Enumerable {
+
+    // Structs
 
     struct Pokemon {
         uint256 id;
@@ -50,24 +52,34 @@ contract NFT is ERC721, ERC721Enumerable {
         Pokemon pok2;
     }
 
+    // ______________________________________________________________________________________________________________________________
+
+    // Variables
 
     IStarknetCore starknetCore;
-    uint256 nonce = 0;
-    uint256 L2_CONTRACT = 0x052196409d8edbeb0e7b3a27fe529115aa12af80dbc468a3e6a112a265b11eb1; // L2 contract
-    uint256 constant SELECTOR = 1625440424450498852892950090004073452274266572863945925863133186904237482575; // pokemon_game_flat as a selector encoded
-    uint256 constant SELECTOR_STRUCT = 1287792748861478314957917789548421785918690629705705918786662048852425233154; //pokemon_game selector
+
+    // Variables needed for L2 interaction
+    uint256 L2_CONTRACT = 0x052196409d8edbeb0e7b3a27fe529115aa12af80dbc468a3e6a112a265b11eb1; // L2 contract address
+    uint256 constant SELECTOR = 1625440424450498852892950090004073452274266572863945925863133186904237482575; // pokemon_game_flat method as a selector encoded
+    uint256 constant SELECTOR_STRUCT = 1287792748861478314957917789548421785918690629705705918786662048852425233154; //pokemon_game method as a selector encoded
 
 
     uint256 fightIDCounter = 0;
+    uint256 nonce = 0; // needed for creating random numbers
 
     Pokemon[] public pokemons; // List of all Pokemon
 
+    // ______________________________________________________________________________________________________________________________
+
+    // Mappings
+
     mapping(uint256 => Pokemon) public fightIDToWinnerPokemon; // mapping of fight ID to Winner Pokemon
-    mapping(uint256 => Fight) public fightIDToFighters;
-    mapping(uint256 => uint256) public pokemonIDToFightsWon;
+    mapping(uint256 => Fight) public fightIDToFighters; //  mapping of fight ID to Fight struct (two fighting pokemon)
+    mapping(uint256 => uint256) public pokemonIDToFightsWon; // mapping of pokemon ID to number of rounds won
 
+    // ______________________________________________________________________________________________________________________________
 
-    // EVENTS
+    // Events
     event startFight(address indexed _from, uint256 _pok1, uint256 _pok2, uint256 l2Contract, uint _value);
 
     event startFightMessage(uint message);
@@ -82,15 +94,36 @@ contract NFT is ERC721, ERC721Enumerable {
 
     event winnerCount(uint winnerPokID, uint roundsWon);
 
+    // ______________________________________________________________________________________________________________________________
 
 
-
-
-
-    constructor() ERC721("NFT", "CC") {
+    //
+    constructor() ERC721("Pokemon", "PKM") {
         starknetCore = IStarknetCore(address(0xde29d060D45901Fb19ED6C6e959EB22d8626708e));
         // https://docs.starknet.io/documentation/Ecosystem/ref_operational_info/
     }
+
+    // _________________________________________________________________________________________________________________________________
+    // method that need to be overriden for ERC721, ERC721Enumerable
+
+    function supportsInterface(bytes4 interfaceId)
+    public
+    view
+    override (ERC721, ERC721Enumerable)
+    returns (bool)
+    {
+        return super.supportsInterface(interfaceId);
+    }
+
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId)
+    internal
+    override (ERC721, ERC721Enumerable)
+    {
+        super._beforeTokenTransfer(from, to, tokenId);
+    }
+
+
+    // _________________________________________________________________________________________________________________________________
 
 
 
@@ -321,24 +354,6 @@ contract NFT is ERC721, ERC721Enumerable {
     function random(uint _interval) internal returns (uint) {
         nonce++;
         return uint(keccak256(abi.encodePacked(block.difficulty, block.timestamp, nonce))) % _interval;
-    }
-
-    // override method from ERC721, ERC721Enumerable
-    function supportsInterface(bytes4 interfaceId)
-    public
-    view
-    override (ERC721, ERC721Enumerable)
-    returns (bool)
-    {
-        return super.supportsInterface(interfaceId);
-    }
-
-    // override method from ERC721, ERC721Enumerable
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId)
-    internal
-    override (ERC721, ERC721Enumerable)
-    {
-        super._beforeTokenTransfer(from, to, tokenId);
     }
 
 
