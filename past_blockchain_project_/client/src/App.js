@@ -34,11 +34,10 @@ const App = () => {
     const [selectedFight, setSelectedFight] = useState(null);
     const names = [];
 
-    const L2_CONTRACT =       "0x052196409d8edbeb0e7b3a27fe529115aa12af80dbc468a3e6a112a265b11eb1";
-    const L1_CONTRACT      =  "0xaB5eb5D77365f45c1675ed4450DF30105290a166";
-    const L1_CONTRACT_ZERO =  "0x000000000000000000000000aB5eb5D77365f45c1675ed4450DF30105290a166";
+    const L2_CONTRACT =       "0x0723627da2c6e4c4e545c8c81e05c9c64e81e6f73028a356a7c51b305ac4509f";
+    const L1_CONTRACT      =  "0x11675d50C6b327837D81C758c5bA6030B15f1B55";
+    const L1_CONTRACT_ZERO =  "0x000000000000000000000000011675d50C6b327837D81C758c5bA6030B15f1B5";
     const StarkNetCore =      '0xde29d060D45901Fb19ED6C6e959EB22d8626708e';
-    const StarkNetCore_Zero = '0x000000000000000000000000de29d060D45901Fb19ED6C6e959EB22d8626708e';
 
     const mint = () => {
         if (nameID.length > 0 && nameID > 0) {
