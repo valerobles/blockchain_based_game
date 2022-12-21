@@ -61,12 +61,6 @@ func fight_steps(step: felt) {
 @event
 func get_winner_called(winner: felt) {
 }
-@event
-func effciency_slower_per_round(round: felt, efficiency: felt){
-}
-@event
-func get_index_and_data(index: felt, data: felt){
-}
 //------------------------------------------------------------------------------------------------------------------------
 // Setter for L1 address
 @external
@@ -309,9 +303,7 @@ func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
             local y = faster_pkmn.hp;
             pkmn1_hp = currentHPFaster - dmg;
         }
-        // For debbugging, delete later
-        effciency_slower_per_round.emit(n,z2);
-        effciency_slower_per_round.emit(n,newEff2);
+
 
         let addEff2 = eff2 + newEff2;
         slower_efficiency.write(addEff2);
@@ -378,7 +370,6 @@ func getEfficiency{syscall_ptr: felt*,range_check_ptr}(atk_type: felt, type1: fe
     let (data) = get_data();
     let index = (atk_type-1) * 18 + type1-1;
     let efficiency1 = data[index];
-    get_index_and_data.emit(index, efficiency1);
     local efficiency2: felt;
     // if type2 is not "none"
     if (type2 != 99) {
