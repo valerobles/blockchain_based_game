@@ -202,42 +202,7 @@ const App = () => {
 
     }
 
-    function listener_consumed(_web3){
 
-        const consumedOnL1 = {
-            fromBlock: 807000,
-            address: StarkNetCore, //
-            topics: ["0x7a06c571aa77f34d9706c51e5d8122b5595aebeaa34233bfe866f22befb973b1", L2_CONTRACT, L1_CONTRACT_ZERO, null]
-        };
-        _web3.eth.subscribe('logs', consumedOnL1, (err, event) => {
-            if (!err)
-                console.log(event);
-        })
-            .on("data", function (log) {
-
-
-
-                let temp = log.data
-                let tempSub = temp.substring(temp.length - 128)
-                let _fightID = parseInt(tempSub.substring(tempSub.length - 64), 16)
-
-                //TODO: Problem when this listener is catched before the list of fighters is filled
-
-                const index = fightList.findIndex(f => {
-                    return f.fightID === _fightID;
-                });
-                console.log(index)
-                console.log(_fightID)
-
-                //fightList[index].onBlockchain = true;
-
-                //console.log(fightList[index])
-
-
-            });
-
-
-    }
 
     function fightExists(fightID) {
         let fightExistsB = false
@@ -476,7 +441,6 @@ const App = () => {
     }
 
     function showRounds(){
-        console.log(selectedFight)
         if(selectedFight != null){
             return(
                 <div>

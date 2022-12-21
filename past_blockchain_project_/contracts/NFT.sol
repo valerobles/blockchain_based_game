@@ -27,7 +27,7 @@ interface IStarknetCore {
 }
 
 
-contract Pokemon is ERC721, ERC721Enumerable {
+contract NFT is ERC721, ERC721Enumerable {
 
     // Structs
 
@@ -59,7 +59,7 @@ contract Pokemon is ERC721, ERC721Enumerable {
     IStarknetCore starknetCore;
 
     // Variables needed for L2 interaction
-    uint256 L2_CONTRACT = 0x052196409d8edbeb0e7b3a27fe529115aa12af80dbc468a3e6a112a265b11eb1; // L2 contract address
+    uint256 L2_CONTRACT = 0x0723627da2c6e4c4e545c8c81e05c9c64e81e6f73028a356a7c51b305ac4509f; // L2 contract address
     uint256 constant SELECTOR = 1625440424450498852892950090004073452274266572863945925863133186904237482575; // pokemon_game_flat method as a selector encoded
     uint256 constant SELECTOR_STRUCT = 1287792748861478314957917789548421785918690629705705918786662048852425233154; //pokemon_game method as a selector encoded
 
@@ -97,8 +97,9 @@ contract Pokemon is ERC721, ERC721Enumerable {
     // ______________________________________________________________________________________________________________________________
 
 
-    //
-    constructor() ERC721("Pokemon", "PKM") {
+    //NFT name and Symbol
+    constructor() ERC721("NFT", "CC") {
+        // setting StarknetCore Contract address
         starknetCore = IStarknetCore(address(0xde29d060D45901Fb19ED6C6e959EB22d8626708e));
         // https://docs.starknet.io/documentation/Ecosystem/ref_operational_info/
     }
@@ -124,28 +125,29 @@ contract Pokemon is ERC721, ERC721Enumerable {
 
 
     // _________________________________________________________________________________________________________________________________
+    // Creating Pokemon methods
 
 
-
+    // Mint function. Recieves name_id of pokemon
     function mint(uint256 _name_id) public {
+
         require(_name_id > 0 && _name_id < 650, "Only valid dex numbers. Must be between 1 and 649");
 
         uint256 _uuid = pokemons.length;
+
         // TODO: create UUID for unique ID
+        // create pokemon struct from name_id
         Pokemon memory newPok = createPokemonByNameId(_name_id, _uuid);
         pokemons.push(newPok);
 
         emit createdRandomPkmn(_uuid, newPok.hp, newPok.atk, newPok.init, newPok.def);
 
-        // create Pokemon from json
-
         // _safeMint method from openzeppelin
-        //TODO safe all data in nft
         _safeMint(msg.sender, _uuid);
     }
 
 
-    // TODO: get data from json
+    // Create Pokemon depending on given name_id
     function createPokemonByNameId(uint256 _name_id, uint256 _id) internal returns (Pokemon memory) {
 
 
@@ -176,6 +178,7 @@ contract Pokemon is ERC721, ERC721Enumerable {
         if (_name_id == 9) {
             return (createPokemon(_id, 186, 148, 143, 167, 2, 99, 2, 50, getType(), getDamage(), _name_id));
         }
+        // Only types and strength are accurate
         if (_name_id == 10) {
             return (createPokemonOther(_id, 11, 99, _name_id, 1));
         }
@@ -305,6 +308,7 @@ contract Pokemon is ERC721, ERC721Enumerable {
         if (_name_id == 52) {
             return (createPokemonOther(_id, 0, 99, _name_id, 2));
         }
+        // Everything above name_id 52 has type1 = normal, type2 = none and random strength
         else {
             return (createPokemonOther(_id, 0, 99, _name_id, getStrength()));
         }
@@ -312,23 +316,14 @@ contract Pokemon is ERC721, ERC721Enumerable {
     }
 
 
-    function getType() internal returns (uint) {
-        return random(17);
-    }
 
-    function getDamage() internal returns (uint) {
-        return random(50) + 40;
-    }
-
-    function getStrength() internal returns (uint) {
-        return random(2) + 1;
-    }
-
+    // Create pokemon struct
     //Every pokemon gets random bonus stats on every stat
     function createPokemon(uint256 id, uint256 hp, uint256 atk, uint256 init, uint256 def, uint256 type1, uint256 type2, uint256 atk1_type, uint256 atk1_damage, uint256 atk2_type, uint256 atk2_damage, uint256 name_id) internal returns (Pokemon memory){
         return Pokemon(id, hp + getDv(), atk + getDv(), init + getDv(), def + getDv(), type1, type2, atk1_type, atk1_damage, atk2_type, atk2_damage, name_id);
     }
 
+    // Create pokemon struct from minimalized stats and adjusted depending on strength given
     //Every pokemon gets random bonus stats on every stat
     function createPokemonOther(uint256 id, uint256 type1, uint256 type2, uint256 name_id, uint256 strength) internal returns (Pokemon memory){
         uint256 base_stat = 100;
@@ -343,12 +338,27 @@ contract Pokemon is ERC721, ERC721Enumerable {
             base_stat += 70;
         }
 
-
         return Pokemon(id, base_stat + getDv(), base_stat + getDv(), base_stat + getDv(), base_stat + getDv(), type1, type2, type1, getDamage(), getType(), getDamage(), name_id);
     }
 
+    // _________________________________________________________________________________________________________________________________
+
+    // Get random number methods
+
     function getDv() internal returns (uint) {
         return random(20);
+    }
+
+    function getType() internal returns (uint) {
+        return random(17);
+    }
+
+    function getDamage() internal returns (uint) {
+        return random(50) + 40;
+    }
+
+    function getStrength() internal returns (uint) {
+        return random(2) + 1;
     }
 
     function random(uint _interval) internal returns (uint) {
@@ -358,12 +368,13 @@ contract Pokemon is ERC721, ERC721Enumerable {
 
 
 
+    // _________________________________________________________________________________________________________________________________
 
-    // L1 L2 Handlers
+    // L1 <-> L2 methods
 
 
 
-    // L1 -> L2. Send 2 pokemon to fight to L2
+    // L1 -> L2. Send two pokemon to fight to L2
     function sendPokemonsToL2(
         uint256 myPok,
         uint256 enemyPok
