@@ -61,6 +61,12 @@ func fight_steps(step: felt) {
 @event
 func get_winner_called(winner: felt) {
 }
+@event
+func effciency_slower_per_round(round: felt, efficiency: felt){
+}
+@event
+func get_index_and_data(index: felt, data: felt){
+}
 //------------------------------------------------------------------------------------------------------------------------
 // Setter for L1 address
 @external
@@ -241,8 +247,8 @@ func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
             atk_damage_slow = slower_pkmn.atk1_damage;
             atk_type_slow = slower_pkmn.atk1_type;
         } else {
-            atk_damage_slow = slower_pkmn.atk1_damage;
-            atk_type_slow = slower_pkmn.atk1_type;
+            atk_damage_slow = slower_pkmn.atk2_damage;
+            atk_type_slow = slower_pkmn.atk2_type;
         }
 
     //Calculate dmg of faster pkmn attacking slower pkmn
@@ -293,16 +299,20 @@ func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         let (mul2) = pow(10, n);
         local mull2 = mul2;
         local newEff2: felt;
-         local currentHPFaster = faster_pkmn.hp;
+        local currentHPFaster = faster_pkmn.hp;
         if (z2 == 0) {
             newEff2 = mull2 * 6;
             //-1 to prevent endless fights if dmg is 0
-                    pkmn1_hp = currentHPFaster - 1;
+            pkmn1_hp = currentHPFaster - 1;
         } else {
             newEff2 = z2 * mull2;
-             local y = faster_pkmn.hp;
-                    pkmn1_hp = currentHPFaster - dmg;
+            local y = faster_pkmn.hp;
+            pkmn1_hp = currentHPFaster - dmg;
         }
+        // For debbugging, delete later
+        effciency_slower_per_round.emit(n,z2);
+        effciency_slower_per_round.emit(n,newEff2);
+
         let addEff2 = eff2 + newEff2;
         slower_efficiency.write(addEff2);
 
@@ -360,7 +370,7 @@ func attackAndGetDamage{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashB
 }
 //return dmg (e) multiplied by efficiency, external for testing
 @external
-func getEfficiency{range_check_ptr}(atk_type: felt, type1: felt, type2: felt, e: felt) -> (
+func getEfficiency{syscall_ptr: felt*,range_check_ptr}(atk_type: felt, type1: felt, type2: felt, e: felt) -> (
     res: felt, efficiency: felt
 ) {
     alloc_locals;
@@ -368,6 +378,7 @@ func getEfficiency{range_check_ptr}(atk_type: felt, type1: felt, type2: felt, e:
     let (data) = get_data();
     let index = (atk_type-1) * 18 + type1-1;
     let efficiency1 = data[index];
+    get_index_and_data.emit(index, efficiency1);
     local efficiency2: felt;
     // if type2 is not "none"
     if (type2 != 99) {
