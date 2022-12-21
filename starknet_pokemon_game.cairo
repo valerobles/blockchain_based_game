@@ -102,6 +102,14 @@ func createPikachu() -> Pokemon* {
     return (new Pokemon(id=3, hp=142, atk=117, init=156, def=101, type1=1, type2=2, atk1_type=1, atk1_damage=40, atk2_type=1, atk2_damage=40, name_id=25));
 }
 // create a pokemon for testing purposes
+func createKakuna() -> Pokemon* {
+    return (new Pokemon(id=7, hp=152, atk=111, init=106, def=111, type1=7, type2=11, atk1_type=7, atk1_damage=40, atk2_type=11, atk2_damage=40, name_id=1));
+}
+// create a pokemon for testing purposes
+func createFearow() -> Pokemon* {
+    return (new Pokemon(id=6, hp=142, atk=117, init=156, def=101, type1=0, type2=9, atk1_type=0, atk1_damage=40, atk2_type=9, atk2_damage=40, name_id=25));
+}
+// create a pokemon for testing purposes
 func createBisasamZero() -> Pokemon* {
     return (new Pokemon(id=4, hp=152, atk=111, init=106, def=111, type1=0, type2=99, atk1_type=13, atk1_damage=40, atk2_type=13, atk2_damage=40, name_id=1));
 }
@@ -118,7 +126,7 @@ func no_param_fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
     faster_efficiency.write(0);
     slower_efficiency.write(0);
     attack_counter.write(0);
-    let (res) = fight(createBisasam(), createPikachu());
+    let (res) = fight(createKakuna(), createFearow());
     let (c) = attack_counter.read();
     attacks.emit(c);
     let (e1) = faster_efficiency.read();
@@ -368,12 +376,12 @@ func getEfficiency{syscall_ptr: felt*,range_check_ptr}(atk_type: felt, type1: fe
     alloc_locals;
     local z: felt;
     let (data) = get_data();
-    let index = (atk_type-1) * 18 + type1-1;
+    let index = (atk_type) * 18 + type1;
     let efficiency1 = data[index];
     local efficiency2: felt;
     // if type2 is not "none"
     if (type2 != 99) {
-        let index2 = (atk_type-1) * 18 + type2-1;
+        let index2 = (atk_type) * 18 + type2;
         let efficiency2temp = data[index2];
         if (efficiency2temp == 0) {
             efficiency2 = 0;
@@ -540,7 +548,7 @@ func get_data() -> (data: felt*) {
     dw 1;
     dw 1;
     dw 1;
-    // line 4 plant
+    // line 4 grass
     dw 1;
     dw 3;
     dw 2;
@@ -673,7 +681,7 @@ func get_data() -> (data: felt*) {
     dw 1;
     dw 3;
     dw 1;
-    // line 10 psycho
+    // line 11 psycho
     dw 1;
     dw 1;
     dw 1;
@@ -692,7 +700,7 @@ func get_data() -> (data: felt*) {
     dw 0;
     dw 3;
     dw 1;
-    // line 11 bug
+    // line 12 bug
     dw 1;
     dw 3;
     dw 1;
@@ -711,7 +719,7 @@ func get_data() -> (data: felt*) {
     dw 2;
     dw 3;
     dw 3;
-    // line 12 rock
+    // line 13 rock
     dw 1;
     dw 2;
     dw 1;
@@ -730,7 +738,7 @@ func get_data() -> (data: felt*) {
     dw 1;
     dw 3;
     dw 1;
-    // line 13 ghost
+    // line 14 ghost
     dw 0;
     dw 1;
     dw 1;
@@ -749,7 +757,7 @@ func get_data() -> (data: felt*) {
     dw 3;
     dw 1;
     dw 1;
-    // line 14 dragon
+    // line 15 dragon
     dw 1;
     dw 1;
     dw 1;
@@ -768,7 +776,7 @@ func get_data() -> (data: felt*) {
     dw 1;
     dw 3;
     dw 0;
-    // line 15 dark
+    // line 16 dark
     dw 1;
     dw 1;
     dw 1;
@@ -787,7 +795,7 @@ func get_data() -> (data: felt*) {
     dw 3;
     dw 1;
     dw 3;
-    // line 16 steel
+    // line 17 steel
     dw 1;
     dw 3;
     dw 3;
@@ -806,7 +814,7 @@ func get_data() -> (data: felt*) {
     dw 1;
     dw 3;
     dw 2;
-    // line 16 fairy
+    // line 18 fairy
     dw 1;
     dw 3;
     dw 1;

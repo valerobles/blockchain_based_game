@@ -7,50 +7,33 @@ from starkware.starknet.testing.starknet import Starknet
 CONTRACT_FILE = os.path.join(
     os.path.dirname(__file__), "starknet_pokemon_game.cairo")
 
-
 @pytest.mark.asyncio
-async def test_increase_balance():
+async def test_efficiency():
     # Create a new Starknet class that simulates the StarkNet
     # system.
     starknet = await Starknet.empty()
 
-    # Deploy the contract.
+   # Deploy the contract.
     contract = await starknet.deploy(
         source=CONTRACT_FILE,
     )
-
-    # Invoke increase_balance() twice.
-   # await contract.increase_balance(amount=10).execute()
-   # await contract.increase_balance(amount=20).execute()
-
-    # Check the result of get_balance().
-   # execution_info = await contract.pokemon_game([id=1, hp=152, atk=111, init=106, def=111, type1=1, type2=0, atk1_type=1, atk1_damage=30, atk2_type=2, atk1_damage=40]).call()
-    #new Pokemon(id=1, hp=152, atk=111, init=106, def=111, type1=1, type2=0, atk1_type=1, atk1_damage=30, atk2_type=2, atk2_damage=40)), (new Pokemon(id=2, hp=152, atk=111, init=106, def=111, type1='grass', type2='', atk1_type='grass', atk1_damage=30, atk2_type='normal', atk2_damage=40)
-   # execution_info = await contract.pokemon_game( pkmn1.id=1, pkmn1.hp=152, pkmn1.atk=111, pkmn1.init=106, pkmn1.def=111, pkmn1.type1=1, pkmn1.type2=0, pkmn1.atk1_type=1, pkmn1.atk1_damage=30, pkmn1.atk2_type=2, pkmn1.atk1_damage=40, pkmn2.id=25, pkmn2.hp=142, pkmn2.atk=117, pkmn2.init=156, pkmn2.def=101, pkmn2.type1=3, pkmn2.type2=0, pkmn2.atk1_type=3, pkmn2.atk1_damage=30, pkmn2.atk2_type=2, pkmn2.atk2_damage=35).call()
-
-#     execution_info_param = await contract.no_param_fight().call()
-#     assert execution_info_param.result == (555555555555555,)
-    execution_info = await contract.getEfficiency(atk_type=6, type1=4, type2=4, e=1).call()
-    assert execution_info.result == (0,)
-# @pytest.mark.asyncio
-# async def getEfficiency():
-#     # Create a new Starknet class that simulates the StarkNet
-#     # system.
-#     starknet = await Starknet.empty()
-#
-#     # Deploy the contract.
-#     contract = await starknet.deploy(
-#         source=CONTRACT_FILE,
-#     )
-#
-#     # Invoke increase_balance() twice.
-#    # await contract.increase_balance(amount=10).execute()
-#    # await contract.increase_balance(amount=20).execute()
-#
-#     # Check the result of get_balance().
-#    # execution_info = await contract.pokemon_game([id=1, hp=152, atk=111, init=106, def=111, type1=1, type2=0, atk1_type=1, atk1_damage=30, atk2_type=2, atk1_damage=40]).call()
-#     #new Pokemon(id=1, hp=152, atk=111, init=106, def=111, type1=1, type2=0, atk1_type=1, atk1_damage=30, atk2_type=2, atk2_damage=40)), (new Pokemon(id=2, hp=152, atk=111, init=106, def=111, type1='grass', type2='', atk1_type='grass', atk1_damage=30, atk2_type='normal', atk2_damage=40)
-#    # execution_info = await contract.pokemon_game( pkmn1.id=1, pkmn1.hp=152, pkmn1.atk=111, pkmn1.init=106, pkmn1.def=111, pkmn1.type1=1, pkmn1.type2=0, pkmn1.atk1_type=1, pkmn1.atk1_damage=30, pkmn1.atk2_type=2, pkmn1.atk1_damage=40, pkmn2.id=25, pkmn2.hp=142, pkmn2.atk=117, pkmn2.init=156, pkmn2.def=101, pkmn2.type1=3, pkmn2.type2=0, pkmn2.atk1_type=3, pkmn2.atk1_damage=30, pkmn2.atk2_type=2, pkmn2.atk2_damage=35).call()
-#
-#     execution_info = await contract.getEfficiency(atk_type=2, type1=1, type2=2, e=0).call()
-#     assert execution_info.result == (1,)
+    #Test quarter efficiency
+    quarter = await contract.getEfficiency(atk_type=0, type1=12, type2=16, e=1).call()
+    assert  quarter.result[1] == 5
+    #Test half efficiency
+    half = await contract.getEfficiency(atk_type=1, type1=2, type2=0, e=1).call()
+    assert half.result[1] == 3
+    #Test zero efficiency
+    zero = await contract.getEfficiency(atk_type=8, type1=9, type2=99, e=1).call()
+    assert  zero.result[1] == 0
+    #Test neutral efficiency
+    neutral1 = await contract.getEfficiency(atk_type=0, type1=1, type2=2, e=1).call()
+    assert  neutral1.result[1] == 1
+    neutral2 = await contract.getEfficiency(atk_type=2, type1=1, type2=2, e=1).call()
+    #Test double efficiency
+    assert  neutral2.result[1] == 1
+    double = await contract.getEfficiency(atk_type=2, type1=0, type2=1, e=1).call()
+    assert  double.result[1] == 2
+    #Test quadruple efficiency
+    quadruple = await contract.getEfficiency(atk_type=4, type1=2, type2=9, e=1).call()
+    assert  quadruple.result[1] == 4
