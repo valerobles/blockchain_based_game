@@ -21,8 +21,10 @@ async def test_efficiency():
     quarter = await contract.getEfficiency(atk_type=0, type1=12, type2=16, e=1).call()
     assert  quarter.result[1] == 5
     #Test half efficiency
-    half = await contract.getEfficiency(atk_type=1, type1=2, type2=0, e=1).call()
+    half = await contract.getEfficiency(atk_type=1, type1=1, type2=0, e=1).call()
+    half2 = await contract.getEfficiency(atk_type=6, type1=17, type2=1, e=1).call()
     assert half.result[1] == 3
+    assert half2.result[1] == 3
     #Test zero efficiency
     zero = await contract.getEfficiency(atk_type=8, type1=9, type2=99, e=1).call()
     assert  zero.result[1] == 0
@@ -37,3 +39,14 @@ async def test_efficiency():
     #Test quadruple efficiency
     quadruple = await contract.getEfficiency(atk_type=4, type1=2, type2=9, e=1).call()
     assert  quadruple.result[1] == 4
+
+@pytest.mark.asyncio
+async def test_efficiency():
+    # Create a new Starknet class that simulates the StarkNet
+    # system.
+    starknet = await Starknet.empty()
+
+   # Deploy the contract.
+    contract = await starknet.deploy(
+        source=CONTRACT_FILE,
+    )
