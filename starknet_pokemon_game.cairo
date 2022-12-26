@@ -452,7 +452,7 @@ func attackAndGetDamage{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashB
     let (final, r) = unsigned_div_rem(h, 1000);
     return (final);
 }
-// return dmg (e) multiplied by efficiency, external for testing
+// return dmg multiplied by efficiency, external for testing
 @external
 func getDmgAndEfficiency{syscall_ptr: felt*, range_check_ptr}(
     atk_type: felt, type1: felt, type2: felt, dmg: felt
@@ -587,7 +587,7 @@ func get_data() -> (data: felt*) {
     return (data=cast(data_address, felt*));
 
     data_start:
-    // line 1 normal
+    // row 1 of 18 normal attacking all types
     dw 1;
     dw 1;
     dw 1;

@@ -8,9 +8,6 @@ import starknet_logo from "./starknet.png"
 import bigInt from "big-integer";
 
 
-
-
-
 const App = () => {
 
     // TODO: Add fight rounds won -> methods.pokemonIDToFightsWon(winnerID).call()
@@ -18,7 +15,16 @@ const App = () => {
         return {nameID: nameID, owner: owner, type1: type1, type2: type2, id: id, name: name, winCounts: winCounts}
     }
     const FightObj = (fightID, winnerID, winnerPok, firstPok, secondPok, onBlockchain, eff_pok1, eff_pok2) => {
-        return {fightID: fightID, winnerID: winnerID, winnerPok: winnerPok, firstPok: firstPok, secondPok: secondPok, onBlockchain:onBlockchain, eff_pok1:eff_pok1,eff_pok2:eff_pok2 }
+        return {
+            fightID: fightID,
+            winnerID: winnerID,
+            winnerPok: winnerPok,
+            firstPok: firstPok,
+            secondPok: secondPok,
+            onBlockchain: onBlockchain,
+            eff_pok1: eff_pok1,
+            eff_pok2: eff_pok2
+        }
     }
     const [web3, setWeb3] = useState();
 
@@ -34,17 +40,17 @@ const App = () => {
     const [selectedFight, setSelectedFight] = useState(null);
     const names = [];
 
-    const L2_CONTRACT =       "0x0723627da2c6e4c4e545c8c81e05c9c64e81e6f73028a356a7c51b305ac4509f";
-    const L1_CONTRACT      =  "0x11675d50C6b327837D81C758c5bA6030B15f1B55";
-    const L1_CONTRACT_ZERO =  "0x000000000000000000000000011675d50C6b327837D81C758c5bA6030B15f1B5";
-    const StarkNetCore =      '0xde29d060D45901Fb19ED6C6e959EB22d8626708e';
+    const L2_CONTRACT = "0x0723627da2c6e4c4e545c8c81e05c9c64e81e6f73028a356a7c51b305ac4509f";
+    const L1_CONTRACT = "0x11675d50C6b327837D81C758c5bA6030B15f1B55";
+    const L1_CONTRACT_ZERO = "0x000000000000000000000000011675d50C6b327837D81C758c5bA6030B15f1B5";
+    const StarkNetCore = '0xde29d060D45901Fb19ED6C6e959EB22d8626708e';
 
     const mint = () => {
         if (nameID.length > 0 && nameID > 0) {
             contract.methods.mint(nameID).send({from: account}, (error) => {
                 if (!error) {
 
-                    let pok = PokemonObj(nameID, account,"Loading", "Loading",-1,"Loading");
+                    let pok = PokemonObj(nameID, account, "Loading", "Loading", -1, "Loading");
                     setPokemonList([...pokemonList, pok]);
 
                 } else {
@@ -113,7 +119,10 @@ const App = () => {
             let weiPrice = web3.utils.toWei(price, "ether")
 
 
-            contract.methods.sendPokemonsToL2Struct(my_uuid, enemy_uuid).send({from: account, value: weiPrice}, (error) => {
+            contract.methods.sendPokemonsToL2Struct(my_uuid, enemy_uuid).send({
+                from: account,
+                value: weiPrice
+            }, (error) => {
                 if (error) {
                     console.log(error);
                 }
@@ -131,38 +140,35 @@ const App = () => {
         console.log(obj.winnerPok.id, obj.fightID)
 
 
-        console.log(obj.eff_pok1.reverse().toString().replaceAll(',',''))
-        console.log(obj.eff_pok2.reverse().toString().replaceAll(',',''))
-        let eff_ = obj.eff_pok1.reverse().toString().replaceAll(',','')
-        let eff = obj.eff_pok2.reverse().toString().replaceAll(',','')
-        await contract.methods.get_winner(obj.winnerPok.id, obj.fightID,eff,eff_).send( {from: account} ,(error) => {
-            if(error) {
+        console.log(obj.eff_pok1.reverse().toString().replaceAll(',', ''))
+        console.log(obj.eff_pok2.reverse().toString().replaceAll(',', ''))
+        let eff_ = obj.eff_pok1.reverse().toString().replaceAll(',', '')
+        let eff = obj.eff_pok2.reverse().toString().replaceAll(',', '')
+        await contract.methods.get_winner(obj.winnerPok.id, obj.fightID, eff, eff_).send({from: account}, (error) => {
+            if (error) {
                 console.log(error);
             } else {
-                obj.onBlockchain=true
+                obj.onBlockchain = true
             }
         });
 
 
-
-
-
     }
 
-    function isOnBlockchainMessage(fightOb){
-        if (fightOb.onBlockchain){
+    function isOnBlockchainMessage(fightOb) {
+        if (fightOb.onBlockchain) {
             return (
-                <p >Is saved forever on Ethereum blockchain</p>
+                <p>Is saved forever on Ethereum blockchain</p>
 
             )
         } else {
-            return(
-                <button className="btn btn-black p-2" onClick={() => getWinner(fightOb)}>Save results on blockchain</button>
+            return (
+                <button className="btn btn-black p-2" onClick={() => getWinner(fightOb)}>Save results on
+                    blockchain</button>
             )
 
         }
     }
-
 
 
     function listener_fights(_web3, c) {
@@ -180,27 +186,21 @@ const App = () => {
 
                 let temp = log.data
 
-                let l =temp.length
+                let l = temp.length
                 let s = 64
-                let _winnerID = parseInt(temp.substring((l-4*s) , (l-3*s) ), 16)
-                let _fightID = parseInt(temp.substring((l-3*s)  , (l-2*s) ), 16)
+                let _winnerID = parseInt(temp.substring((l - 4 * s), (l - 3 * s)), 16)
+                let _fightID = parseInt(temp.substring((l - 3 * s), (l - 2 * s)), 16)
 
-                let _faster_eff = bigInt(temp.substring((l-2*s) , (l-s)), 16).toString().split('').reverse().join('')
-                let _slower_eff = bigInt(temp.substring((l-s) , l), 16).toString().split('').reverse().join('')
+                let _faster_eff = bigInt(temp.substring((l - 2 * s), (l - s)), 16).toString().split('').reverse().join('')
+                let _slower_eff = bigInt(temp.substring((l - s), l), 16).toString().split('').reverse().join('')
 
-                createFightObj(_fightID, _winnerID, c,_faster_eff,_slower_eff)
+                createFightObj(_fightID, _winnerID, c, _faster_eff, _slower_eff)
 
 
             });
 
 
-
-
-
-
-
     }
-
 
 
     function fightExists(fightID) {
@@ -258,7 +258,7 @@ const App = () => {
 
                 let pok1_eff;
                 let pok2_eff;
-                if(firstPok.init > secondPok.init){
+                if (firstPok.init > secondPok.init) {
                     pok1_eff = eff_fast_list
                     pok2_eff = eff_slow_list
                 } else {
@@ -267,10 +267,10 @@ const App = () => {
                 }
 
 
-                let firstPokObj = PokemonObj(firstPok.name_id, firstPokOwner, typeArray[firstPok.type1], firstType2, firstPok.id, firstName,pok1Wins)
+                let firstPokObj = PokemonObj(firstPok.name_id, firstPokOwner, typeArray[firstPok.type1], firstType2, firstPok.id, firstName, pok1Wins)
                 let secondPokObj = PokemonObj(secondPok.name_id, secondPokOwner, typeArray[secondPok.type1], secondType2, secondPok.id, secondName, pok2Wins)
 
-                let fightobj = FightObj(fightID, w, pok, firstPokObj, secondPokObj, false,pok1_eff,pok2_eff)
+                let fightobj = FightObj(fightID, w, pok, firstPokObj, secondPokObj, false, pok1_eff, pok2_eff)
 
                 let winnerExists = await c.methods.fightIDToWinnerPokemon(fightID).call();
 
@@ -293,8 +293,7 @@ const App = () => {
     }
 
 
-
-        function Slideshow() {
+    function Slideshow() {
         const delay = 4000;
         const [index, setIndex] = useState(0);
         const timeoutRef = useRef(null);
@@ -328,7 +327,7 @@ const App = () => {
                         return (
                             <div className="slide" key={index} onClick={() => getFight(fight)}>
                                 <div className="d-flex flex-column align-items-center">
-                                    <div className="row-10" >
+                                    <div className="row-10">
 
                                         <img height="80"
                                              src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${fight.firstPok.nameID}.svg`}/>
@@ -376,19 +375,37 @@ const App = () => {
     }
 
     function showYourPok() {
-        if (mySelectedPok.nameID !== undefined)
+        if (mySelectedPok.nameID !== undefined) {
             return (
                 <div className="d-flex flex-column align-items-center p-4 ">
                     <span className="font-weight-bold">Your Pokemon</span>
                     <img height="80"
                          src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${mySelectedPok.nameID}.svg`}/>
                     <span>{mySelectedPok.name}</span>
-                    <span className="corners"><div className="rcorners1">Type:</div> <div className="rcorners2">{mySelectedPok.type1} </div></span>
-                    <span className="corners"><div className="rcorners1">Type:</div> <div className="rcorners2">{mySelectedPok.type2} </div></span>
+                    {  showTypes(mySelectedPok)}
                     <span>My nameID/dex# = {mySelectedPok.nameID}</span>
 
                 </div>
             )
+        }
+    }
+
+    function showTypes(pok) {
+        if (pok.type2 !== 'None') {
+            return (
+                <div>
+                <span className="corners"><div className="rcorners1">Type:</div> <div
+                    className="rcorners2">{pok.type1} </div></span>
+                    <span className="corners"><div className="rcorners1">Type:</div> <div
+                        className="rcorners2">{pok.type2} </div></span>
+                </div>
+            )
+        } else {
+            return(<div>
+            <span className="corners"><div className="rcorners1">Type:</div> <div
+                className="rcorners2">{pok.type1} </div></span>
+            </div>)
+        }
     }
 
     function showChosenOponent() {
@@ -399,8 +416,7 @@ const App = () => {
                     <img height="80"
                          src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${oponentSelectedPok.nameID}.svg`}/>
                     <span>{oponentSelectedPok.name}</span>
-                    <span className="corners"><div className="rcorners1">Type:</div> <div className="rcorners2">{oponentSelectedPok.type1} </div></span>
-                    <span className="corners"><div className="rcorners1">Type:</div> <div className="rcorners2">{oponentSelectedPok.type2} </div></span>
+                    {showTypes(oponentSelectedPok)}
                     <span>My nameID/dex# = {oponentSelectedPok.nameID}</span>
 
                 </div>
@@ -410,22 +426,20 @@ const App = () => {
     function fightButton() {
         if (oponentSelectedPok.nameID !== undefined && mySelectedPok.nameID !== undefined)
             return (
-                <div className="row align-items-center" style={{width: '50%'}} >
-                    <button onClick={() => fight(mySelectedPok.id, oponentSelectedPok.id)} className="btn btn-secondary p-3" style={{marginBottom: '5px',width:'50%'}}>
-                        FIGHT </button>
+                <div className="row align-items-center" style={{width: '50%'}}>
+                    <button onClick={() => fight(mySelectedPok.id, oponentSelectedPok.id)}
+                            className="btn btn-secondary p-3" style={{marginBottom: '5px', width: '50%'}}>
+                        FIGHT
+                    </button>
                     <span style={{paddingTop: '10px'}}>The fight will be sent to the StarkNet platform where the fight will be calculated and later return to the Ethereum blockchain.</span>
                     <span>This usually takes 30 min to 1 hour depending on the traffic on the blockchain</span>
                     <span>Once the winner results are in, you will see it under "All the winners"</span>
                 </div>
 
 
-
             )
 
     }
-
-
-
 
 
     const baseUrl = 'https://pokeapi.co/api/v2/pokemon/?offset='
@@ -439,20 +453,20 @@ const App = () => {
         return name
     }
 
-    function showRounds(){
-        if(selectedFight != null){
-            return(
+    function showRounds() {
+        if (selectedFight != null) {
+            return (
                 <div>
                     <span>Efficiency pok 1 {selectedFight.eff_pok1}</span>
                     <br/>
-                    <span>Efficiency pok 2  {selectedFight.eff_pok2}</span>
+                    <span>Efficiency pok 2 {selectedFight.eff_pok2}</span>
                 </div>
             )
         }
 
     }
 
-    function getFight(fightObj){
+    function getFight(fightObj) {
         setSelectedFight(fightObj)
     }
 
@@ -484,8 +498,10 @@ const App = () => {
                              src={eth}
                              alt="" height="60"/>
                     </div>
-                    <h2 className="display-7 fw-bold" style={{width: '70%', textAlign: 'center', marginBottom:'150px'}}>Create your own
-                        Pokémon NFT and fight against friends on the Ethereum blockchain using ZK-Rollups on <a href="https://starkware.co/starknet/">StarkNet*</a> </h2>
+                    <h2 className="display-7 fw-bold"
+                        style={{width: '70%', textAlign: 'center', marginBottom: '150px'}}>Create your own
+                        Pokémon NFT and fight against friends on the Ethereum blockchain using ZK-Rollups on <a
+                            href="https://starkware.co/starknet/">StarkNet*</a></h2>
                     <div className="col-6 text-center mb-3">
                         <h3>Mint your pokemon <img src={eth} height="30"/></h3>
                         <div>
@@ -516,13 +532,15 @@ const App = () => {
                             if (pok.owner === account) {
                                 return (
                                     <div className="d-flex flex-column align-items-center p-5" key={my_uuid}
-                                         style={{backgroundColor: mySelectedPok == pok ? 'darkgray' : 'transparent', height: '100%'}}
+                                         style={{
+                                             backgroundColor: mySelectedPok == pok ? 'darkgray' : 'transparent',
+                                             height: '100%'
+                                         }}
                                          onClick={() => selectMyFighter(pok)}>
                                         <img height="160"
                                              src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${pok.nameID}.svg`}/>
                                         <span>{pok.name}</span>
-                                        <span className="corners"><div className="rcorners1">Type:</div> <div className="rcorners2">{pok.type1} </div></span>
-                                        <span className="corners"><div className="rcorners1">Type:</div> <div className="rcorners2">{pok.type2} </div></span>
+                                        {showTypes(pok)}
                                         <span>My nameID/dex# = {pok.nameID}</span>
                                         <span>Win counts = {pok.winCounts}</span>
                                         <span>My UUID = {my_uuid}</span>
@@ -550,8 +568,7 @@ const App = () => {
                                         <img height="150"
                                              src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${pok.nameID}.svg`}/>
                                         <span>{pok.name}</span>
-                                        <span className="corners"><div className="rcorners1">Type:</div> <div className="rcorners2">{pok.type1} </div></span>
-                                        <span className="corners"><div className="rcorners1">Type:</div> <div className="rcorners2">{pok.type2} </div></span>
+                                        {showTypes(pok)}
                                         <span>My nameID/dex# = {pok.nameID}</span>
                                         <span>Win counts = {pok.winCounts}</span>
                                         <span>UUID = {index}</span>
@@ -575,10 +592,6 @@ const App = () => {
         </div>
     </div>;
 };
-
-
-
-
 
 
 export default App;
