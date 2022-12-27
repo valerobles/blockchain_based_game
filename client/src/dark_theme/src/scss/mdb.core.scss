@@ -1,0 +1,30 @@
+// CORE FUNCTIONS
+@import 'src/dark_theme/src/scss/bootstrap-rtl-fix/functions';
+@import 'src/dark_theme/src/scss/free/functions';
+
+// CORE VARIABLES
+@import 'src/dark_theme/src/scss/free/variables';
+@import 'src/dark_theme/src/scss/bootstrap-rtl-fix/variables';
+
+// BOOTSTRAP CORE
+@import 'src/dark_theme/src/scss/bootstrap-rtl-fix/mixins';
+@import 'src/dark_theme/src/scss/bootstrap-rtl-fix/utilities';
+
+// BOOTSTRAP CORE COMPONENTS
+@import 'src/dark_theme/src/scss/bootstrap-rtl-fix/root';
+@import 'src/dark_theme/src/scss/bootstrap-rtl-fix/reboot';
+@import 'src/dark_theme/src/scss/bootstrap-rtl-fix/type';
+@import 'src/dark_theme/src/scss/bootstrap-rtl-fix/containers';
+@import 'src/dark_theme/src/scss/bootstrap-rtl-fix/grid';
+
+// Utilities
+@import 'src/dark_theme/src/scss/bootstrap-rtl-fix/utilities/api';
+
+// MDB CORE
+@import 'src/dark_theme/src/scss/free/mixins';
+
+// MDB CORE COMPONENTS
+@import 'src/dark_theme/src/scss/free/root';
+@import 'src/dark_theme/src/scss/free/reboot';
+@import 'src/dark_theme/src/scss/free/colors';
+@import 'src/dark_theme/src/scss/free/shadows';
