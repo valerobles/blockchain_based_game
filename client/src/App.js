@@ -49,7 +49,7 @@ const App = () => {
             contract.methods.mint(nameID).send({from: account}, (error) => {
                 if (!error) {
 
-                    let pok = PokemonObj(nameID, account, "Loading", "Loading", -1, "Loading");
+                    let pok = PokemonObj(nameID, account, "Loading", "Loading", -1, "Loading",0);
                     setPokemonList([...pokemonList, pok]);
 
                 } else {

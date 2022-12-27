@@ -132,18 +132,16 @@ contract NFT is ERC721, ERC721Enumerable {
 
         require(_name_id > 0 && _name_id < 650, "Only valid dex numbers. Must be between 1 and 649");
 
-        uint256 _uuid = pokemons.length;
+        uint256 _id = pokemons.length;
 
-        // TODO: create UUID for unique ID
         // create pokemon struct from name_id
-        Pokemon memory newPok = createPokemonByNameId(_name_id, _uuid);
+        Pokemon memory newPok = createPokemonByNameId(_name_id, _id);
         pokemons.push(newPok);
 
-        emit createdRandomPkmn(_uuid, newPok.hp, newPok.atk, newPok.init, newPok.def);
 
         // _safeMint method from openzeppelin
         // makes sure that NFT is of ERC721 standard
-        _safeMint(msg.sender, _uuid);
+        _safeMint(msg.sender, _id);
     }
 
 
