@@ -39,7 +39,9 @@ func winner(fight_id: felt) -> (winner_id: felt) {
 
 // ------------------------------------------------------------------------------------------------------------------------
 // events
-
+@event
+func slow(value: felt) {
+}
 @event
 func attacks(count: felt) {
 }
@@ -156,9 +158,9 @@ func createFearow() -> Pokemon* {
         new Pokemon(
             id=1,
             hp=116,
-          atk=111,
-          init=113,
-          def=105,
+            atk=111,
+            init=113,
+            def=105,
             type1=7,
             type2=9,
             atk1_type=7,
@@ -226,7 +228,7 @@ func no_param_fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
 
     efficiency_slower_event.emit(e2);
 
-    return (winner=e2);
+    return (winner=e1);
 }
 // fight with pokemon that can do zero damage (dmg) to eachother -> type1 & atk_dmg = 0
 @external
@@ -237,8 +239,8 @@ func no_param_fight_zerodmg{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, rang
     let (res) = fight(createBisasamZero(), createPikachuZero());
     let (c) = attack_counter.read();
     attacks.emit(c);
-     let (e1) = faster_efficiency.read();
-        let (e2) = slower_efficiency.read();
+    let (e1) = faster_efficiency.read();
+    let (e2) = slower_efficiency.read();
 
     return (winner=e2);
 }
@@ -255,8 +257,8 @@ func pokemon_game{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
     // Get values of the fp register.
     let (__fp__, _) = get_fp_and_pc();
     faster_efficiency.write(0);
-     slower_efficiency.write(0);
-     attack_counter.write(0);
+    slower_efficiency.write(0);
+    attack_counter.write(0);
     let (l1_contract_address) = l1_address.read();
     assert from_address = l1_contract_address;
     fight_steps.emit(step=1);
@@ -323,11 +325,11 @@ func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         slower_pkmn = pkmn1;
     }
     if (is_le(faster_pkmn.hp, 0) == 1) {
-            return (res=slower_pkmn.id);
-        }
-         if (is_le(slower_pkmn.hp, 0) == 1) {
-                    return (res=faster_pkmn.id);
-                }
+        return (res=slower_pkmn.id);
+    }
+    if (is_le(slower_pkmn.hp, 0) == 1) {
+        return (res=faster_pkmn.id);
+    }
     // Coinflip for which attack to use for the faster pkmn
     let coinflip1 = get_random(2);
     local atk_damage_fast: felt;
@@ -409,6 +411,7 @@ func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         }
 
         let addEff2 = eff2 + newEff2;
+        slow.emit(value=addEff2);
         slower_efficiency.write(addEff2);
 
         // update hp of faster pkmn
