@@ -135,18 +135,18 @@ func createPikachu() -> Pokemon* {
 func createKakuna() -> Pokemon* {
     return (
         new Pokemon(
-            id=7,
-            hp=152,
-            atk=111,
-            init=106,
-            def=111,
-            type1=7,
-            type2=11,
-            atk1_type=7,
-            atk1_damage=40,
-            atk2_type=11,
-            atk2_damage=40,
-            name_id=1,
+            id=0,
+            hp=154,
+            atk=159,
+            init=167,
+            def=157,
+            type1=11,
+            type2=9,
+            atk1_type=11,
+            atk1_damage=61,
+            atk2_type=1,
+            atk2_damage=44,
+            name_id=12,
         )
     );
 }
@@ -154,18 +154,18 @@ func createKakuna() -> Pokemon* {
 func createFearow() -> Pokemon* {
     return (
         new Pokemon(
-            id=6,
-            hp=142,
-            atk=117,
-            init=156,
-            def=101,
-            type1=0,
+            id=1,
+            hp=116,
+          atk=111,
+          init=113,
+          def=105,
+            type1=7,
             type2=9,
-            atk1_type=0,
-            atk1_damage=40,
-            atk2_type=9,
-            atk2_damage=40,
-            name_id=25,
+            atk1_type=7,
+            atk1_damage=75,
+            atk2_type=14,
+            atk2_damage=54,
+            name_id=41,
         )
     );
 }
@@ -199,8 +199,8 @@ func createPikachuZero() -> Pokemon* {
             def=101,
             type1=0,
             type2=99,
-            atk1_type=13,
-            atk1_damage=40,
+            atk1_type=1,
+            atk1_damage=10,
             atk2_type=13,
             atk2_damage=40,
             name_id=25,
@@ -226,18 +226,21 @@ func no_param_fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
 
     efficiency_slower_event.emit(e2);
 
-    return (winner=e1);
+    return (winner=e2);
 }
 // fight with pokemon that can do zero damage (dmg) to eachother -> type1 & atk_dmg = 0
 @external
 func no_param_fight_zerodmg{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     winner: felt
 ) {
-    attack_counter.write(0);
+    attack_counter.write(7);
     let (res) = fight(createBisasamZero(), createPikachuZero());
     let (c) = attack_counter.read();
     attacks.emit(c);
-    return (winner=res);
+     let (e1) = faster_efficiency.read();
+        let (e2) = slower_efficiency.read();
+
+    return (winner=e2);
 }
 
 // ------------------------------------------------------------------------------------------------------------------------
@@ -251,7 +254,9 @@ func pokemon_game{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
 ) {
     // Get values of the fp register.
     let (__fp__, _) = get_fp_and_pc();
-
+    faster_efficiency.write(0);
+     slower_efficiency.write(0);
+     attack_counter.write(0);
     let (l1_contract_address) = l1_address.read();
     assert from_address = l1_contract_address;
     fight_steps.emit(step=1);
@@ -317,7 +322,12 @@ func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         faster_pkmn = pkmn2;
         slower_pkmn = pkmn1;
     }
-
+    if (is_le(faster_pkmn.hp, 0) == 1) {
+            return (res=slower_pkmn.id);
+        }
+         if (is_le(slower_pkmn.hp, 0) == 1) {
+                    return (res=faster_pkmn.id);
+                }
     // Coinflip for which attack to use for the faster pkmn
     let coinflip1 = get_random(2);
     local atk_damage_fast: felt;
