@@ -59,7 +59,7 @@ contract NFT is ERC721, ERC721Enumerable {
     IStarknetCore starknetCore;
 
     // Variables needed for L2 interaction
-    uint256 L2_CONTRACT = 0x0723627da2c6e4c4e545c8c81e05c9c64e81e6f73028a356a7c51b305ac4509f; // L2 contract address
+    uint256 L2_CONTRACT = 0x02ceca6b6d4d9f6b0da9a08f01b328fc06539267740fe1e14526fbba7f78e0c9; // L2 contract address
     uint256 constant SELECTOR= 1287792748861478314957917789548421785918690629705705918786662048852425233154; //pokemon_game method as a selector encoded
 
 
@@ -97,10 +97,9 @@ contract NFT is ERC721, ERC721Enumerable {
 
 
     //NFT name and Symbol
-    constructor() ERC721("NFT", "PKMN") {
+    constructor() ERC721("PokemonNFT", "PKMN") {
         // setting StarknetCore Contract address
         starknetCore = IStarknetCore(address(0xde29d060D45901Fb19ED6C6e959EB22d8626708e));
-        // https://docs.starknet.io/documentation/Ecosystem/ref_operational_info/
     }
 
     // _________________________________________________________________________________________________________________________________
@@ -431,6 +430,7 @@ contract NFT is ERC721, ERC721Enumerable {
         );
 
         fightIDToFighters[fight_ID] = Fight(pok1,pok2);
+
         emit startFight(msg.sender, pok1.id, pok2.id, L2_CONTRACT, msg.value);
     }
 

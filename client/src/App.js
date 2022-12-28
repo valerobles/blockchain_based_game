@@ -39,9 +39,9 @@ const App = () => {
     const [oponentSelectedPok, setOponentSelectedPok] = useState(PokemonObj);
     const [selectedFight, setSelectedFight] = useState(null);
 
-    const L2_CONTRACT = "0x0723627da2c6e4c4e545c8c81e05c9c64e81e6f73028a356a7c51b305ac4509f";
-    const L1_CONTRACT = "0x2E11039F155992A65935AA2Fd8fdD84857301B87";
-    const L1_CONTRACT_ZERO = "0x0000000000000000000000002E11039F155992A65935AA2Fd8fdD84857301B87";
+    const L2_CONTRACT = "0x02ceca6b6d4d9f6b0da9a08f01b328fc06539267740fe1e14526fbba7f78e0c9";
+    const L1_CONTRACT = "0x98C304C156556dafFFBb5771A6D2D0ecb3CCb102";
+    const L1_CONTRACT_ZERO = "0x00000000000000000000000098C304C156556dafFFBb5771A6D2D0ecb3CCb102";
     const StarkNetCore = '0xde29d060D45901Fb19ED6C6e959EB22d8626708e';
 
     const mint = () => {
@@ -427,17 +427,13 @@ const App = () => {
     }
 
     function fightButton() {
-        if (oponentSelectedPok.nameID !== undefined && mySelectedPok.nameID !== undefined)
+        if ( mySelectedPok.nameID !== undefined)
             return (
-                <div className="row align-items-center" style={{width: '50%'}}>
-                    <button onClick={() => fight(mySelectedPok.id, oponentSelectedPok.id)}
-                            className="btn btn-secondary p-3" style={{marginBottom: '5px', width: '50%'}}>
+                    <button onClick={() => fight(mySelectedPok.id, 1)}
+                            className="btn btn-secondary p-2" style={{marginBottom: '5px', width: '50%'}}>
                         FIGHT
                     </button>
-                    <span style={{paddingTop: '10px'}}>The fight will be sent to the StarkNet platform where the fight will be calculated and later return to the Ethereum blockchain.</span>
-                    <span>This usually takes 30 min to 1 hour depending on the traffic on the blockchain</span>
-                    <span>Once the winner results are in, you will see it under "All the winners"</span>
-                </div>
+
 
 
             )
@@ -590,6 +586,16 @@ const App = () => {
                     <p>Fresh out of StarkNet <img alt="" src={starknet_logo} height="30px"/></p>
                     {Slideshow()}
                     {showRounds()}
+                    <h1>About this project</h1>
+                    <div style={{alignItems: 'center', display: 'flex', flexDirection: 'column'}}>
+                        <div style={{backgroundColor: '#4a5772', width: '70%',padding: '20px'}}>
+                            <br/>
+                            <span>The fight will be sent to the StarkNet platform where the fight will be calculated and later return to the Ethereum blockchain.</span>
+                            <span>This usually takes 30 min to 1 hour depending on the traffic on the blockchain</span>
+                            <span>Once the winner results are in, you will see it under "All the winners"</span>
+                        </div>
+                    </div>
+
 
 
                 </div>
