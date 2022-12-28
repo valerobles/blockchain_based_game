@@ -10,11 +10,18 @@ import bigInt from "big-integer";
 
 const App = () => {
 
-    // TODO: Add fight rounds won -> methods.pokemonIDToFightsWon(winnerID).call()
+
     const PokemonObj = (nameID, owner, type1, type2, id, name, winCounts) => {
-        return {nameID: nameID, owner: owner, type1: type1, type2: type2, id: id, name: name, winCounts: winCounts}
+        return {
+            nameID: nameID,
+            owner: owner,
+            type1: type1,
+            type2: type2,
+            id: id,
+            name: name,
+            winCounts: winCounts}
     }
-    const FightObj = (fightID, winnerID, winnerPok, firstPok, secondPok, onBlockchain, eff_pok1, eff_pok2) => {
+    const FightObj = (fightID, winnerID, winnerPok, firstPok, secondPok, onBlockchain, eff_pok1, eff_pok2, blockNumber, pok1Faster) => {
         return {
             fightID: fightID,
             winnerID: winnerID,
@@ -23,7 +30,9 @@ const App = () => {
             secondPok: secondPok,
             onBlockchain: onBlockchain,
             eff_pok1: eff_pok1,
-            eff_pok2: eff_pok2
+            eff_pok2: eff_pok2,
+            blockNumber: blockNumber,
+            pok1Faster: pok1Faster
         }
     }
     const [web3, setWeb3] = useState();
@@ -92,25 +101,26 @@ const App = () => {
         }
     }
 
-    // load the contract
+    // load the solidity contract
     const loadWeb3Contract = async (web3) => {
         const abi = NFT.abi;
-        const contract = new web3.eth.Contract(abi, L1_CONTRACT); // TODO get solidity contract address
+        const contract = new web3.eth.Contract(abi, L1_CONTRACT);
         setContract(contract);
         return contract;
     }
    function listener_fights(_web3, c) {
 
         const fromL2toStarkNetCore = {
-            fromBlock: 807000,
+            fromBlock: 8214000,
             address: StarkNetCore, // starknetcore
             topics: ["0x4264ac208b5fde633ccdd42e0f12c3d6d443a4f3779bbf886925b94665b63a22", L2_CONTRACT, L1_CONTRACT_ZERO, null]
         };
         _web3.eth.subscribe('logs', fromL2toStarkNetCore, (err, event) => {
-            if (!err)
+            if (err)
                 console.log(event);
         })
             .on("data", function (log) {
+
 
                 let temp = log.data
 
@@ -122,7 +132,7 @@ const App = () => {
                 let _faster_eff = bigInt(temp.substring((l - 2 * s), (l - s)), 16).toString().split('').reverse().join('')
                 let _slower_eff = bigInt(temp.substring((l - s), l), 16).toString().split('').reverse().join('')
 
-                createFightObj(_fightID, _winnerID, c, _faster_eff, _slower_eff)
+                createFightObj(_fightID, _winnerID, c, _faster_eff, _slower_eff, log.blockNumber)
 
 
             });
@@ -176,24 +186,35 @@ const App = () => {
     }
 
 
-    // TODO: NOT WORKING
-    // TODO: which one is faster?
+
     async function getWinner(obj) {
 
         console.log(obj.winnerPok.id, obj.fightID)
+        let eff_1 = obj.eff_pok1.reverse().toString().replaceAll(',', '')
+        let eff_2 = obj.eff_pok2.reverse().toString().replaceAll(',', '')
+
+        if(obj.pok1Faster){
+            await contract.methods.get_winner(obj.winnerPok.id, obj.fightID, eff_1, eff_2).send({from: account}, (error) => {
+                if (error) {
+                    console.log(error);
+                } else {
+                    obj.onBlockchain = true
+                }
+            });
+        } else {
+            await contract.methods.get_winner(obj.winnerPok.id, obj.fightID, eff_2, eff_1).send({from: account}, (error) => {
+                if (error) {
+                    console.log(error);
+                } else {
+                    obj.onBlockchain = true
+                }
+            });
+
+        }
 
 
-        console.log(obj.eff_pok1.reverse().toString().replaceAll(',', ''))
-        console.log(obj.eff_pok2.reverse().toString().replaceAll(',', ''))
-        let eff_ = obj.eff_pok1.reverse().toString().replaceAll(',', '')
-        let eff = obj.eff_pok2.reverse().toString().replaceAll(',', '')
-        await contract.methods.get_winner(obj.winnerPok.id, obj.fightID, eff, eff_).send({from: account}, (error) => {
-            if (error) {
-                console.log(error);
-            } else {
-                obj.onBlockchain = true
-            }
-        });
+
+
 
 
     }
@@ -224,9 +245,9 @@ const App = () => {
         return fightExistsB;
     }
 
-    async function createFightObj(fightID, w, c, eff_fast, eff_slow) {
+    async function createFightObj(fightID, w, c, eff_fast, eff_slow,blocknumber) {
 
-        console.log(fightID, w)
+
         if (!fightExists(fightID)) {
 
             await getPokByUUID(w, c).then(async pok => {
@@ -245,8 +266,8 @@ const App = () => {
                     eff_slow_list.push(eff_slow.charAt(i))
 
                 }
-                console.log(eff_fast_list);
-                console.log(eff_slow_list);
+                //console.log(eff_fast_list);
+                //console.log(eff_slow_list);
 
 
                 let constestants = await c.methods.fightIDToFighters(fightID).call(); // call mapping in solidity contract
@@ -267,19 +288,26 @@ const App = () => {
 
                 let pok1_eff;
                 let pok2_eff;
+                let pok1WasFaster;
                 if (firstPok.init > secondPok.init) {
                     pok1_eff = eff_fast_list
                     pok2_eff = eff_slow_list
+                    pok1WasFaster = true;
+
                 } else {
                     pok1_eff = eff_slow_list
                     pok2_eff = eff_fast_list
+                    pok1WasFaster = false;
+
                 }
+
+
 
 
                 let firstPokObj = PokemonObj(firstPok.name_id, firstPokOwner, typeArray[firstPok.type1], firstType2, firstPok.id, firstName, pok1Wins)
                 let secondPokObj = PokemonObj(secondPok.name_id, secondPokOwner, typeArray[secondPok.type1], secondType2, secondPok.id, secondName, pok2Wins)
 
-                let fightobj = FightObj(fightID, w, pok, firstPokObj, secondPokObj, false, pok1_eff, pok2_eff)
+                let fightobj = FightObj(fightID, w, pok, firstPokObj, secondPokObj, false, pok1_eff, pok2_eff,blocknumber, pok1WasFaster)
 
                 let winnerExists = await c.methods.fightIDToWinnerPokemon(fightID).call();
 
@@ -336,16 +364,23 @@ const App = () => {
                         return (
                             <div className="slide" key={index} onClick={() => getFight(fight)}>
                                 <div className="d-flex flex-column align-items-center">
-                                    <div className="row-10">
+                                    <span>Blocknumber: {fight.blockNumber}</span>
+                                    <div className="row-9">
+                                        <div className="col-4">
+                                            <img alt="" height="80"
+                                                 src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${fight.firstPok.nameID}.svg`}/>
+                                            <span>{fight.firstPok.name}</span>
+                                            <span>Win counts: {fight.firstPok.winCounts}</span>
+                                        </div>
 
-                                        <img alt="" height="80"
-                                             src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${fight.firstPok.nameID}.svg`}/>
-                                        <span>{fight.firstPok.name}</span>
-                                        <span>Win counts: {fight.firstPok.winCounts}</span>
-                                        <img alt="" height="80"
-                                             src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${fight.secondPok.nameID}.svg`}/>
-                                        <span>{fight.secondPok.name}</span>
-                                        <span>Win counts: {fight.secondPok.winCounts}</span>
+                                        <div className="col-4">
+                                            <img alt="" height="80"
+                                                 src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${fight.secondPok.nameID}.svg`}/>
+                                            <span>{fight.secondPok.name}</span>
+                                            <span>Win counts: {fight.secondPok.winCounts}</span>
+                                        </div>
+
+
                                     </div>
                                     <div className="d-flex flex-column align-items-center p-4">
                                         <img alt="" height="150"
@@ -353,7 +388,6 @@ const App = () => {
                                         <span>{fight.winnerPok.name}</span>
                                         <span>My nameID/dex# = {fight.winnerPok.nameID}</span>
                                         <span>Win counts = {fight.winnerPok.winCounts}</span>
-                                        <span>WINNER = {fight.winnerID}</span>
                                         <span>FIGHT ID = {fight.fightID}</span>
                                         <span>Owner : {shortOwnerText}</span>
                                         {isOnBlockchainMessage(fight)}
@@ -429,7 +463,7 @@ const App = () => {
     function fightButton() {
         if ( mySelectedPok.nameID !== undefined && opponentSelectedPok.nameID !== undefined )
             return (
-                    <button onClick={() => fight(mySelectedPok.id, opponentSelectedPok.id)}
+                    <button onClick={() => fight(mySelectedPok.id, opponentSelectedPok.nameID)}
                             className="btn btn-secondary p-2" style={{marginBottom: '5px', width: '50%'}}>
                         FIGHT
                     </button>
