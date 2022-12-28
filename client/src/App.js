@@ -624,17 +624,28 @@ const App = () => {
                     <div style={{alignItems: 'center', display: 'flex', flexDirection: 'column'}}>
                         <div style={{backgroundColor: '#4a5772', width: '70%',padding: '20px'}}>
                             <br/>
-                            <span>The fight will be sent to the StarkNet platform where the fight will be calculated and later return to the Ethereum blockchain.</span>
+                            <span>A Fight between two Pokemon will be sent to the StarkNet platform where the fight will be calculated and later return to the Ethereum blockchain.</span>
                             <span>This usually takes 30 min to 1 hour depending on the traffic on the blockchain</span>
                             <span>Once the winner results are in, you will see it under "All the winners"</span>
+                            <span>To save the results on the blockchain and have your Pokemon's wins update, click on "Save results to blockchain". This is a transaction and gas fees must be paid. </span>
+                            <span>The transaction takes around 2 minutes to be confirmed.</span>
+                        </div>
+                        <br/>
+                        <div style={{backgroundColor: '#5c4a72', width: '70%',padding: '20px'}}>
+                            <br/>
+                            <span> MORE INFO? </span>
+
                         </div>
                     </div>
 
-
-
+                </div>
+                <div className="footer">
+                    <p style={{color: "black"}}>Project by Luca Lunati and Valeria Robles Garzon for FHNW</p>
                 </div>
             </div>
+
         </div>
+
     </div>;
 };
 
