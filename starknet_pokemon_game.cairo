@@ -40,7 +40,7 @@ func winner(fight_id: felt) -> (winner_id: felt) {
 // ------------------------------------------------------------------------------------------------------------------------
 // events
 @event
-func slow(value: felt, counter: felt) {
+func slow(value: felt) {
 }
 @event
 func attacks(count: felt) {
@@ -411,7 +411,7 @@ func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         }
 
         let addEff2 = eff2 + newEff2;
-        slow.emit(value=addEff2,counter=n);
+        slow.emit(value=addEff2);
         slower_efficiency.write(addEff2);
 
         // update hp of faster pkmn
