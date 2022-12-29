@@ -64,20 +64,20 @@
 .rcorners1 {
   border-radius: 25px 0px 0px 25px;
   background: black;
-  padding: 10px;
+  padding: 5px 5px 5px 8px;
   margin-bottom: 5px;
   color:white;
-  width:80px;
-  max-width: 80px;
+  width:70px;
+  max-width: 70px;
 }
 .rcorners2 {
   border-radius: 0px 25px 25px 0px;
   background: white;
-  padding: 10px;
+  padding: 5px 5px 5px 8px;
   margin-bottom: 5px;
   color: black;
-  width:80px;
-  max-width: 80px;
+  width:70px;
+  max-width: 70px;
 }
 .corners {
   display: flex;
@@ -92,4 +92,9 @@
   60% {background-position: 60%;}
   75% {background-position: 40%;}
   100%  {background-position: 0 0;}
+}
+.textName {
+  font-family: "Flexo-Medium", arial, sans-serif;
+  font-weight: bold;
+  align-items: center;
 }

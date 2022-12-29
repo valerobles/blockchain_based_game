@@ -19,7 +19,8 @@ const App = () => {
             type2: type2,
             id: id,
             name: name,
-            winCounts: winCounts}
+            winCounts: winCounts
+        }
     }
     const FightObj = (fightID, winnerID, winnerPok, firstPok, secondPok, onBlockchain, eff_pok1, eff_pok2, blockNumber, pok1Faster) => {
         return {
@@ -58,7 +59,7 @@ const App = () => {
             contract.methods.mint(nameID).send({from: account}, (error) => {
                 if (!error) {
 
-                    let pok = PokemonObj(nameID, account, "Loading", "Loading", -1, "Loading",0);
+                    let pok = PokemonObj(nameID, account, "Loading", "Loading", -1, "Loading", 0);
                     setPokemonList([...pokemonList, pok]);
 
                 } else {
@@ -108,7 +109,8 @@ const App = () => {
         setContract(contract);
         return contract;
     }
-   function listener_fights(_web3, c) {
+
+    function listener_fights(_web3, c) {
 
         const fromL2toStarkNetCore = {
             fromBlock: 8214000,
@@ -139,6 +141,7 @@ const App = () => {
 
 
     }
+
     useEffect(() => {
 
         async function fetchData() {
@@ -149,6 +152,7 @@ const App = () => {
 
             await listener_fights(web3, contract);
         }
+
         fetchData();
         //await listener_consumed(web3);
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -186,14 +190,13 @@ const App = () => {
     }
 
 
-
     async function getWinner(obj) {
 
         console.log(obj.winnerPok.id, obj.fightID)
         let eff_1 = obj.eff_pok1.reverse().toString().replaceAll(',', '')
         let eff_2 = obj.eff_pok2.reverse().toString().replaceAll(',', '')
 
-        if(obj.pok1Faster){
+        if (obj.pok1Faster) {
             await contract.methods.get_winner(obj.winnerPok.id, obj.fightID, eff_1, eff_2).send({from: account}, (error) => {
                 if (error) {
                     console.log(error);
@@ -213,10 +216,6 @@ const App = () => {
         }
 
 
-
-
-
-
     }
 
     function selectMyFighter(myPok) {
@@ -232,7 +231,6 @@ const App = () => {
     }
 
 
-
     function fightExists(fightID) {
         let fightExistsB = false
         fightList.forEach(f => {
@@ -245,7 +243,7 @@ const App = () => {
         return fightExistsB;
     }
 
-    async function createFightObj(fightID, w, c, eff_fast, eff_slow,blocknumber) {
+    async function createFightObj(fightID, w, c, eff_fast, eff_slow, blocknumber) {
 
 
         if (!fightExists(fightID)) {
@@ -302,12 +300,10 @@ const App = () => {
                 }
 
 
-
-
                 let firstPokObj = PokemonObj(firstPok.name_id, firstPokOwner, typeArray[firstPok.type1], firstType2, firstPok.id, firstName, pok1Wins)
                 let secondPokObj = PokemonObj(secondPok.name_id, secondPokOwner, typeArray[secondPok.type1], secondType2, secondPok.id, secondName, pok2Wins)
 
-                let fightobj = FightObj(fightID, w, pok, firstPokObj, secondPokObj, false, pok1_eff, pok2_eff,blocknumber, pok1WasFaster)
+                let fightobj = FightObj(fightID, w, pok, firstPokObj, secondPokObj, false, pok1_eff, pok2_eff, blocknumber, pok1WasFaster)
 
                 let winnerExists = await c.methods.fightIDToWinnerPokemon(fightID).call();
 
@@ -329,6 +325,19 @@ const App = () => {
 
     }
 
+    function showLoser(fight) {
+        if (fight.firstPok.nameID === fight.winnerPok.nameID) {
+            return (<div className="col-4">
+                {showNameAndPicture(fight.secondPok, 80)}
+                <span>{fight.secondPok.winCounts} fights won</span>
+            </div>)
+        } else {
+            return (<div className="col-4">
+                {showNameAndPicture(fight.firstPok, 80)}
+                <span>{fight.firstPok.winCounts} fights won</span>
+            </div>)
+        }
+    }
 
     function Slideshow() {
         const delay = 4000;
@@ -363,42 +372,24 @@ const App = () => {
                         let shortOwnerText = fight.winnerPok.owner.substring(0, 10) + "..."
                         return (
                             <div className="slide" key={index} onClick={() => getFight(fight)}>
-                                <div className="d-flex flex-column align-items-center">
+
+                                <div className="d-flex flex-column align-items-center p-4">
+                                    {showNameAndPicture(fight.winnerPok, 150)}
+                                    <span>{fight.winnerPok.winCounts} fights won</span>
+                                    <span>Fight-ID: {fight.fightID}</span>
+                                    <span>Owner: {shortOwnerText}</span>
+                                    <span className="font-weight-bold">Won vs.</span>
+                                    {showLoser(fight)}
                                     <span>Blocknumber: {fight.blockNumber}</span>
-                                    <div className="row-9">
-                                        <div className="col-4">
-                                            <img alt="" height="80"
-                                                 src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${fight.firstPok.nameID}.svg`}/>
-                                            <span>{fight.firstPok.name}</span>
-                                            <span>Win counts: {fight.firstPok.winCounts}</span>
-                                        </div>
-
-                                        <div className="col-4">
-                                            <img alt="" height="80"
-                                                 src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${fight.secondPok.nameID}.svg`}/>
-                                            <span>{fight.secondPok.name}</span>
-                                            <span>Win counts: {fight.secondPok.winCounts}</span>
-                                        </div>
-
-
-                                    </div>
-                                    <div className="d-flex flex-column align-items-center p-4">
-                                        <img alt="" height="150"
-                                             src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${fight.winnerPok.nameID}.svg`}/>
-                                        <span>{fight.winnerPok.name}</span>
-                                        <span>My nameID/dex# = {fight.winnerPok.nameID}</span>
-                                        <span>Win counts = {fight.winnerPok.winCounts}</span>
-                                        <span>FIGHT ID = {fight.fightID}</span>
-                                        <span>Owner : {shortOwnerText}</span>
-                                        {isOnBlockchainMessage(fight)}
-                                    </div>
-
-
+                                    {isOnBlockchainMessage(fight)}
                                 </div>
 
 
-                            </div>
-                        )
+
+
+
+                    </div>
+                    )
                     })}
 
 
@@ -409,22 +400,26 @@ const App = () => {
     }
 
 
-
-
     function showYourPok() {
         if (mySelectedPok.nameID !== undefined) {
             return (
-                <div className="d-flex flex-column align-items-center p-4 ">
-                    <span className="font-weight-bold">Your Pokemon</span>
-                    <img alt="" height="80"
-                         src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${mySelectedPok.nameID}.svg`}/>
-                    <span>{mySelectedPok.name}</span>
+                <div className="d-flex flex-column align-items-center p-4">
+                    <span className="font-weight-bold">Your Fighter</span>
+                    {showNameAndPicture(mySelectedPok, 110)}
                     {showTypes(mySelectedPok)}
-                    <span>My nameID/dex# = {mySelectedPok.nameID}</span>
-
                 </div>
             )
         }
+    }
+
+    function showNameAndPicture(pok, height) {
+        return (<div className="d-flex flex-column align-items-center ">
+                <span className="textName">{pok.name} #{pok.nameID}</span>
+                <br/>
+                <img alt="" height={height}
+                     src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${pok.nameID}.svg`}/>
+            </div>
+        )
     }
 
     function showTypes(pok) {
@@ -449,32 +444,31 @@ const App = () => {
         if (opponentSelectedPok.nameID !== undefined)
             return (
                 <div className="d-flex flex-column align-items-center p-4 ">
-                    <span className="font-weight-bold">Your Opponent Pokemon</span>
-                    <img alt="" height="80"
-                         src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${opponentSelectedPok.nameID}.svg`}/>
-                    <span>{opponentSelectedPok.name}</span>
+                    <span className="font-weight-bold">Opponent</span>
+                    {showNameAndPicture(opponentSelectedPok, 110)}
                     {showTypes(opponentSelectedPok)}
-                    <span>My nameID/dex# = {opponentSelectedPok.nameID}</span>
-
                 </div>
             )
     }
 
     function fightButton() {
-        if ( mySelectedPok.nameID !== undefined && opponentSelectedPok.nameID !== undefined )
+        if (mySelectedPok.nameID !== undefined && opponentSelectedPok.nameID !== undefined)
             return (
+                <div style={{height: '100%', width: '100%'}}>
+                    <div style={{height: '40%'}}></div>
                     <button onClick={() => fight(mySelectedPok.id, opponentSelectedPok.nameID)}
-                            className="btn btn-secondary p-2" style={{marginBottom: '5px', width: '50%'}}>
+                            className="btn btn-secondary p-2 " style={{
+                        width: '100%', height: '20%'
+
+                    }}>
                         FIGHT
                     </button>
-
+                </div>
 
 
             )
 
     }
-
-
 
 
     function showRounds() {
@@ -489,7 +483,6 @@ const App = () => {
         }
 
     }
-
 
 
     function isOnBlockchainMessage(fightOb) {
@@ -553,37 +546,36 @@ const App = () => {
                     <br/>
                     <div className="d-flex flex-row">
                         {showYourPok()}
+                        {fightButton()}
                         {showChosenOponent()}
 
                     </div>
-                    {fightButton()}
 
 
                     <br/>
                     <br/>
                     <h1>Your collection</h1>
                     <p>Select a Pokemon to fight</p>
-                    <div style={{width: "70%", overflow: "auto", display: "flex"}}>
+                    <div style={{width: "70%", overflow: "auto", display: "flex", height: "800px"}}>
 
                         {pokemonList.slice(1, pokemonList.length).map((pok, my_uuid) => {
                             if (pok.owner === account) {
                                 return (
-                                    <div className="d-flex flex-column align-items-center p-5" key={my_uuid}
+                                    <div className="d-flex flex-column align-items-center p-6" key={my_uuid}
                                          style={{
                                              backgroundColor: mySelectedPok === pok ? 'darkgray' : 'transparent',
                                              height: '100%'
                                          }}
                                          onClick={() => selectMyFighter(pok)}>
-                                        <img alt="" height="160"
-                                             src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${pok.nameID}.svg`}/>
-                                        <span>{pok.name}</span>
+                                        {showNameAndPicture(pok, 160)}
                                         {showTypes(pok)}
-                                        <span>My nameID/dex# = {pok.nameID}</span>
-                                        <span>Win counts = {pok.winCounts}</span>
-                                        <span>My UUID = {my_uuid}</span>
+                                        <span>Wins: {pok.winCounts}</span>
+                                        <span>ID: {my_uuid}</span>
                                     </div>
                                 )
-                            }else{return("")}
+                            } else {
+                                return ("")
+                            }
                         })}
 
                     </div>
@@ -591,7 +583,7 @@ const App = () => {
                     <br/>
                     <br/>
 
-                    <h1>Choose your fighter</h1>
+                    <h1>Choose your opponent</h1>
                     <div className="col-8 d-flex justify-content-center flex-wrap">
 
                         {pokemonList.slice(1, pokemonList.length).map((pok, index) => {
@@ -600,16 +592,15 @@ const App = () => {
                                     <div className="d-flex flex-column align-items-center p-4 " key={index}
                                          style={{backgroundColor: opponentSelectedPok === pok ? 'darkgray' : 'transparent'}}
                                          onClick={() => selectOtherFighter(pok)}>
-                                        <img alt="" height="150"
-                                             src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/dream-world/${pok.nameID}.svg`}/>
-                                        <span>{pok.name}</span>
+                                        {showNameAndPicture(pok, 150)}
                                         {showTypes(pok)}
-                                        <span>My nameID/dex# = {pok.nameID}</span>
-                                        <span>Win counts = {pok.winCounts}</span>
-                                        <span>UUID = {index}</span>
+                                        <span>Wins: {pok.winCounts}</span>
+                                        <span>ID: {index}</span>
                                     </div>
                                 )
-                            }else{return("")}
+                            } else {
+                                return ("")
+                            }
                         })
                         }
                     </div>
@@ -622,7 +613,7 @@ const App = () => {
                     {showRounds()}
                     <h1>About this project</h1>
                     <div style={{alignItems: 'center', display: 'flex', flexDirection: 'column'}}>
-                        <div style={{backgroundColor: '#4a5772', width: '70%',padding: '20px'}}>
+                        <div style={{backgroundColor: '#4a5772', width: '70%', padding: '20px'}}>
                             <br/>
                             <span>A Fight between two Pokemon will be sent to the StarkNet platform where the fight will be calculated and later return to the Ethereum blockchain.</span>
                             <span>This usually takes 30 min to 1 hour depending on the traffic on the blockchain</span>
@@ -631,7 +622,7 @@ const App = () => {
                             <span>The transaction takes around 2 minutes to be confirmed.</span>
                         </div>
                         <br/>
-                        <div style={{backgroundColor: '#5c4a72', width: '70%',padding: '20px'}}>
+                        <div style={{backgroundColor: '#5c4a72', width: '70%', padding: '20px'}}>
                             <br/>
                             <span> MORE INFO? </span>
 
