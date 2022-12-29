@@ -175,7 +175,6 @@ const App = () => {
             const price = "0.02"
             let weiPrice = web3.utils.toWei(price, "ether")
 
-
             contract.methods.sendPokemonsToL2(my_uuid, enemy_uuid).send({
                 from: account,
                 value: weiPrice
@@ -456,7 +455,7 @@ const App = () => {
             return (
                 <div style={{height: '100%', width: '100%'}}>
                     <div style={{height: '40%'}}></div>
-                    <button onClick={() => fight(mySelectedPok.id, opponentSelectedPok.nameID)}
+                    <button onClick={() => fight(mySelectedPok.id, opponentSelectedPok.id)}
                             className="btn btn-secondary p-2 " style={{
                         width: '100%', height: '20%'
 
