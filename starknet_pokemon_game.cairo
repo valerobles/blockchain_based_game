@@ -207,11 +207,9 @@ func createPikachuZero() -> Pokemon* {
 func no_param_fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     winner: felt
 ) {
-
-    let (res,e1,e2,counter) = fight(createKakuna(), createFearow(),0,0,-1);
+    let (res, e1, e2, counter) = fight(createKakuna(), createFearow(), 0, 0, -1);
 
     attacks.emit(counter);
-
 
     efficiency_faster_event.emit(e1);
 
@@ -224,8 +222,7 @@ func no_param_fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
 func no_param_fight_zerodmg{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
     winner: felt
 ) {
-   
-    let (res,e1,e2,counter) = fight(createBisasamZero(), createPikachuZero(),0,0,-1);
+    let (res, e1, e2, counter) = fight(createBisasamZero(), createPikachuZero(), 0, 0, -1);
     attacks.emit(counter);
 
     return (winner=e1);
@@ -246,7 +243,7 @@ func pokemon_game{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
     let (l1_contract_address) = l1_address.read();
     assert from_address = l1_contract_address;
     fight_steps.emit(step=1);
-    let (res,e1,e2,counter) = fight(&pkmn1, &pkmn2,0,0,-1);
+    let (res, e1, e2, counter) = fight(&pkmn1, &pkmn2, 0, 0, -1);
     fight_steps.emit(step=2);
     // save winner in map
     winner.write(fight_id, res);
@@ -289,11 +286,11 @@ func get_winner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}
 // Returns the ID of the winning pokemon
 func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
     pkmn1: Pokemon*, pkmn2: Pokemon*, fasterEfficiency: felt, slowerEfficiency: felt, counter: felt
-) -> (res: felt,fasterEfficiency:felt,slowerEfficiency: felt, counter: felt) {
+) -> (res: felt, fasterEfficiency: felt, slowerEfficiency: felt, counter: felt) {
     alloc_locals;
     // Count attacks for testing & for calculating length of efficiency payload variable
+    let n = counter + 1;
 
-    let n =counter+1;
     // Check who is faster
     local faster_pkmn: Pokemon*;
     local slower_pkmn: Pokemon*;
@@ -304,48 +301,84 @@ func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         faster_pkmn = pkmn2;
         slower_pkmn = pkmn1;
     }
+    // End if one Pokemon is below 0
     if (is_le(faster_pkmn.hp, 0) == 1) {
-        return (res=slower_pkmn.id,fasterEfficiency=fasterEfficiency,slowerEfficiency=slowerEfficiency,counter=n);
+        return (
+            res=slower_pkmn.id,
+            fasterEfficiency=fasterEfficiency,
+            slowerEfficiency=slowerEfficiency,
+            counter=n,
+        );
     }
     if (is_le(slower_pkmn.hp, 0) == 1) {
-        return (res=faster_pkmn.id,fasterEfficiency=fasterEfficiency,slowerEfficiency=slowerEfficiency,counter=n);
+        return (
+            res=faster_pkmn.id,
+            fasterEfficiency=fasterEfficiency,
+            slowerEfficiency=slowerEfficiency,
+            counter=n,
+        );
     }
+
+    let (newPok, fasterEfficiencyOut) = dealDmgAndCalcEfficiency(
+        faster_pkmn, slower_pkmn, fasterEfficiency, n
+    );
+    // if new HP value less 0 -> fight over
+    if (is_le(newPok.hp, 0) == 1) {
+        return (
+            res=faster_pkmn.id,
+            fasterEfficiency=fasterEfficiencyOut,
+            slowerEfficiency=slowerEfficiency,
+            counter=n,
+        );
+    } else {
+        // Slower pkmn gets to attack
+        let (newPok2, slowerEfficiencyOut) = dealDmgAndCalcEfficiency(
+            slower_pkmn, faster_pkmn, slowerEfficiency, n
+        );
+        // if faster is dead end, else start new fight round
+        if (is_le(newPok2.hp, 0) == 1) {
+            return (
+                res=slower_pkmn.id,
+                fasterEfficiency=fasterEfficiencyOut,
+                slowerEfficiency=slowerEfficiencyOut,
+                counter=n,
+            );
+        } else {
+            let (res, e1, e2, counterNew) = fight(
+                newPok, newPok2, fasterEfficiencyOut, slowerEfficiencyOut, n
+            );
+            return (res=res, fasterEfficiency=e1, slowerEfficiency=e2, counter=counterNew);
+        }
+    }
+}
+func dealDmgAndCalcEfficiency{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashBuiltin*}(
+    pkmn_attacking: Pokemon*, pkmn_defending: Pokemon*, attacking_efficiency: felt, counter: felt
+) -> (Pokemon*, felt) {
+    alloc_locals;
     // Coinflip for which attack to use for the faster pkmn
     let coinflip1 = get_random(2);
     local atk_damage_fast: felt;
     local atk_type_fast: felt;
     if (coinflip1 == 1) {
-        atk_damage_fast = faster_pkmn.atk1_damage;
-        atk_type_fast = faster_pkmn.atk1_type;
+        atk_damage_fast = pkmn_attacking.atk1_damage;
+        atk_type_fast = pkmn_attacking.atk1_type;
     } else {
-        atk_damage_fast = faster_pkmn.atk2_damage;
-        atk_type_fast = faster_pkmn.atk2_type;
+        atk_damage_fast = pkmn_attacking.atk2_damage;
+        atk_type_fast = pkmn_attacking.atk2_type;
     }
-    // Coinflip for which attack to use for the slower pkmn
-    let coinflip2 = get_random(2);
-    local atk_damage_slow: felt;
-    local atk_type_slow: felt;
-    if (coinflip2 == 1) {
-        atk_damage_slow = slower_pkmn.atk1_damage;
-        atk_type_slow = slower_pkmn.atk1_type;
-    } else {
-        atk_damage_slow = slower_pkmn.atk2_damage;
-        atk_type_slow = slower_pkmn.atk2_type;
-    }
-
     // Calculate dmg of faster pkmn attacking slower pkmn
-    let _dmgx = attackAndGetDamage(faster_pkmn, atk_type_fast, atk_damage_fast, slower_pkmn);
+    let _dmgx = attackAndGetDamage(pkmn_attacking, atk_type_fast, atk_damage_fast, pkmn_defending);
     local dmg = _dmgx;
 
     // calculate new (health points) HP
     local pkmn2_hp: felt;
 
     // Get efficiency without previous dmg to save to fight history
-    let (_, z) = getDmgAndEfficiency(atk_type_fast, slower_pkmn.type1, slower_pkmn.type2, 1);
-    let (mul) = pow(10, n);
+    let (_, z) = getDmgAndEfficiency(atk_type_fast, pkmn_defending.type1, pkmn_defending.type2, 1);
+    let (mul) = pow(10, counter);
     local mull = mul;
     local newEff: felt;
-    local currentHPSlower = slower_pkmn.hp;
+    local currentHPSlower = pkmn_defending.hp;
     if (z == 0) {
         // change 0 to 6 because can't multiply 0*10
         newEff = mull * 6;
@@ -355,56 +388,13 @@ func fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
         newEff = z * mull;
         pkmn2_hp = currentHPSlower - dmg;
     }
-    let fasterEfficiencyOut=fasterEfficiency + newEff;
+    // Save efficiency of attack history
+    let efficiencyOut = attacking_efficiency + newEff;
 
     // Set new health points
-    let newPok_: Pokemon* = updateHP(slower_pkmn, pkmn2_hp);
+    let newPok_: Pokemon* = updateHP(pkmn_defending, pkmn2_hp);
     local newPok: Pokemon* = newPok_;
-
-    // if new HP value less 0 -> fight over
-    if (is_le(newPok.hp, 0) == 1) {
-        return (res=faster_pkmn.id,fasterEfficiency=fasterEfficiencyOut,slowerEfficiency=slowerEfficiency,counter=n);
-    } else {
-        // Slower pkmn gets to attack
-        let _dmgSecondFight = attackAndGetDamage(
-            slower_pkmn, atk_type_slow, atk_damage_slow, faster_pkmn
-        );
-        local dmgSecondFight = _dmgSecondFight;
-        local pkmn1_hp: felt;
-
-        let (_, z2) = getDmgAndEfficiency(atk_type_slow, faster_pkmn.type1, faster_pkmn.type2, 1);
-      
-        let (mul2) = pow(10, n);
-        local mull2 = mul2;
-        local newEff2: felt;
-        local currentHPFaster = faster_pkmn.hp;
-        if (z2 == 0) {
-            newEff2 = mull2 * 6;
-            // -1 to prevent endless fights if dmg is 0
-            pkmn1_hp = currentHPFaster - 1;
-        } else {
-            newEff2 = z2 * mull2;
-            local y = faster_pkmn.hp;
-            pkmn1_hp = currentHPFaster - dmg;
-        }
-
-
-     
-        let slowerEfficiencyOut = slowerEfficiency+newEff2;
-         slow.emit(value=slowerEfficiencyOut);
-
-        // update hp of faster pkmn
-        let newPok_2: Pokemon* = updateHP(faster_pkmn, pkmn1_hp);
-        local newPok2: Pokemon* = newPok_2;
-
-        // if faster is dead end, else start new fight round
-        if (is_le(newPok2.hp, 0) == 1) {
-            return (res=slower_pkmn.id,fasterEfficiency=fasterEfficiencyOut,slowerEfficiency=slowerEfficiencyOut,counter=n);
-        } else {
-            let (res,e1,e2,counterNew) = fight(newPok, newPok2,fasterEfficiencyOut,slowerEfficiencyOut,n);
-            return (res=res,fasterEfficiency=e1,slowerEfficiency=e2,counter=counterNew);
-        }
-    }
+    return (newPok, efficiencyOut);
 }
 
 // Takes an attacking pokemon, it's attack type, it's attack damage and a defending pokemon
