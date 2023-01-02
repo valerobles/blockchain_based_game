@@ -19,4 +19,6 @@ async def test_efficiency():
     )
 
     fight = await contract.no_param_fight().call()
-    assert fight.result == 0
+    assert fight.result[0] == 1111
+    zeroDmgFight = await contract.no_param_fight_zerodmg().call()
+    assert zeroDmgFight.result[0] == 1111111111

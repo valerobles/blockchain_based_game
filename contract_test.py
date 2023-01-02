@@ -40,5 +40,3 @@ async def test_efficiency():
     quadruple = await contract.getDmgAndEfficiency(atk_type=4, type1=2, type2=9, dmg=1).call()
     assert  quadruple.result[1] == 4
 
-    fight = await contract.no_param_fight().call()
-    assert fight.result == 0
