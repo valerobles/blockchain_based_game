@@ -1,5 +1,7 @@
 import Web3 from "web3";
 
+
+// Code from github repo: https://github.com/Nazariy995/crypto-coders/blob/main/client/src/getWeb3.js
 const getWeb3 = () =>
   new Promise((resolve, reject) => {
     // Wait for loading completion to avoid race conditions with web3 injection timing.

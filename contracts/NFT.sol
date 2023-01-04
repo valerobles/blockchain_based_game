@@ -93,7 +93,7 @@ contract NFT is ERC721, ERC721Enumerable {
 
     event winnerCount(uint winnerPokID, uint roundsWon);
 
-    // ______________________________________________________________________________________________________________________________
+ // ______________________________________________________________________________________________________________________________
 
 
     //NFT name and Symbol
@@ -102,8 +102,8 @@ contract NFT is ERC721, ERC721Enumerable {
         starknetCore = IStarknetCore(address(0xde29d060D45901Fb19ED6C6e959EB22d8626708e));
     }
 
-    // _________________________________________________________________________________________________________________________________
-    // method that need to be overriden for ERC721, ERC721Enumerable
+ // _________________________________________________________________________________________________________________________________
+ // method that need to be overriden for ERC721, ERC721Enumerable
 
     function supportsInterface(bytes4 interfaceId)
     public
@@ -444,8 +444,7 @@ contract NFT is ERC721, ERC721Enumerable {
     ) external {
 
         emit gettingWinnerEntered(11111);
-        //TODO this method change is not yet in the current L1 contract 0x0D6C36F5a0518B282E6171aE7Ee39838F413e855, but it is in 0x54f0f5C15f12DD72F2C78000D43Ea56C70a08b94
-        //however, write l1 adress on l2 didnt work, so currently still using 0x0D6C36F5a0518B282E6171aE7Ee39838F413e855 with broken get_winner
+
         uint256[] memory payload = new uint256[](4);
         payload[0] = pokemonWinnerID;
         payload[1] = fightID;
@@ -458,7 +457,6 @@ contract NFT is ERC721, ERC721Enumerable {
         starknetCore.consumeMessageFromL2(L2_CONTRACT, payload);
 
         // Update the L1 states.
-
         fightIDToWinnerPokemon[fightID] = pokemons[pokemonWinnerID];
 
         pokemonIDToFightsWon[pokemonWinnerID] = pokemonIDToFightsWon[pokemonWinnerID] + 1;

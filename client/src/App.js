@@ -110,37 +110,35 @@ const App = () => {
         return contract;
     }
 
-    function listener_fights(_web3, c) {
+    const listener_fights = async (web3,contract) => {
 
         const fromL2toStarkNetCore = {
             fromBlock: 8214000,
-            address: StarkNetCore, // starknetcore
+            address: StarkNetCore,
             topics: ["0x4264ac208b5fde633ccdd42e0f12c3d6d443a4f3779bbf886925b94665b63a22", L2_CONTRACT, L1_CONTRACT_ZERO, null]
         };
-        _web3.eth.subscribe('logs', fromL2toStarkNetCore, (err, event) => {
+        web3.eth.subscribe('logs', fromL2toStarkNetCore, (err, event) => {
             if (err)
                 console.log(event);
         })
             .on("data", function (log) {
 
-
                 let temp = log.data
 
-                let l = temp.length
-                let s = 64
-                let _winnerID = parseInt(temp.substring((l - 4 * s), (l - 3 * s)), 16)
-                let _fightID = parseInt(temp.substring((l - 3 * s), (l - 2 * s)), 16)
+                let length = temp.length
+                let size = 64
+                let _winnerID = parseInt(temp.substring((length - 4 * size), (length - 3 * size)), 16)
+                let _fightID = parseInt(temp.substring((length - 3 * size), (length - 2 * size)), 16)
 
-                let _faster_eff = bigInt(temp.substring((l - 2 * s), (l - s)), 16).toString().split('').reverse().join('')
-                let _slower_eff = bigInt(temp.substring((l - s), l), 16).toString().split('').reverse().join('')
+                let _faster_eff = bigInt(temp.substring((length - 2 * size), (length - size)), 16).toString().split('').reverse().join('')
+                let _slower_eff = bigInt(temp.substring((length - size), length), 16).toString().split('').reverse().join('')
 
-                createFightObj(_fightID, _winnerID, c, _faster_eff, _slower_eff, log.blockNumber)
-
+                createFightObj(_fightID, _winnerID, contract, _faster_eff, _slower_eff, log.blockNumber)
 
             });
-
-
     }
+
+
 
     useEffect(() => {
 
@@ -154,8 +152,7 @@ const App = () => {
         }
 
         fetchData();
-        //await listener_consumed(web3);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
     }, [])
 
     const baseUrl = 'https://pokeapi.co/api/v2/pokemon/?offset='
@@ -165,8 +162,7 @@ const App = () => {
         const res = await fetch(baseUrl + (index - 1) + "&limit=1")
         obj = await res.json();
         let str = obj.results[0].name
-        let name = str.charAt(0).toUpperCase() + str.slice(1);
-        return name
+        return str.charAt(0).toUpperCase() + str.slice(1)
     }
 
 
