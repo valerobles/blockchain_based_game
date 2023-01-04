@@ -49,9 +49,9 @@ const App = () => {
     const [opponentSelectedPok, setOpponentSelectedPok] = useState(PokemonObj);
     const [selectedFight, setSelectedFight] = useState(null);
 
-    const L2_CONTRACT = "0x02ceca6b6d4d9f6b0da9a08f01b328fc06539267740fe1e14526fbba7f78e0c9";
-    const L1_CONTRACT = "0x98C304C156556dafFFBb5771A6D2D0ecb3CCb102";
-    const L1_CONTRACT_ZERO = "0x00000000000000000000000098C304C156556dafFFBb5771A6D2D0ecb3CCb102";
+    const L2_CONTRACT = "0x063509c6814dcf94b1b8799d4beb2004a8348289247a4f1c273bfb942ce5486f";
+    const L1_CONTRACT = "0x788d104aA1cBf7CA58daD2fF0C99da28E58Bfb13";
+    const L1_CONTRACT_ZERO = "0x00000000000000000000000788d104aA1cBf7CA58daD2fF0C99da28E58Bfb13";
     const StarkNetCore = '0xde29d060D45901Fb19ED6C6e959EB22d8626708e';
 
     const mint = () => {
@@ -185,7 +185,7 @@ const App = () => {
     }
 
 
-    async function getWinner(obj) {
+    async function saveToBlockchain(obj) {
 
         console.log(obj.winnerPok.id, obj.fightID)
         let eff_1 = obj.eff_pok1.reverse().toString().replaceAll(',', '')
@@ -488,7 +488,7 @@ const App = () => {
             )
         } else {
             return (
-                <button className="btn btn-black p-2" onClick={() => getWinner(fightOb)}>Save results on
+                <button className="btn btn-black p-2" onClick={() => saveToBlockchain(fightOb)}>Save results on
                     blockchain</button>
             )
 

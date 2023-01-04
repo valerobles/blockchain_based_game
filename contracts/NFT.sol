@@ -436,14 +436,14 @@ contract NFT is ERC721, ERC721Enumerable {
 
 
     // L2 -> L1. Consume winner from L2
-    function get_winner(
+    function consumeMessage(
         uint256 pokemonWinnerID,
         uint256 fightID,
         uint256 effFast,
         uint256 effSlow
     ) external {
 
-        emit gettingWinnerEntered(11111);
+        emit gettingWinnerEntered(1);
 
         uint256[] memory payload = new uint256[](4);
         payload[0] = pokemonWinnerID;
@@ -462,8 +462,6 @@ contract NFT is ERC721, ERC721Enumerable {
         pokemonIDToFightsWon[pokemonWinnerID] = pokemonIDToFightsWon[pokemonWinnerID] + 1;
 
         emit winnerCount(pokemonWinnerID, pokemonIDToFightsWon[pokemonWinnerID]);
-
-        emit gettingWinnerFinished(L2_CONTRACT, pokemonWinnerID, fightID);
 
 
     }
