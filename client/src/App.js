@@ -50,12 +50,12 @@ const App = () => {
     const [selectedFight, setSelectedFight] = useState(null);
 
     const L2_CONTRACT = "0x063509c6814dcf94b1b8799d4beb2004a8348289247a4f1c273bfb942ce5486f";
-    const L1_CONTRACT = "0x788d104aA1cBf7CA58daD2fF0C99da28E58Bfb13";
-    const L1_CONTRACT_ZERO = "0x000000000000000000000000788d104aA1cBf7CA58daD2fF0C99da28E58Bfb13";
+    const L1_CONTRACT = "0x9Ce58d716dBA650e61E12647449e470613203F37";
+    const L1_CONTRACT_ZERO = "0x0000000000000000000000009Ce58d716dBA650e61E12647449e470613203F37";
     const StarkNetCore = '0xde29d060D45901Fb19ED6C6e959EB22d8626708e';
 
     const mint = () => {
-        if (nameID.length > 0 && nameID > 0) {
+        if (nameID.length > 0 && nameID > 0 && Number.isInteger(nameID)) {
             contract.methods.mint(nameID).send({from: account}, (error) => {
                 if (!error) {
 
@@ -66,6 +66,8 @@ const App = () => {
                     console.log("mint failed")
                 }
             });
+        } else{
+            alert("Only numbers between 1 and 52");
         }
     }
 
@@ -192,7 +194,7 @@ const App = () => {
         let eff_2 = obj.eff_pok2.reverse().toString().replaceAll(',', '')
 
         if (obj.pok1Faster) {
-            await contract.methods.get_winner(obj.winnerPok.id, obj.fightID, eff_1, eff_2).send({from: account}, (error) => {
+            await contract.methods.consumeMessage(obj.winnerPok.id, obj.fightID, eff_1, eff_2).send({from: account}, (error) => {
                 if (error) {
                     console.log(error);
                 } else {
@@ -200,7 +202,7 @@ const App = () => {
                 }
             });
         } else {
-            await contract.methods.get_winner(obj.winnerPok.id, obj.fightID, eff_2, eff_1).send({from: account}, (error) => {
+            await contract.methods.consumeMessage(obj.winnerPok.id, obj.fightID, eff_2, eff_1).send({from: account}, (error) => {
                 if (error) {
                     console.log(error);
                 } else {
@@ -529,6 +531,8 @@ const App = () => {
                             href="https://starkware.co/starknet/">StarkNet*</a></h2>
                     <div className="col-6 text-center mb-3">
                         <h3>Mint your pokemon <img alt="" src={eth} height="30"/></h3>
+                        <span>Choose a Pokemon dex number from 1 to 52 </span> <br/>
+                        <span>See which <a href={"https://www.pokemon.com/us/pokedex"}>Pokemon</a> you can choose from</span>
                         <div>
                             <input
                                 type="text"

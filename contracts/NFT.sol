@@ -65,6 +65,8 @@ contract NFT is ERC721, ERC721Enumerable {
 
     uint256 fightIDCounter = 0;
     uint256 nonce = 0; // needed for creating random numbers
+    using Counters for Counters.Counter;
+    Counters.Counter private _tokenIds;
 
     Pokemon[] public pokemons; // List of all Pokemon
 
@@ -93,7 +95,7 @@ contract NFT is ERC721, ERC721Enumerable {
 
     event winnerCount(uint winnerPokID, uint roundsWon);
 
- // ______________________________________________________________________________________________________________________________
+    // ______________________________________________________________________________________________________________________________
 
 
     //NFT name and Symbol
@@ -102,8 +104,8 @@ contract NFT is ERC721, ERC721Enumerable {
         starknetCore = IStarknetCore(address(0xde29d060D45901Fb19ED6C6e959EB22d8626708e));
     }
 
- // _________________________________________________________________________________________________________________________________
- // method that need to be overriden for ERC721, ERC721Enumerable
+    // _________________________________________________________________________________________________________________________________
+    // method that need to be overriden for ERC721, ERC721Enumerable
 
     function supportsInterface(bytes4 interfaceId)
     public
@@ -129,9 +131,9 @@ contract NFT is ERC721, ERC721Enumerable {
     // Mint function. Recieves name_id of pokemon
     function mint(uint256 _name_id) public {
 
-        require(_name_id > 0 && _name_id < 650, "Only valid dex numbers. Must be between 1 and 649");
+        require(_name_id > 0 && _name_id < 53, "Only valid dex numbers. Must be between 1 and 52");
 
-        uint256 _id = pokemons.length;
+        uint256 _id = _tokenIds.current();
 
         // create pokemon struct from name_id
         Pokemon memory newPok = createPokemonByNameId(_name_id, _id);
@@ -141,12 +143,13 @@ contract NFT is ERC721, ERC721Enumerable {
         // _safeMint method from openzeppelin
         // makes sure that NFT is of ERC721 standard
         _safeMint(msg.sender, _id);
+
+        _tokenIds.increment();
     }
 
 
     // Create Pokemon depending on given name_id
     function createPokemonByNameId(uint256 _name_id, uint256 _id) internal returns (Pokemon memory) {
-
 
         if (_name_id == 1) {
             return (createPokemon(_id, 152, 111, 106, 111, 3, 99, 3, 30, getType(), getDamage(), _name_id));
@@ -304,11 +307,10 @@ contract NFT is ERC721, ERC721Enumerable {
         }
         if (_name_id == 52) {
             return (createPokemonOther(_id, 0, 99, _name_id, 2));
+        } else {
+            revert();
         }
-        // Everything above name_id 52 has type1 = normal, type2 = none and random strength
-        else {
-            return (createPokemonOther(_id, 0, 99, _name_id, getStrength()));
-        }
+
 
     }
 
@@ -354,9 +356,6 @@ contract NFT is ERC721, ERC721Enumerable {
         return random(50) + 40;
     }
 
-    function getStrength() internal returns (uint) {
-        return random(2) + 1;
-    }
 
     function random(uint _interval) internal returns (uint) {
         nonce++;

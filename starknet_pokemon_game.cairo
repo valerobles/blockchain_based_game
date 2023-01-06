@@ -167,18 +167,18 @@ func createFearow() -> Pokemon* {
 func createBisasamZero() -> Pokemon* {
     return (
         new Pokemon(
-            id=4,
-            hp=152,
-            atk=111,
-            init=106,
-            def=111,
-            type1=0,
-            type2=99,
-            atk1_type=13,
-            atk1_damage=40,
-            atk2_type=13,
-            atk2_damage=40,
-            name_id=1,
+            id=          4,
+            hp=          152,
+            atk=         111,
+            init=        106,
+            def=         111,
+            type1=       0,
+            type2=       99,
+            atk1_type=   13,
+            atk1_damage= 40,
+            atk2_type=   13,
+            atk2_damage= 40,
+            name_id=     1,
         )
     );
 }
