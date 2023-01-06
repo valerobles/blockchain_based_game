@@ -66,8 +66,6 @@ const App = () => {
                     console.log("mint failed")
                 }
             });
-        } else{
-            alert("Only numbers between 1 and 52");
         }
     }
 
