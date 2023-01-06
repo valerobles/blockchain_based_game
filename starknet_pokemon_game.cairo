@@ -215,7 +215,7 @@ func no_param_fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
 
     efficiency_slower_event.emit(e2);
 
-    return (winner=e2);
+    return (winner=res);
 }
 // fight with pokemon that can do zero damage (dmg) to eachother -> type1 & atk_dmg = 0
 @external
@@ -225,7 +225,7 @@ func no_param_fight_zerodmg{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, rang
     let (res, e1, e2, counter) = fight(createBisasamZero(), createPikachuZero(), 0, 0, -1);
     attacks.emit(counter);
 
-    return (winner=e1);
+    return (winner=res);
 }
 
 // ------------------------------------------------------------------------------------------------------------------------
@@ -369,10 +369,8 @@ func dealDmgAndCalcEfficiency{syscall_ptr: felt*, range_check_ptr, pedersen_ptr:
     // Calculate dmg of faster pkmn attacking slower pkmn
     let _dmgx = attackAndGetDamage(pkmn_attacking, atk_type_fast, atk_damage_fast, pkmn_defending);
     local dmg = _dmgx;
-
     // calculate new (health points) HP
     local pkmn2_hp: felt;
-
     // Get efficiency without previous dmg to save to fight history
     let (_, z) = getDmgAndEfficiency(atk_type_fast, pkmn_defending.type1, pkmn_defending.type2, 1);
     let (mul) = pow(10, counter);
@@ -390,7 +388,6 @@ func dealDmgAndCalcEfficiency{syscall_ptr: felt*, range_check_ptr, pedersen_ptr:
     }
     // Save efficiency of attack history
     let efficiencyOut = attacking_efficiency + newEff;
-
     // Set new health points
     let newPok_: Pokemon* = updateHP(pkmn_defending, pkmn2_hp);
     local newPok: Pokemon* = newPok_;

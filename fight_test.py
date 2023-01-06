@@ -8,7 +8,7 @@ CONTRACT_FILE = os.path.join(
     os.path.dirname(__file__), "starknet_pokemon_game.cairo")
 
 @pytest.mark.asyncio
-async def test_efficiency():
+async def test_fights():
     # Create a new Starknet class that simulates the StarkNet
     # system.
     starknet = await Starknet.empty()
@@ -19,6 +19,6 @@ async def test_efficiency():
     )
 
     fight = await contract.no_param_fight().call()
-    assert fight.result[0] == 1111
+    assert fight.result[0] == 0
     zeroDmgFight = await contract.no_param_fight_zerodmg().call()
-    assert zeroDmgFight.result[0] == 1111111111
+    assert zeroDmgFight.result[0] == 5
