@@ -55,7 +55,7 @@ const App = () => {
     const StarkNetCore = '0xde29d060D45901Fb19ED6C6e959EB22d8626708e';
 
     const mint = () => {
-        if (nameID.length > 0 && nameID > 0 && Number.isInteger(nameID)) {
+        if (parseInt(nameID) > 0 && parseInt(nameID) < 53 && Number.isInteger(parseInt(nameID))) {
             contract.methods.mint(nameID).send({from: account}, (error) => {
                 if (!error) {
 
@@ -66,6 +66,8 @@ const App = () => {
                     console.log("mint failed")
                 }
             });
+        } else {
+            alert("Only numbers between 1 and 52");
         }
     }
 
