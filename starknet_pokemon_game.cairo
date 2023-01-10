@@ -29,32 +29,7 @@ func nonce() -> (felt,) {
 func winner(fight_id: felt) -> (winner_id: felt) {
 }
 
-// ------------------------------------------------------------------------------------------------------------------------
-// events
-@event
-func slow(value: felt) {
-}
-@event
-func attacks(count: felt) {
-}
-@event
-func address_set(address: felt) {
-}
-@event
-func winner_event(winner: felt) {
-}
-@event
-func efficiency_faster_event(efficiency: felt) {
-}
-@event
-func efficiency_slower_event(efficiency: felt) {
-}
-@event
-func fight_steps(step: felt) {
-}
-@event
-func get_winner_called(winner: felt) {
-}
+
 // ------------------------------------------------------------------------------------------------------------------------
 // Setter for L1 address
 @external
@@ -62,7 +37,6 @@ func set_l1_address{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
     address: felt
 ) {
     l1_address.write(address);
-    address_set.emit(address=address);
     return ();
 }
 
@@ -209,11 +183,6 @@ func no_param_fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
 ) {
     let (res, e1, e2, counter) = fight(createKakuna(), createFearow(), 0, 0, -1);
 
-    attacks.emit(counter);
-
-    efficiency_faster_event.emit(e1);
-
-    efficiency_slower_event.emit(e2);
 
     return (winner=res);
 }
@@ -223,7 +192,6 @@ func no_param_fight_zerodmg{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, rang
     winner: felt
 ) {
     let (res, e1, e2, counter) = fight(createBisasamZero(), createPikachuZero(), 0, 0, -1);
-    attacks.emit(counter);
 
     return (winner=res);
 }
@@ -242,9 +210,7 @@ func pokemon_game{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
 
     let (l1_contract_address) = l1_address.read();
     assert from_address = l1_contract_address;
-    fight_steps.emit(step=1);
     let (res, e1, e2, counter) = fight(&pkmn1, &pkmn2, 0, 0, -1);
-    fight_steps.emit(step=2);
     // save winner in map
     winner.write(fight_id, res);
     // reading storage vars for l1 payload
@@ -257,12 +223,6 @@ func pokemon_game{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
     assert message_payload[3] = e2;
     let (l1_contract_address) = l1_address.read();
     send_message_to_l1(to_address=l1_contract_address, payload_size=4, payload=message_payload);
-    fight_steps.emit(step=3);
-    attacks.emit(counter);
-
-    efficiency_faster_event.emit(e1);
-
-    efficiency_slower_event.emit(e2);
 
     return ();
 }
@@ -274,7 +234,6 @@ func get_winner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}
     fight_id: felt
 ) -> (winner: felt) {
     let (res) = winner.read(fight_id=fight_id);
-    get_winner_called.emit(winner=res);
     return (winner=res);
 }
 
@@ -414,7 +373,7 @@ func attackAndGetDamage{syscall_ptr: felt*, range_check_ptr, pedersen_ptr: HashB
         }
     }
     // increase level by 1000 to prevent rounding issues
-    let level = 50000;
+    let level = 50*1000;
     let rand1 = get_random(2);
     let a = 2 * level * rand1;
     let (crit, r) = unsigned_div_rem(a, 5);
