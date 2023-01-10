@@ -24,12 +24,6 @@ func l1_address() -> (felt,) {
 func nonce() -> (felt,) {
 }
 
-// Mapping to save the id of the winning pokemon for each fight_id
-@storage_var
-func winner(fight_id: felt) -> (winner_id: felt) {
-}
-
-
 // ------------------------------------------------------------------------------------------------------------------------
 // Setter for L1 address
 @external
@@ -182,8 +176,6 @@ func no_param_fight{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_
     winner: felt
 ) {
     let (res, e1, e2, counter) = fight(createKakuna(), createFearow(), 0, 0, -1);
-
-
     return (winner=res);
 }
 // fight with pokemon that can do zero damage (dmg) to eachother -> type1 & atk_dmg = 0
@@ -192,7 +184,6 @@ func no_param_fight_zerodmg{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, rang
     winner: felt
 ) {
     let (res, e1, e2, counter) = fight(createBisasamZero(), createPikachuZero(), 0, 0, -1);
-
     return (winner=res);
 }
 
@@ -211,10 +202,7 @@ func pokemon_game{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
     let (l1_contract_address) = l1_address.read();
     assert from_address = l1_contract_address;
     let (res, e1, e2, counter) = fight(&pkmn1, &pkmn2, 0, 0, -1);
-    // save winner in map
-    winner.write(fight_id, res);
-    // reading storage vars for l1 payload
-    let (res) = winner.read(fight_id=fight_id);
+
     // Filling payload to send to L1
     let (message_payload: felt*) = alloc();
     assert message_payload[0] = res;
@@ -227,15 +215,6 @@ func pokemon_game{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_pt
     return ();
 }
 
-// Takes a fight_id
-// Returns the winner of that fight
-@view
-func get_winner{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
-    fight_id: felt
-) -> (winner: felt) {
-    let (res) = winner.read(fight_id=fight_id);
-    return (winner=res);
-}
 
 // ------------------------------------------------------------------------------------------------------------------------
 // Internal functions for fighting
