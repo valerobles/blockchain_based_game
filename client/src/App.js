@@ -126,21 +126,24 @@ const App = () => {
             .on("data", function (log) {
 
                 let temp = log.data
-
-                let length = temp.length
-                let size = 64
-                let _winnerID = parseInt(temp.substring((length - 4 * size), (length - 3 * size)), 16)
-                let _fightID = parseInt(temp.substring((length - 3 * size), (length - 2 * size)), 16)
-
-                let _faster_eff = bigInt(temp.substring((length - 2 * size), (length - size)), 16).toString().split('').reverse().join('')
-                let _slower_eff = bigInt(temp.substring((length - size), length), 16).toString().split('').reverse().join('')
+                let _winnerID = getSplit(temp,4)
+                let _fightID = getSplit(temp,3)
+                let _faster_eff = calcBigInt(getSplit(temp,2))
+                let _slower_eff = calcBigInt(getSplit(temp,1))
 
                 createFightObj(_fightID, _winnerID, contract, _faster_eff, _slower_eff, log.blockNumber)
 
             });
     }
 
-
+    function getSplit(string, n){
+        let size = 64
+        let length = string.length
+       return parseInt(string.substring((length - n * size), (length - n-1 * size)), 16)
+    }
+    function calcBigInt(input){
+        return bigInt(input).toString().split('').reverse().join('')
+    }
 
     useEffect(() => {
 
