@@ -139,7 +139,7 @@ const App = () => {
     function getSplit(string, n){
         let size = 64
         let length = string.length
-       return parseInt(string.substring((length - n * size), (length - n-1 * size)), 16)
+       return parseInt(string.substring((length - n * size), (length - (n-1) * size)), 16)
     }
     function calcBigInt(input){
         return bigInt(input).toString().split('').reverse().join('')
