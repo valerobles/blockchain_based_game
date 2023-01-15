@@ -59,7 +59,7 @@ contract NFT is ERC721, ERC721Enumerable {
     IStarknetCore starknetCore;
 
     // Variables needed for L2 interaction
-    uint256 L2_CONTRACT = 0x063509c6814dcf94b1b8799d4beb2004a8348289247a4f1c273bfb942ce5486f; // L2 contract address
+    uint256 L2_CONTRACT = 0x00b19ed1fb6e07d84d9b879743cac13c79b344777ca7e6393c9612b214886ded; // L2 contract address
     uint256 constant SELECTOR= 1287792748861478314957917789548421785918690629705705918786662048852425233154; //pokemon_game method as a selector encoded
 
 
@@ -69,6 +69,29 @@ contract NFT is ERC721, ERC721Enumerable {
     Counters.Counter private _tokenIds;
 
     Pokemon[] public pokemons; // List of all Pokemon
+    // ______________________________________________________________________________________________________________________________
+    // Pokemon types
+
+    uint256 constant NORMAL = 0;
+    uint256 constant FIRE = 1;
+    uint256 constant WATER = 2;
+    uint256 constant GRASS = 3;
+    uint256 constant ELECTRO = 4;
+    uint256 constant ICE = 5;
+    uint256 constant FIGHTING = 6;
+    uint256 constant POISON = 7;
+    uint256 constant GROUND = 8;
+    uint256 constant FLYING = 9;
+    uint256 constant PSYCHO = 10;
+    uint256 constant BUG = 11;
+    uint256 constant ROCK = 12;
+    uint256 constant GHOST = 13;
+    uint256 constant DRAGON = 14;
+    uint256 constant DARK = 15;
+    uint256 constant STEEL = 16;
+    uint256 constant FAIRY = 17;
+    uint256 constant NONE = 99;
+
 
     // ______________________________________________________________________________________________________________________________
 
@@ -77,23 +100,6 @@ contract NFT is ERC721, ERC721Enumerable {
     mapping(uint256 => Pokemon) public fightIDToWinnerPokemon; // mapping of fight ID to Winner Pokemon
     mapping(uint256 => Fight) public fightIDToFighters; //  mapping of fight ID to Fight struct (two fighting pokemon)
     mapping(uint256 => uint256) public pokemonIDToFightsWon; // mapping of pokemon ID to number of rounds won
-
-    // ______________________________________________________________________________________________________________________________
-
-    // Events
-    event startFight(address indexed _from, uint256 _pok1, uint256 _pok2, uint256 l2Contract, uint _value);
-
-    event startFightMessage(uint message);
-
-    event gettingWinnerEntered(uint message);
-
-    event gettingWinnerFinished(uint256 l2contract, uint256 _winnerPok, uint256 _fightID);
-
-    event enteredFunc(uint message);
-
-    event createdRandomPkmn(uint uuid, uint hp, uint atk, uint init, uint def);
-
-    event winnerCount(uint winnerPokID, uint roundsWon);
 
     // ______________________________________________________________________________________________________________________________
 
@@ -152,161 +158,161 @@ contract NFT is ERC721, ERC721Enumerable {
     function createPokemonByNameId(uint256 _name_id, uint256 _id) internal returns (Pokemon memory) {
 
         if (_name_id == 1) {
-            return (createPokemon(_id, 152, 111, 106, 111, 3, 99, 3, 30, getType(), getDamage(), _name_id));
+            return (createPokemon(_id, 152, 111, 106, 111, GRASS, POISON, GRASS, 30, getType(), getDamage(), _name_id));
         }
         if (_name_id == 2) {
-            return (createPokemon(_id, 167, 125, 123, 126, 3, 7, 3, 40, getType(), getDamage(), _name_id));
+            return (createPokemon(_id, 167, 125, 123, 126, GRASS, POISON, GRASS, 40, getType(), getDamage(), _name_id));
         }
         if (_name_id == 3) {
-            return (createPokemon(_id, 187, 167, 145, 192, 3, 7, 3, 50, getType(), getDamage(), _name_id));
+            return (createPokemon(_id, 187, 167, 145, 192, GRASS, POISON, GRASS, 50, getType(), getDamage(), _name_id));
         }
         if (_name_id == 4) {
-            return (createPokemon(_id, 146, 114, 128, 104, 1, 99, 1, 40, getType(), getDamage(), _name_id));
+            return (createPokemon(_id, 146, 114, 128, 104, FIRE, NONE, FIRE, 40, getType(), getDamage(), _name_id));
         }
         if (_name_id == 5) {
-            return (createPokemon(_id, 165, 127, 145, 121, 1, 99, 1, 40, getType(), getDamage(), _name_id));
+            return (createPokemon(_id, 165, 127, 145, 121, FIRE, NONE, FIRE, 40, getType(), getDamage(), _name_id));
         }
         if (_name_id == 6) {
-            return (createPokemon(_id, 185, 200, 167, 179, 1, 9, 1, 50, getType(), getDamage(), _name_id));
+            return (createPokemon(_id, 185, 200, 167, 179, FIRE, FLYING, FIRE, 50, getType(), getDamage(), _name_id));
         }
         if (_name_id == 7) {
-            return (createPokemon(_id, 151, 110, 104, 128, 2, 99, 2, 30, getType(), getDamage(), _name_id));
+            return (createPokemon(_id, 151, 110, 104, 128, WATER, NONE, WATER, 30, getType(), getDamage(), _name_id));
         }
         if (_name_id == 8) {
-            return (createPokemon(_id, 166, 126, 121, 145, 2, 99, 2, 40, getType(), getDamage(), _name_id));
+            return (createPokemon(_id, 166, 126, 121, 145, WATER, NONE, WATER, 40, getType(), getDamage(), _name_id));
         }
         if (_name_id == 9) {
-            return (createPokemon(_id, 186, 148, 143, 167, 2, 99, 2, 50, getType(), getDamage(), _name_id));
+            return (createPokemon(_id, 186, 148, 143, 167, WATER, NONE, WATER, 50, getType(), getDamage(), _name_id));
         }
         // Only types and strength are accurate
         if (_name_id == 10) {
-            return (createPokemonOther(_id, 11, 99, _name_id, 1));
+            return (createPokemonOther(_id, BUG, NONE, _name_id, 1));
         }
         if (_name_id == 11) {
-            return (createPokemonOther(_id, 11, 99, _name_id, 2));
+            return (createPokemonOther(_id, BUG, NONE, _name_id, 2));
         }
         if (_name_id == 12) {
-            return (createPokemonOther(_id, 11, 9, _name_id, 3));
+            return (createPokemonOther(_id, BUG, FLYING, _name_id, 3));
         }
         if (_name_id == 13) {
-            return (createPokemonOther(_id, 11, 7, _name_id, 1));
+            return (createPokemonOther(_id, BUG, POISON, _name_id, 1));
         }
         if (_name_id == 14) {
-            return (createPokemonOther(_id, 11, 7, _name_id, 2));
+            return (createPokemonOther(_id, BUG, POISON, _name_id, 2));
         }
         if (_name_id == 15) {
-            return (createPokemonOther(_id, 11, 7, _name_id, 3));
+            return (createPokemonOther(_id, BUG, POISON, _name_id, 3));
         }
         if (_name_id == 16) {
-            return (createPokemonOther(_id, 0, 9, _name_id, 1));
+            return (createPokemonOther(_id, NORMAL, FLYING, _name_id, 1));
         }
         if (_name_id == 17) {
-            return (createPokemonOther(_id, 0, 9, _name_id, 2));
+            return (createPokemonOther(_id, NORMAL, FLYING, _name_id, 2));
         }
         if (_name_id == 18) {
-            return (createPokemonOther(_id, 0, 9, _name_id, 3));
+            return (createPokemonOther(_id, NORMAL, FLYING, _name_id, 3));
         }
         if (_name_id == 19) {
-            return (createPokemonOther(_id, 0, 99, _name_id, 1));
+            return (createPokemonOther(_id, NORMAL, NONE, _name_id, 1));
         }
         if (_name_id == 20) {
-            return (createPokemonOther(_id, 0, 99, _name_id, 2));
+            return (createPokemonOther(_id, NORMAL, NONE, _name_id, 2));
         }
         if (_name_id == 21) {
-            return (createPokemonOther(_id, 0, 9, _name_id, 1));
+            return (createPokemonOther(_id, NORMAL, FLYING, _name_id, 1));
         }
         if (_name_id == 22) {
-            return (createPokemonOther(_id, 0, 9, _name_id, 2));
+            return (createPokemonOther(_id, NORMAL, FLYING, _name_id, 2));
         }
         if (_name_id == 23) {
-            return (createPokemonOther(_id, 7, 99, _name_id, 1));
+            return (createPokemonOther(_id, POISON, NONE, _name_id, 1));
         }
         if (_name_id == 24) {
-            return (createPokemonOther(_id, 7, 99, _name_id, 2));
+            return (createPokemonOther(_id, POISON, NONE, _name_id, 2));
         }
         if (_name_id == 25) {
-            return (createPokemonOther(_id, 4, 99, _name_id, 2));
+            return (createPokemonOther(_id, ELECTRO, NONE, _name_id, 2));
         }
         if (_name_id == 26) {
-            return (createPokemonOther(_id, 4, 99, _name_id, 3));
+            return (createPokemonOther(_id, ELECTRO, NONE, _name_id, 3));
         }
         if (_name_id == 27) {
-            return (createPokemonOther(_id, 8, 99, _name_id, 1));
+            return (createPokemonOther(_id, GROUND, NONE, _name_id, 1));
         }
         if (_name_id == 28) {
-            return (createPokemonOther(_id, 8, 99, _name_id, 2));
+            return (createPokemonOther(_id, GROUND, NONE, _name_id, 2));
         }
         if (_name_id == 29) {
-            return (createPokemonOther(_id, 7, 99, _name_id, 1));
+            return (createPokemonOther(_id, POISON, NONE, _name_id, 1));
         }
         if (_name_id == 30) {
-            return (createPokemonOther(_id, 7, 99, _name_id, 1));
+            return (createPokemonOther(_id, POISON, NONE, _name_id, 1));
         }
         if (_name_id == 31) {
-            return (createPokemonOther(_id, 7, 8, _name_id, 3));
+            return (createPokemonOther(_id, POISON, GROUND, _name_id, 3));
         }
         if (_name_id == 32) {
-            return (createPokemonOther(_id, 7, 99, _name_id, 1));
+            return (createPokemonOther(_id, POISON, NONE, _name_id, 1));
         }
         if (_name_id == 33) {
-            return (createPokemonOther(_id, 7, 99, _name_id, 2));
+            return (createPokemonOther(_id, POISON, NONE, _name_id, 2));
         }
         if (_name_id == 34) {
-            return (createPokemonOther(_id, 7, 8, _name_id, 3));
+            return (createPokemonOther(_id, POISON, GROUND, _name_id, 3));
         }
         if (_name_id == 35) {
-            return (createPokemonOther(_id, 17, 99, _name_id, 1));
+            return (createPokemonOther(_id, FAIRY, NONE, _name_id, 1));
         }
         if (_name_id == 36) {
-            return (createPokemonOther(_id, 17, 99, _name_id, 2));
+            return (createPokemonOther(_id, FAIRY, NONE, _name_id, 2));
         }
         if (_name_id == 37) {
-            return (createPokemonOther(_id, 1, 99, _name_id, 2));
+            return (createPokemonOther(_id, FIRE, NONE, _name_id, 2));
         }
         if (_name_id == 38) {
-            return (createPokemonOther(_id, 1, 99, _name_id, 3));
+            return (createPokemonOther(_id, FIRE, NONE, _name_id, 3));
         }
         if (_name_id == 39) {
-            return (createPokemonOther(_id, 0, 17, _name_id, 1));
+            return (createPokemonOther(_id, NORMAL, FAIRY, _name_id, 1));
         }
         if (_name_id == 40) {
-            return (createPokemonOther(_id, 0, 17, _name_id, 2));
+            return (createPokemonOther(_id, NORMAL, FAIRY, _name_id, 2));
         }
         if (_name_id == 41) {
-            return (createPokemonOther(_id, 7, 9, _name_id, 1));
+            return (createPokemonOther(_id, POISON, FLYING, _name_id, 1));
         }
         if (_name_id == 42) {
-            return (createPokemonOther(_id, 7, 9, _name_id, 2));
+            return (createPokemonOther(_id, POISON, FLYING, _name_id, 2));
         }
         if (_name_id == 43) {
-            return (createPokemonOther(_id, 3, 7, _name_id, 1));
+            return (createPokemonOther(_id, GRASS, POISON, _name_id, 1));
         }
         if (_name_id == 44) {
-            return (createPokemonOther(_id, 3, 7, _name_id, 2));
+            return (createPokemonOther(_id, GRASS, POISON, _name_id, 2));
         }
         if (_name_id == 45) {
-            return (createPokemonOther(_id, 3, 7, _name_id, 3));
+            return (createPokemonOther(_id, GRASS, POISON, _name_id, 3));
         }
         if (_name_id == 46) {
-            return (createPokemonOther(_id, 11, 3, _name_id, 1));
+            return (createPokemonOther(_id, BUG, GRASS, _name_id, 1));
         }
         if (_name_id == 47) {
-            return (createPokemonOther(_id, 11, 3, _name_id, 2));
+            return (createPokemonOther(_id, BUG, GRASS, _name_id, 2));
         }
         if (_name_id == 48) {
-            return (createPokemonOther(_id, 11, 7, _name_id, 1));
+            return (createPokemonOther(_id, BUG, POISON, _name_id, 1));
         }
         if (_name_id == 49) {
-            return (createPokemonOther(_id, 11, 7, _name_id, 3));
+            return (createPokemonOther(_id, BUG, POISON, _name_id, 3));
         }
         if (_name_id == 50) {
-            return (createPokemonOther(_id, 8, 99, _name_id, 2));
+            return (createPokemonOther(_id, GROUND, NONE, _name_id, 2));
         }
         if (_name_id == 51) {
-            return (createPokemonOther(_id, 8, 99, _name_id, 3));
+            return (createPokemonOther(_id, GROUND, NONE, _name_id, 3));
         }
         if (_name_id == 52) {
-            return (createPokemonOther(_id, 0, 99, _name_id, 2));
+            return (createPokemonOther(_id, NORMAL, NONE, _name_id, 2));
         } else {
             revert();
         }
@@ -376,13 +382,12 @@ contract NFT is ERC721, ERC721Enumerable {
         uint256 myPok,
         uint256 enemyPok
     ) external payable {
+        require(myPok != enemyPok);
         require(msg.value>= 20000000000000000);
         require(ownerOf(myPok) == msg.sender); // myPok has to be from the sender
-        require(myPok < totalSupply());
-        require(enemyPok < totalSupply());
+        require(ownerOf(enemyPok) != address(0)); // check if NFT exists
 
 
-        emit startFightMessage(1);
 
         Pokemon memory pok1 = pokemons[myPok];
         Pokemon memory pok2 = pokemons[enemyPok];
@@ -430,7 +435,6 @@ contract NFT is ERC721, ERC721Enumerable {
 
         fightIDToFighters[fight_ID] = Fight(pok1,pok2);
 
-        emit startFight(msg.sender, pok1.id, pok2.id, L2_CONTRACT, msg.value);
     }
 
 
@@ -442,7 +446,6 @@ contract NFT is ERC721, ERC721Enumerable {
         uint256 effSlow
     ) external {
 
-        emit gettingWinnerEntered(1);
 
         uint256[] memory payload = new uint256[](4);
         payload[0] = pokemonWinnerID;
@@ -459,8 +462,6 @@ contract NFT is ERC721, ERC721Enumerable {
         fightIDToWinnerPokemon[fightID] = pokemons[pokemonWinnerID];
 
         pokemonIDToFightsWon[pokemonWinnerID] = pokemonIDToFightsWon[pokemonWinnerID] + 1;
-
-        emit winnerCount(pokemonWinnerID, pokemonIDToFightsWon[pokemonWinnerID]);
 
 
     }

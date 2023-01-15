@@ -493,7 +493,7 @@ const App = () => {
             )
         } else {
             return (
-                <button className="btn btn-black p-2" onClick={() => saveToBlockchain(fightOb)}>Save results on
+                <button className="btn btn-light p-2" onClick={() => saveToBlockchain(fightOb)}>Save results on
                     blockchain</button>
             )
 

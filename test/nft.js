@@ -14,20 +14,14 @@ contract("NFT", accounts => {
   });
 
   it("... get's minted and added", async () => {
-    const results = await contract.mint("Valeria");
+    const results = await contract.mint("4");
 
 
-    let student = await contract.students(0);
+    let pokemon = await contract.pokemons(0);
 
-    assert.equal(student.name, "Valeria");
+    assert.equal(pokemon.name_id, "4");
   })
 
-  // it("check price...", async () => {
-  //   const results = await contract.mint("Valeria");
-  //
-  //   let price = await contract.getPrice.call("Valeria");
-  //
-  //   assert(price, 5);
-  // })
+
 
 });
