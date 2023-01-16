@@ -49,9 +49,9 @@ const App = () => {
     const [opponentSelectedPok, setOpponentSelectedPok] = useState(PokemonObj);
     const [selectedFight, setSelectedFight] = useState(null);
 
-    const L2_CONTRACT = "0x063509c6814dcf94b1b8799d4beb2004a8348289247a4f1c273bfb942ce5486f";
-    const L1_CONTRACT = "0xa2DFBe83b16fF40C1De1c3Ac8CB253CEb88f00C1";
-    const L1_CONTRACT_ZERO = "0x000000000000000000000000a2DFBe83b16fF40C1De1c3Ac8CB253CEb88f00C1";
+    const L2_CONTRACT = "0x00b19ed1fb6e07d84d9b879743cac13c79b344777ca7e6393c9612b214886ded";
+    const L1_CONTRACT = "0xa2471D3d935779617a37d1f9B5DeDeBfd5D597d7";
+    const L1_CONTRACT_ZERO = "0x000000000000000000000000a2471D3d935779617a37d1f9B5DeDeBfd5D597d7";
     const StarkNetCore = '0xde29d060D45901Fb19ED6C6e959EB22d8626708e';
 
     const mint = () => {
