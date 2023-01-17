@@ -153,7 +153,7 @@ const App = () => {
        return parseInt(string.substring((length - n * size), (length - (n-1) * size)), 16)
     }
     function calcBigInt(input){
-        return bigInt(input).toString().split('').reverse()
+        return bigInt(input).toString().split('').reverse().join('')
     }
 
     useEffect(() => {
@@ -484,7 +484,7 @@ const App = () => {
         let rounds =[{round: 0,pokemon1: 0,pokemon2:0}]
         if (fight.eff_pok1.length > fight.eff_pok2.length) {
             for (let i = 0; i < fight.eff_pok1.length; i++) {
-                rounds.push({ round: i ,pokemon1: fight.eff_pok1.get(i), pokemon2: fight.eff_pok2.get(i)})
+                rounds.push({ round: i ,pokemon1: fight.eff_pok1[i], pokemon2: fight.eff_pok2[i]})
             }
         }
         return rounds
@@ -492,14 +492,18 @@ const App = () => {
 
     function showRounds() {
         if (selectedFight != null) {
-
+            //console.log(getRounds(selectedFight))
                 {getRounds(selectedFight).map((val,key) => {
                     return(
-                        <tr key={key}>
-                            <td>{val.round}</td>
-                            <td>{val.pokemon1}</td>
-                            <td>{val.pokemon2}</td>
-                        </tr>
+                        <div>
+                            <span>HELLO</span>
+                        </div>
+
+                        // <tr key={key}>
+                        //     <td>{val.round}</td>
+                        //     <td>{val.pokemon1}</td>
+                        //     <td>{val.pokemon2}</td>
+                        // </tr>
                     )
                 })}
 
@@ -520,7 +524,6 @@ const App = () => {
                 <button className="btn btn-light p-2" onClick={() => saveToBlockchain(fightOb)}>Save results on
                     blockchain</button>
             )
-
         }
 
     }
