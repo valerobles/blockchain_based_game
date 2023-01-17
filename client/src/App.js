@@ -597,7 +597,7 @@ const App = () => {
                                         {showNameAndPicture(pok, 160)}
                                         {showTypes(pok)}
                                         <span>Wins: {pok.winCounts}</span>
-                                        <span>ID: {my_uuid}</span>
+
                                     </div>
                                 )
                             } else {
@@ -622,7 +622,6 @@ const App = () => {
                                         {showNameAndPicture(pok, 150)}
                                         {showTypes(pok)}
                                         <span>Wins: {pok.winCounts}</span>
-                                        <span>ID: {index}</span>
                                     </div>
                                 )
                             } else {
