@@ -648,7 +648,11 @@ const App = () => {
                                 The transaction takes around 2 minutes to be confirmed. <br/>
                                 <strong>Enjoy Crypto Pokémon! </strong>
                             </p>
+
                         </div>
+                        <br/>
+                        <img alt="" style={{ display: 'block', margin_left: 'auto', margin_right: 'auto', width: '70%'}}
+                             src="https://media.tenor.com/zenjhCdEDtkAAAAC/pokemon-happy.gif" />
                         <br/>
 
                     </div>
