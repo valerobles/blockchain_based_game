@@ -36,6 +36,17 @@ const App = () => {
             pok1Faster: pok1Faster
         }
     }
+
+    const FightEfficiency = (fightID, firstPok, secondPok, effFirstPok, effSecondPok ) => {
+        return {
+            fightID: fightID,
+            firstPok: firstPok,
+            secondPok: secondPok,
+            effFirstPok: effFirstPok,
+            effSecondPok: effSecondPok
+
+        }
+    }
     const [web3, setWeb3] = useState();
 
     const [contract, setContract] = useState(null);
@@ -142,7 +153,7 @@ const App = () => {
        return parseInt(string.substring((length - n * size), (length - (n-1) * size)), 16)
     }
     function calcBigInt(input){
-        return bigInt(input).toString().split('').reverse().join('')
+        return bigInt(input).toString().split('').reverse()
     }
 
     useEffect(() => {
@@ -192,7 +203,6 @@ const App = () => {
 
     async function saveToBlockchain(obj) {
 
-        console.log(obj.winnerPok.id, obj.fightID)
         let eff_1 = obj.eff_pok1.reverse().toString().replaceAll(',', '')
         let eff_2 = obj.eff_pok2.reverse().toString().replaceAll(',', '')
 
@@ -264,14 +274,13 @@ const App = () => {
                     eff_slow_list.push(eff_slow.charAt(i))
 
                 }
-                //console.log(eff_fast_list);
-                //console.log(eff_slow_list);
 
 
-                let constestants = await c.methods.fightIDToFighters(fightID).call(); // call mapping in solidity contract
 
-                let firstPok = constestants.pok1
-                let secondPok = constestants.pok2
+                let contestants = await c.methods.fightIDToFighters(fightID).call(); // call mapping in solidity contract
+
+                let firstPok = contestants.pok1
+                let secondPok = contestants.pok2
                 let firstPokOwner = await c.methods.ownerOf(firstPok.id).call();
                 let secondPokOwner = await c.methods.ownerOf(secondPok.id).call();
 
@@ -471,15 +480,30 @@ const App = () => {
     }
 
 
+    function getRounds(fight){
+        let rounds =[{round: 0,pokemon1: 0,pokemon2:0}]
+        if (fight.eff_pok1.length > fight.eff_pok2.length) {
+            for (let i = 0; i < fight.eff_pok1.length; i++) {
+                rounds.push({ round: i ,pokemon1: fight.eff_pok1.get(i), pokemon2: fight.eff_pok2.get(i)})
+            }
+        }
+        return rounds
+    }
+
     function showRounds() {
         if (selectedFight != null) {
-            return (
-                <div>
-                    <span>Efficiency pok 1 {selectedFight.eff_pok1}</span>
-                    <br/>
-                    <span>Efficiency pok 2 {selectedFight.eff_pok2}</span>
-                </div>
-            )
+
+                {getRounds(selectedFight).map((val,key) => {
+                    return(
+                        <tr key={key}>
+                            <td>{val.round}</td>
+                            <td>{val.pokemon1}</td>
+                            <td>{val.pokemon2}</td>
+                        </tr>
+                    )
+                })}
+
+
         }
 
     }
@@ -616,20 +640,18 @@ const App = () => {
                     {showRounds()}
                     <h1>About this project</h1>
                     <div style={{alignItems: 'center', display: 'flex', flexDirection: 'column'}}>
-                        <div style={{backgroundColor: '#4a5772', width: '70%', padding: '20px'}}>
+                        <div style={{backgroundColor: '#70778d', width: '70%', padding: '20px'}}>
                             <br/>
-                            <span>A Fight between two Pokemon will be sent to the StarkNet platform where the fight will be calculated and later return to the Ethereum blockchain.</span>
-                            <span>This usually takes 30 min to 1 hour depending on the traffic on the blockchain</span>
-                            <span>Once the winner results are in, you will see it under "All the winners"</span>
-                            <span>To save the results on the blockchain and have your Pokemon's wins update, click on "Save results to blockchain". This is a transaction and gas fees must be paid. </span>
-                            <span>The transaction takes around 2 minutes to be confirmed.</span>
+                            <p style={{fontSize: '20px'}}>A Fight between two Pokemon will be sent to the StarkNet platform where the fight will be calculated and later return to the Ethereum blockchain.<br/>
+                                This usually takes 30 min to 1 hour so please be patient<br/>
+                                Once the winner results are in, you will see it under "All the winners" <br/>
+                                If you wish to save the results of your fight and officially add the win to your pokemon on the blockchain,  click on "Save results to blockchain" under the fight. This is a transaction and gas fees must be paid. <br/>
+                                The transaction takes around 2 minutes to be confirmed. <br/>
+                                <strong>Enjoy Crypto Pokémon! </strong>
+                            </p>
                         </div>
                         <br/>
-                        <div style={{backgroundColor: '#5c4a72', width: '70%', padding: '20px'}}>
-                            <br/>
-                            <span> MORE INFO? </span>
 
-                        </div>
                     </div>
 
                 </div>
