@@ -11,12 +11,14 @@
 }
 
 
-
+p{
+  font-size: 20px;
+}
 
 .slideshow {
   margin: 0 auto;
   max-width: 80%;
-  height: 50%;
+  height: 30%;
 }
 
 .slideshowSlider {
@@ -97,4 +99,25 @@
   font-family: "Flexo-Medium", arial, sans-serif;
   font-weight: bold;
   align-items: center;
+}
+
+
+table {
+  background-color: #9badc9;
+  width: 800px;
+  height: 10%;
+}
+
+th {
+  border-bottom: 1px solid black;
+  text-align: center;
+  color: #092d44;
+
+}
+
+td {
+  text-align: center;
+  padding: 5px;
+  color: #092d44;
+
 }

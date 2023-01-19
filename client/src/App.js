@@ -22,7 +22,7 @@ const App = () => {
             winCounts: winCounts
         }
     }
-    const FightObj = (fightID, winnerID, winnerPok, firstPok, secondPok, onBlockchain, eff_pok1, eff_pok2, blockNumber, pok1Faster) => {
+    const FightObj = (fightID, winnerID, winnerPok, firstPok, secondPok, onBlockchain, eff_pok1, eff_pok2, blockNumber, pok1Faster, winnerPokIsPok1) => {
         return {
             fightID: fightID,
             winnerID: winnerID,
@@ -33,15 +33,14 @@ const App = () => {
             eff_pok1: eff_pok1,
             eff_pok2: eff_pok2,
             blockNumber: blockNumber,
-            pok1Faster: pok1Faster
+            pok1Faster: pok1Faster,
+            winnerPokIsPok1: winnerPokIsPok1
         }
     }
 
-    const FightEfficiency = (fightID, firstPok, secondPok, effFirstPok, effSecondPok ) => {
+    const Round = (roundNumber, effFirstPok, effSecondPok ) => {
         return {
-            fightID: fightID,
-            firstPok: firstPok,
-            secondPok: secondPok,
+            roundNumber: roundNumber,
             effFirstPok: effFirstPok,
             effSecondPok: effSecondPok
 
@@ -260,20 +259,24 @@ const App = () => {
 
             await getPokByUUID(w, c).then(async pok => {
 
+                //
+                 let eff_fast_list = []
+                //
+                // for (let i = 0; i < eff_fast.length; i++) {
+                //     eff_fast_list.push(eff_fast.charAt(i))
+                //
+                // }
+                //
+                 let eff_slow_list = []
+                //
+                // for (let i = 0; i < eff_slow.length; i++) {
+                //     eff_slow_list.push(eff_slow.charAt(i))
+                //
+                // }
 
-                let eff_fast_list = []
+                eff_fast_list = eff_fast.split('')
 
-                for (let i = 0; i < eff_fast.length; i++) {
-                    eff_fast_list.push(eff_fast.charAt(i))
-
-                }
-
-                let eff_slow_list = []
-
-                for (let i = 0; i < eff_slow.length; i++) {
-                    eff_slow_list.push(eff_slow.charAt(i))
-
-                }
+                eff_slow_list = eff_slow.split('')
 
 
 
@@ -312,7 +315,9 @@ const App = () => {
                 let firstPokObj = PokemonObj(firstPok.name_id, firstPokOwner, typeArray[firstPok.type1], firstType2, firstPok.id, firstName, pok1Wins)
                 let secondPokObj = PokemonObj(secondPok.name_id, secondPokOwner, typeArray[secondPok.type1], secondType2, secondPok.id, secondName, pok2Wins)
 
-                let fightobj = FightObj(fightID, w, pok, firstPokObj, secondPokObj, false, pok1_eff, pok2_eff, blocknumber, pok1WasFaster)
+                let winnerPokIsPk1 = pok.nameID === firstPokObj.nameID
+
+                let fightobj = FightObj(fightID, w, pok, firstPokObj, secondPokObj, false, pok1_eff, pok2_eff, blocknumber, pok1WasFaster,winnerPokIsPk1)
 
                 let winnerExists = await c.methods.fightIDToWinnerPokemon(fightID).call();
 
@@ -347,6 +352,19 @@ const App = () => {
             </div>)
         }
     }
+    function showWinner(fight) {
+        if (fight.firstPok.nameID === fight.winnerPok.nameID) {
+            return (<div className="col-4">
+                {showNameAndPicture(fight.firstPok, 80)}
+                <span>{fight.firstPok.winCounts} fights won</span>
+            </div>)
+        } else {
+            return (<div className="col-4">
+                {showNameAndPicture(fight.secondPok, 80)}
+                <span>{fight.secondPok.winCounts} fights won</span>
+            </div>)
+        }
+    }
 
     function Slideshow() {
         const delay = 4000;
@@ -378,6 +396,7 @@ const App = () => {
             <div className="slideshow">
                 <div className="slideshowSlider" style={{transform: `translate3d(${-index * 80}%, 0, 0)`}}>
                     {fightList.map((fight, index) => {
+
                         let shortOwnerText = fight.winnerPok.owner.substring(0, 10) + "..."
                         return (
                             <div className="slide" key={index} onClick={() => getFight(fight)}>
@@ -393,11 +412,7 @@ const App = () => {
                                     {isOnBlockchainMessage(fight)}
                                 </div>
 
-
-
-
-
-                    </div>
+                             </div>
                     )
                     })}
 
@@ -442,7 +457,8 @@ const App = () => {
                 </div>
             )
         } else {
-            return (<div>
+            return (
+                <div>
             <span className="corners"><div className="rcorners1">Type:</div> <div
                 className="rcorners2">{pok.type1} </div></span>
             </div>)
@@ -481,36 +497,85 @@ const App = () => {
 
 
     function getRounds(fight){
-        let rounds =[{round: 0,pokemon1: 0,pokemon2:0}]
-        if (fight.eff_pok1.length > fight.eff_pok2.length) {
-            for (let i = 0; i < fight.eff_pok1.length; i++) {
-                rounds.push({ round: i ,pokemon1: fight.eff_pok1[i], pokemon2: fight.eff_pok2[i]})
+        let rounds = []
+
+        let longerEff = fight.pok1Faster ? fight.eff_pok1 : fight.eff_pok2
+            for (let i = 0; i < longerEff.length; i++) {
+                if (i < longerEff.length-1)
+                    rounds.push(Round(i+1,fight.eff_pok1[i],fight.eff_pok2[i]))
+                else
+                    rounds.push(Round(i+1,fight.pok1Faster ? fight.eff_pok1[i] : 0,fight.pok1Faster ? 0 : fight.eff_pok2[i]))
             }
-        }
         return rounds
-    }
+        }
+
+
 
     function showRounds() {
+
         if (selectedFight != null) {
-            //console.log(getRounds(selectedFight))
-                {getRounds(selectedFight).map((val,key) => {
-                    return(
-                        <div>
-                            <span>HELLO</span>
-                        </div>
+            const temp = getRounds(selectedFight)
 
-                        // <tr key={key}>
-                        //     <td>{val.round}</td>
-                        //     <td>{val.pokemon1}</td>
-                        //     <td>{val.pokemon2}</td>
-                        // </tr>
-                    )
-                })}
+            return (
+                <div style={{textAlign: 'center'}}>
+                    <h2>Attack efficiency per round</h2>
+                    <br/>
+                    <div style={{display: 'flex', justifyContent: 'space-around'}}>
+                        {showWinner(selectedFight)}
+                        <h3>vs.</h3>
+                        {showLoser(selectedFight)}
+                    </div>
+                    <br/>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Round</th>
+                            <th>{selectedFight.winnerPokIsPok1 ? selectedFight.firstPok.name : selectedFight.secondPok.name}</th>
+                            <th>{selectedFight.winnerPokIsPok1 ? selectedFight.secondPok.name : selectedFight.firstPok.name}</th>
+                        </tr>
+                        </thead>
+                        {temp.map((r,index) => {
+                            return(
+                                <tbody>
+                                <tr key={index}>
+                                    <td>{r.roundNumber}</td>
+                                    <td>{r.effFirstPok}</td>
+                                    <td>{r.effSecondPok}</td>
+                                </tr>
+                                </tbody>
 
+                            )
+
+                        })}
+                    </table>
+                    <br/>
+                    <div style={{width: '100%',backgroundColor: '#3c5171'}}>
+                        <p>The calculated efficiency for both the Pokémon’s types and multiplied </p>
+                        <br/>
+                        <p>
+                            0 for not effect (times 0) <br/>
+                            1 for normal (times 1) <br/>
+                            2 for super-effective (times 2) <br/>
+                            3 for not very effective (times 0.5) <br/>
+                            4 for quadruple efficiency (times 4) <br/>
+                            5 for quarter efficiency (times 0.25) <br/>
+                        </p>
+                    </div>
+                </div>
+
+            )
 
         }
 
     }
+
+//     •	0 for no effect (times 0)
+// •	1 for normal (times 1)
+// •	2 for super-effective (times 2)
+// •	3 for not very effective (times 0.5)
+// •	4 for quadruple efficiency (times 4)
+// •	5 for quarter efficiency (times 0.25)
+
 
 
     function isOnBlockchainMessage(fightOb) {
@@ -639,7 +704,14 @@ const App = () => {
                     <h1>All the winners</h1>
                     <p>Fresh out of StarkNet <img alt="" src={starknet_logo} height="30px"/></p>
                     {Slideshow()}
+
+
                     {showRounds()}
+
+
+
+
+                    <br/>
                     <h1>About this project</h1>
                     <div style={{alignItems: 'center', display: 'flex', flexDirection: 'column'}}>
                         <div style={{backgroundColor: '#70778d', width: '70%', padding: '20px'}}>
