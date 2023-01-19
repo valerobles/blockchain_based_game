@@ -30,6 +30,16 @@ This project was developed and tested on MacOS with browsers using the Metamask 
 - The App should now open up in your browser and prompt you to connect your metamask wallet. Once your account is connected, you can use every feature!
 
 
+## How to play Crypto Pokémon
+Make sure you are logged in to MetaMask
 
+- Pick a number between 1 and 52 and mint your Pokémon
+- To start a fight, chose one of your Pokémon and an opponent that is not yours
+- Pay the fee to start a fight on Layer 2
+- Once the results have been accepted on the Ethereum Blockchain, it will be shown under 'All winners'
+- If you wish to save your results to the blockchain and update your wins count, select the 'save to blockchain' button. (You must pay gas fees)
+- If you want to know more about the fight, click on a fight result
 
+Fight result: \
+<img alt="Employee data" src="./fight_results.png" title="Fight result" height=500/>
 
