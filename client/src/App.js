@@ -569,19 +569,13 @@ const App = () => {
 
     }
 
-//     •	0 for no effect (times 0)
-// •	1 for normal (times 1)
-// •	2 for super-effective (times 2)
-// •	3 for not very effective (times 0.5)
-// •	4 for quadruple efficiency (times 4)
-// •	5 for quarter efficiency (times 0.25)
 
 
 
     function isOnBlockchainMessage(fightOb) {
         if (fightOb.onBlockchain) {
             return (
-                <p>Is saved forever on Ethereum blockchain</p>
+                <p style={{color: '#a3b9ff'}}> &#9939;Is saved <strong>forever</strong> on <br/>Ethereum blockchain &#9939; </p>
 
             )
         } else {
@@ -659,7 +653,7 @@ const App = () => {
                                     <div className="d-flex flex-column align-items-center p-6" key={my_uuid}
                                          style={{
                                              backgroundColor: mySelectedPok === pok ? 'darkgray' : 'transparent',
-                                             height: '100%'
+                                             height: '100%',paddingRight: '5px'
                                          }}
                                          onClick={() => selectMyFighter(pok)}>
                                         {showNameAndPicture(pok, 160)}
@@ -721,6 +715,7 @@ const App = () => {
                                 Once the winner results are in, you will see it under "All the winners" <br/>
                                 If you wish to save the results of your fight and officially add the win to your pokemon on the blockchain,  click on "Save results to blockchain" under the fight. This is a transaction and gas fees must be paid. <br/>
                                 The transaction takes around 2 minutes to be confirmed. <br/>
+                                To see more information about the fight, click on the winner Pokémon under 'All the winners'
                                 <strong>Enjoy Crypto Pokémon! </strong>
                             </p>
 
