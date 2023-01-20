@@ -341,30 +341,17 @@ const App = () => {
 
     function showLoser(fight) {
         if (fight.firstPok.nameID === fight.winnerPok.nameID) {
-            return (<div className="col-4">
-                {showNameAndPicture(fight.secondPok, 80)}
-                <span>{fight.secondPok.winCounts} fights won</span>
-            </div>)
+            return showPok(fight.secondPok)
         } else {
-            return (<div className="col-4">
-                {showNameAndPicture(fight.firstPok, 80)}
-                <span>{fight.firstPok.winCounts} fights won</span>
-            </div>)
+            return showPok(fight.firstPok)
         }
     }
 
-    function showWinner(fight) {
-        if (fight.firstPok.nameID === fight.winnerPok.nameID) {
-            return (<div className="col-4">
-                {showNameAndPicture(fight.firstPok, 80)}
-                <span>{fight.firstPok.winCounts} fights won</span>
-            </div>)
-        } else {
-            return (<div className="col-4">
-                {showNameAndPicture(fight.secondPok, 80)}
-                <span>{fight.secondPok.winCounts} fights won</span>
-            </div>)
-        }
+    function showPok(pok) {
+        return (<div className="col-4">
+            {showNameAndPicture(pok, 80)}
+            <span>{pok.winCounts} fights won</span>
+        </div>)
     }
 
     function Slideshow() {
@@ -499,8 +486,13 @@ const App = () => {
 
     function getRounds(fight) {
         let rounds = []
+        let longerEff = ""
+        if (fight.eff_pok1.length > fight.eff_pok2.length) {
+            longerEff = fight.eff_pok1
+        } else {
+            longerEff = fight.eff_pok2
+        }
 
-        let longerEff = fight.pok1Faster ? fight.eff_pok1 : fight.eff_pok2
         for (let i = 0; i < longerEff.length; i++) {
             if (i < longerEff.length - 1)
 
@@ -510,6 +502,7 @@ const App = () => {
         }
         return rounds
     }
+
 
     function effToText(eff) {
         if (eff === "0") {
@@ -543,17 +536,17 @@ const App = () => {
                     <h2>Attack efficiency per round</h2>
                     <br/>
                     <div style={{display: 'flex', justifyContent: 'space-around'}}>
-                        {showLoser(selectedFight)}
+                        {showPok(selectedFight.firstPok)}
                         <h3>vs.</h3>
-                     {showWinner(selectedFight)}
+                        {showPok(selectedFight.secondPok)}
                     </div>
                     <br/>
                     <table>
                         <thead>
                         <tr>
                             <th>Round</th>
-                            <th>{selectedFight.winnerPokIsPok1 ? selectedFight.secondPok.name : selectedFight.firstPok.name}'s Attacks</th>
-                            <th>{selectedFight.winnerPokIsPok1 ? selectedFight.firstPok.name : selectedFight.secondPok.name}'s Attacks</th>
+                            <th>{selectedFight.firstPok.name}'s Attacks</th>
+                            <th>{selectedFight.secondPok.name}'s Attacks</th>
                         </tr>
                         </thead>
                         {temp.map((r, index) => {
