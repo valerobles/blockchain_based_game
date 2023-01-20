@@ -260,20 +260,8 @@ const App = () => {
 
             await getPokByUUID(w, c).then(async pok => {
 
-                //
                 let eff_fast_list = []
-                //
-                // for (let i = 0; i < eff_fast.length; i++) {
-                //     eff_fast_list.push(eff_fast.charAt(i))
-                //
-                // }
-                //
                 let eff_slow_list = []
-                //
-                // for (let i = 0; i < eff_slow.length; i++) {
-                //     eff_slow_list.push(eff_slow.charAt(i))
-                //
-                // }
 
                 eff_fast_list = eff_fast.split('')
 
@@ -726,13 +714,7 @@ const App = () => {
                             </p>
 
                         </div>
-                        {/*<br/>*/}
-                        {/*<img alt="" style={{display: 'block', margin_left: 'auto', margin_right: 'auto', width: '70%'}}*/}
-                        {/*     src="https://media.tenor.com/zenjhCdEDtkAAAAC/pokemon-happy.gif"/>*/}
-                        {/*<br/>*/}
-
                     </div>
-
                 </div>
                 <div className="footer">
                     <p style={{color: "black"}}>Project by Luca Lunati and Valeria Robles Garzon for FHNW</p>
