@@ -29,6 +29,12 @@ This project was developed and tested on MacOS with browsers using the Metamask 
 - `npm start`
 - The App should now open up in your browser and prompt you to connect your metamask wallet. Once your account is connected, you can use every feature!
 
+## Important Project Files
+
+- Under `./starknet_pokemon_game.cairo` is the starknet contract used for layer 2
+- Under `./contracts/NFT.sol` is the solidity contract used for layer 1
+- Under `./client` is the front end implementation
+- Under `./tests` are tests for L1 and L2 contracts
 
 ## How to play Crypto Pokémon
 Make sure you are logged in to MetaMask
