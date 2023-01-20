@@ -521,7 +521,7 @@ const App = () => {
             return "Super effective"
         }
         if (eff === "5") {
-            return "Not effective"
+            return "Almost no effect"
         }
         return "Error"
     }
@@ -533,7 +533,7 @@ const App = () => {
 
             return (
                 <div style={{textAlign: 'center'}}>
-                    <h2>Attack efficiency per round</h2>
+                    <h2>Fight #{selectedFight.fightID} won by {selectedFight.winnerPok.name}</h2>
                     <br/>
                     <div style={{display: 'flex', justifyContent: 'space-around'}}>
                         {showPok(selectedFight.firstPok)}
@@ -700,6 +700,7 @@ const App = () => {
 
                     <h1>All the winners</h1>
                     <p>Fresh out of StarkNet <img alt="" src={starknet_logo} height="30px"/></p>
+                    <p>Select a fight for more detail </p>
                     {Slideshow()}
 
 
