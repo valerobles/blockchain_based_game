@@ -706,8 +706,7 @@ const App = () => {
                                 Once the winner results are in, you will see it under "All the winners" <br/>
                                 If you wish to save the results of your fight and officially add the win to your pokemon
                                 on the blockchain, click on "Save results to blockchain" under the fight. This is a
-                                transaction and gas fees must be paid. <br/>
-                                The transaction takes around 2 minutes to be confirmed. <br/>
+                                transaction and gas fees must be paid. The transaction takes around 2 minutes to be confirmed. <br/>
                                 To see more information about the fight, click on the winner Pokémon under 'All the
                                 winners'
                                 <strong>Enjoy Crypto Pokémon! </strong>
