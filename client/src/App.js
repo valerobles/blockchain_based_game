@@ -38,7 +38,7 @@ const App = () => {
         }
     }
 
-    const Round = (roundNumber, effFirstPok, effSecondPok ) => {
+    const Round = (roundNumber, effFirstPok, effSecondPok) => {
         return {
             roundNumber: roundNumber,
             effFirstPok: effFirstPok,
@@ -122,7 +122,7 @@ const App = () => {
         return contract;
     }
 
-    const listener_fights = async (web3,contract) => {
+    const listener_fights = async (web3, contract) => {
 
         const fromL2toStarkNetCore = {
             fromBlock: 8214000,
@@ -136,22 +136,23 @@ const App = () => {
             .on("data", function (log) {
 
                 let temp = log.data
-                let _winnerID = getSplit(temp,4)
-                let _fightID = getSplit(temp,3)
-                let _faster_eff = calcBigInt(getSplit(temp,2))
-                let _slower_eff = calcBigInt(getSplit(temp,1))
+                let _winnerID = getSplit(temp, 4)
+                let _fightID = getSplit(temp, 3)
+                let _faster_eff = calcBigInt(getSplit(temp, 2))
+                let _slower_eff = calcBigInt(getSplit(temp, 1))
 
                 createFightObj(_fightID, _winnerID, contract, _faster_eff, _slower_eff, log.blockNumber)
 
             });
     }
 
-    function getSplit(string, n){
+    function getSplit(string, n) {
         let size = 64
         let length = string.length
-       return parseInt(string.substring((length - n * size), (length - (n-1) * size)), 16)
+        return parseInt(string.substring((length - n * size), (length - (n - 1) * size)), 16)
     }
-    function calcBigInt(input){
+
+    function calcBigInt(input) {
         return bigInt(input).toString().split('').reverse().join('')
     }
 
@@ -260,14 +261,14 @@ const App = () => {
             await getPokByUUID(w, c).then(async pok => {
 
                 //
-                 let eff_fast_list = []
+                let eff_fast_list = []
                 //
                 // for (let i = 0; i < eff_fast.length; i++) {
                 //     eff_fast_list.push(eff_fast.charAt(i))
                 //
                 // }
                 //
-                 let eff_slow_list = []
+                let eff_slow_list = []
                 //
                 // for (let i = 0; i < eff_slow.length; i++) {
                 //     eff_slow_list.push(eff_slow.charAt(i))
@@ -277,7 +278,6 @@ const App = () => {
                 eff_fast_list = eff_fast.split('')
 
                 eff_slow_list = eff_slow.split('')
-
 
 
                 let contestants = await c.methods.fightIDToFighters(fightID).call(); // call mapping in solidity contract
@@ -317,7 +317,7 @@ const App = () => {
 
                 let winnerPokIsPk1 = pok.nameID === firstPokObj.nameID
 
-                let fightobj = FightObj(fightID, w, pok, firstPokObj, secondPokObj, false, pok1_eff, pok2_eff, blocknumber, pok1WasFaster,winnerPokIsPk1)
+                let fightobj = FightObj(fightID, w, pok, firstPokObj, secondPokObj, false, pok1_eff, pok2_eff, blocknumber, pok1WasFaster, winnerPokIsPk1)
 
                 let winnerExists = await c.methods.fightIDToWinnerPokemon(fightID).call();
 
@@ -352,6 +352,7 @@ const App = () => {
             </div>)
         }
     }
+
     function showWinner(fight) {
         if (fight.firstPok.nameID === fight.winnerPok.nameID) {
             return (<div className="col-4">
@@ -412,8 +413,8 @@ const App = () => {
                                     {isOnBlockchainMessage(fight)}
                                 </div>
 
-                             </div>
-                    )
+                            </div>
+                        )
                     })}
 
 
@@ -461,7 +462,7 @@ const App = () => {
                 <div>
             <span className="corners"><div className="rcorners1">Type:</div> <div
                 className="rcorners2">{pok.type1} </div></span>
-            </div>)
+                </div>)
         }
     }
 
@@ -496,20 +497,41 @@ const App = () => {
     }
 
 
-    function getRounds(fight){
+    function getRounds(fight) {
         let rounds = []
 
         let longerEff = fight.pok1Faster ? fight.eff_pok1 : fight.eff_pok2
-            for (let i = 0; i < longerEff.length; i++) {
-                if (i < longerEff.length-1)
-                    rounds.push(Round(i+1,fight.eff_pok1[i],fight.eff_pok2[i]))
-                else
-                    rounds.push(Round(i+1,fight.pok1Faster ? fight.eff_pok1[i] : 0,fight.pok1Faster ? 0 : fight.eff_pok2[i]))
-            }
-        return rounds
+        for (let i = 0; i < longerEff.length; i++) {
+            if (i < longerEff.length - 1)
+
+                rounds.push(Round(i + 1, effToText(fight.eff_pok1[i]), effToText(fight.eff_pok2[i])))
+            else
+                rounds.push(Round(i + 1, fight.pok1Faster ? effToText(fight.eff_pok1[i]) : "-", fight.pok1Faster ? "-" : effToText(fight.eff_pok2[i])))
         }
+        return rounds
+    }
 
-
+    function effToText(eff) {
+        if (eff === "0") {
+            return "No effect"
+        }
+        if (eff === "1") {
+            return "Effective"
+        }
+        if (eff === "2") {
+            return "Very effective"
+        }
+        if (eff === "3") {
+            return "Not very effective"
+        }
+        if (eff === "4") {
+            return "Super effective"
+        }
+        if (eff === "5") {
+            return "Not effective"
+        }
+        return "Error"
+    }
 
     function showRounds() {
 
@@ -521,21 +543,21 @@ const App = () => {
                     <h2>Attack efficiency per round</h2>
                     <br/>
                     <div style={{display: 'flex', justifyContent: 'space-around'}}>
-                        {showWinner(selectedFight)}
-                        <h3>vs.</h3>
                         {showLoser(selectedFight)}
+                        <h3>vs.</h3>
+                     {showWinner(selectedFight)}
                     </div>
                     <br/>
                     <table>
                         <thead>
                         <tr>
                             <th>Round</th>
-                            <th>{selectedFight.winnerPokIsPok1 ? selectedFight.firstPok.name : selectedFight.secondPok.name}</th>
-                            <th>{selectedFight.winnerPokIsPok1 ? selectedFight.secondPok.name : selectedFight.firstPok.name}</th>
+                            <th>{selectedFight.winnerPokIsPok1 ? selectedFight.secondPok.name : selectedFight.firstPok.name}'s Attacks</th>
+                            <th>{selectedFight.winnerPokIsPok1 ? selectedFight.firstPok.name : selectedFight.secondPok.name}'s Attacks</th>
                         </tr>
                         </thead>
-                        {temp.map((r,index) => {
-                            return(
+                        {temp.map((r, index) => {
+                            return (
                                 <tbody>
                                 <tr key={index}>
                                     <td>{r.roundNumber}</td>
@@ -549,18 +571,6 @@ const App = () => {
                         })}
                     </table>
                     <br/>
-                    <div style={{width: '100%',backgroundColor: '#3c5171'}}>
-                        <p>The calculated efficiency for both the Pokémon’s types and multiplied </p>
-                        <br/>
-                        <p>
-                            0 for not effect (times 0) <br/>
-                            1 for normal (times 1) <br/>
-                            2 for super-effective (times 2) <br/>
-                            3 for not very effective (times 0.5) <br/>
-                            4 for quadruple efficiency (times 4) <br/>
-                            5 for quarter efficiency (times 0.25) <br/>
-                        </p>
-                    </div>
                 </div>
 
             )
@@ -570,12 +580,11 @@ const App = () => {
     }
 
 
-
-
     function isOnBlockchainMessage(fightOb) {
         if (fightOb.onBlockchain) {
             return (
-                <p style={{color: '#a3b9ff'}}> &#9939;Is saved <strong>forever</strong> on <br/>Ethereum blockchain &#9939; </p>
+                <p style={{color: '#a3b9ff'}}> &#9939;Is saved <strong>forever</strong> on <br/>Ethereum
+                    blockchain &#9939; </p>
 
             )
         } else {
@@ -622,7 +631,8 @@ const App = () => {
                     <div className="col-6 text-center mb-3">
                         <h3>Mint your pokemon <img alt="" src={eth} height="30"/></h3>
                         <span>Choose a Pokemon dex number from 1 to 52 </span> <br/>
-                        <span>See which <a href={"https://www.pokemon.com/us/pokedex"}>Pokemon</a> you can choose from</span>
+                        <span>See which <a
+                            href={"https://www.pokemon.com/us/pokedex"}>Pokemon</a> you can choose from</span>
                         <div>
                             <input
                                 type="text"
@@ -653,7 +663,7 @@ const App = () => {
                                     <div className="d-flex flex-column align-items-center p-6" key={my_uuid}
                                          style={{
                                              backgroundColor: mySelectedPok === pok ? 'darkgray' : 'transparent',
-                                             height: '100%',paddingRight: '5px'
+                                             height: '100%', paddingRight: '5px'
                                          }}
                                          onClick={() => selectMyFighter(pok)}>
                                         {showNameAndPicture(pok, 160)}
@@ -703,27 +713,29 @@ const App = () => {
                     {showRounds()}
 
 
-
-
                     <br/>
                     <h1>About this project</h1>
                     <div style={{alignItems: 'center', display: 'flex', flexDirection: 'column'}}>
                         <div style={{backgroundColor: '#70778d', width: '70%', padding: '20px'}}>
                             <br/>
-                            <p style={{fontSize: '20px'}}>A Fight between two Pokemon will be sent to the StarkNet platform where the fight will be calculated and later return to the Ethereum blockchain.<br/>
+                            <p style={{fontSize: '16px'}}>A Fight between two Pokemon will be sent to the StarkNet
+                                platform where the fight will be calculated and later return to the Ethereum blockchain.<br/>
                                 This usually takes 30 min to 1 hour so please be patient<br/>
                                 Once the winner results are in, you will see it under "All the winners" <br/>
-                                If you wish to save the results of your fight and officially add the win to your pokemon on the blockchain,  click on "Save results to blockchain" under the fight. This is a transaction and gas fees must be paid. <br/>
+                                If you wish to save the results of your fight and officially add the win to your pokemon
+                                on the blockchain, click on "Save results to blockchain" under the fight. This is a
+                                transaction and gas fees must be paid. <br/>
                                 The transaction takes around 2 minutes to be confirmed. <br/>
-                                To see more information about the fight, click on the winner Pokémon under 'All the winners'
+                                To see more information about the fight, click on the winner Pokémon under 'All the
+                                winners'
                                 <strong>Enjoy Crypto Pokémon! </strong>
                             </p>
 
                         </div>
-                        <br/>
-                        <img alt="" style={{ display: 'block', margin_left: 'auto', margin_right: 'auto', width: '70%'}}
-                             src="https://media.tenor.com/zenjhCdEDtkAAAAC/pokemon-happy.gif" />
-                        <br/>
+                        {/*<br/>*/}
+                        {/*<img alt="" style={{display: 'block', margin_left: 'auto', margin_right: 'auto', width: '70%'}}*/}
+                        {/*     src="https://media.tenor.com/zenjhCdEDtkAAAAC/pokemon-happy.gif"/>*/}
+                        {/*<br/>*/}
 
                     </div>
 
